@@ -16,6 +16,7 @@ class Categoria(models.Model):
     class Meta:
         managed = False
         db_table = 'categoria'
+        app_label = 'MultiverseAnimeStore'
 
 
 class Contactos(models.Model):

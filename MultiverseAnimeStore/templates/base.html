@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Multiverse Anime Store</title>
-    <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/sidebar.css' %}">
+    <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/sidebar.css' %}">
     <script>
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
@@ -17,7 +17,14 @@
         <button class="sidebar-toggle" onclick="toggleSidebar()">☰</button>
         <h1>Multiverse Anime Store</h1>
         <nav>
-            <a href="{% url 'categoria_list' %}">Categorías</a>
+            <ul>
+                <li><a href="{% url 'categoria_list' %}">Categorías</a></li>
+                <li><a href="{% url 'contactos_list' %}">Contactos</a></li>
+                <li><a href="{% url 'productos_list' %}">productos</a></li>
+                <li><a href="{% url 'pedidos_list' %}">pedidos</a></li>
+                <li><a href="{% url 'pedidos_productos_list' %}">pedidosproductos</a></li>
+                <li><a href="{% url 'usuarios_list' %}">usuarios</a></li>
+            </ul>
             <!-- Agrega más enlaces de navegación aquí si lo necesitas -->
         </nav>
         <hr>
@@ -32,3 +39,7 @@
     </footer> -->
 </body>
 </html>
+
+{% if request.resolver_match.url_name == 'pedidos_create' %}
+    <script src="{% static 'MultiverseAnimeStore/Js/pedidos_form.js' %}"></script>
+{% endif %}

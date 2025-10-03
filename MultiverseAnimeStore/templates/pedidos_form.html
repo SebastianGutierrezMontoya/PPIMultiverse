@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{% if object %}Editar{% else %}Crear{% endif %} Pedido</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+
+    <label for="productos">Productos:</label>
+    <select id="productos" name="productos">
+            <option value="">Seleccione un producto</option>
+        {% for producto in Productos %}
+            <option value="{{ producto.prod_id }}">{{ producto.prod_nombre }} - ${{ producto.prod_precio_venta }}</option>
+        {% endfor %}
+    </select>
+    <span><label> Cantidad :</label> <input type="number" name="Cantidad"></span>
+
+    <button type="button" id="addProducto">Agregar Producto</button>
+    <div id="productosList">
+        <!-- Aquí se mostrarán los productos agregados al pedido -->
+    </div>
+
+
+    
+
+    <button type="submit">Guardar</button>
+</form>
+<a href="{% url 'pedidos_list' %}">Volver al listado</a>
+{% endblock %}
+

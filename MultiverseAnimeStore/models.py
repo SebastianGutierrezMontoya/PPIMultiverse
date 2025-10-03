@@ -18,33 +18,11 @@ class Categoria(models.Model):
         db_table = 'categoria'
         app_label = 'MultiverseAnimeStore'
 
-
-class Contactos(models.Model):
-    id_contacto = models.FloatField(primary_key=True)
-    tipo_contacto = models.CharField(max_length=1, blank=True, null=True)
-    dato_contacto = models.CharField(max_length=100, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'contactos'
+    def __str__(self):
+        return self.cat_nombre or str(self.cat_id)
 
 
-class Estadopedidos(models.Model):
-    est_id = models.IntegerField(primary_key=True)
-    est_nombre = models.CharField(unique=True, max_length=30, blank=True, null=True)
 
-    class Meta:
-        managed = False
-        db_table = 'estadopedidos'
-
-
-class Estadousuarios(models.Model):
-    id_estado_usuario = models.FloatField(primary_key=True)
-    nombre = models.CharField(unique=True, max_length=20, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'estadousuarios'
 
 
 class Pedidos(models.Model):
@@ -52,13 +30,16 @@ class Pedidos(models.Model):
     usu = models.ForeignKey('Usuarios', models.DO_NOTHING)
     ped_fecha_pedido = models.DateField(blank=True, null=True)
     ped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    ped_estado = models.ForeignKey(Estadopedidos, models.DO_NOTHING, db_column='ped_estado')
+    ped_estado = models.IntegerField(max_length=1, blank=True, null=True, default=1)
     ped_direccion_envio = models.CharField(max_length=200, blank=True, null=True)
     ped_notas = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'pedidos'
+
+    def __str__(self):
+        return f"Pedido {self.ped_id}"
 
 
 class PedidosProductos(models.Model):
@@ -82,6 +63,9 @@ class Perfiles(models.Model):
         managed = False
         db_table = 'perfiles'
 
+    def __str__(self):
+        return self.nombre or str(self.id_perfil)
+
 
 class Perfilpermisos(models.Model):
     id_perfil_permiso = models.FloatField(primary_key=True)
@@ -102,6 +86,9 @@ class Permisos(models.Model):
         managed = False
         db_table = 'permisos'
 
+    def __str__(self):
+        return self.nombre_permiso or str(self.id_permiso)
+
 
 class Productos(models.Model):
     prod_id = models.CharField(primary_key=True, max_length=10)
@@ -116,6 +103,9 @@ class Productos(models.Model):
     class Meta:
         managed = False
         db_table = 'productos'
+
+    def __str__(self):
+        return self.prod_nombre or str(self.prod_id)
 
 
 class ProductosAuditoria(models.Model):
@@ -137,6 +127,9 @@ class Roles(models.Model):
         managed = False
         db_table = 'roles'
 
+    def __str__(self):
+        return self.nombre or str(self.id_rol)
+
 
 class Rolperfiles(models.Model):
     id_rol_perfil = models.FloatField(primary_key=True)
@@ -156,6 +149,9 @@ class Sexos(models.Model):
         managed = False
         db_table = 'sexos'
 
+    def __str__(self):
+        return self.nombre_sexo or str(self.id_sexo)
+
 
 class Usuarios(models.Model):
     id_usuario = models.FloatField(primary_key=True)
@@ -164,12 +160,31 @@ class Usuarios(models.Model):
     segundo_apellido = models.CharField(max_length=50, blank=True, null=True)
     fecha_nacimiento = models.DateField(blank=True, null=True)
     password_hash = models.CharField(max_length=255, blank=True, null=True)
-    usuario_id_contacto = models.ForeignKey(Contactos, models.DO_NOTHING, db_column='usuario_id_contacto', blank=True, null=True)
-    usuario_id_sexo = models.ForeignKey(Sexos, models.DO_NOTHING, db_column='usuario_id_sexo', blank=True, null=True)
+    usuario_id_sexo = models.ForeignKey(Sexos, models.DO_NOTHING, db_column='usuario_id_sexo')
     usuario_id_rol = models.ForeignKey(Roles, models.DO_NOTHING, db_column='usuario_id_rol')
-    usuario_id_estado = models.ForeignKey(Estadousuarios, models.DO_NOTHING, db_column='usuario_id_estado')
-    activo = models.CharField(max_length=1, blank=True, null=True)
+    activo = models.FloatField(max_length=1, blank=True, null=True, default=1)
 
     class Meta:
         managed = False
         db_table = 'usuarios'
+        # fields = ['id_usuario', 'nombre', 'primer_apellido', 'segundo_apellido', 'fecha_nacimiento',
+        #            'password_hash', 'usuario_id_sexo', 'usuario_id_rol']
+        
+
+    def __str__(self):
+        
+        return self.nombre or str(self.id_usuario)
+    
+
+class Contactos(models.Model):
+    id_contacto = models.FloatField(primary_key=True)
+    tipo_contacto = models.CharField(max_length=1, blank=True, null=True)
+    dato_contacto = models.CharField(max_length=100, blank=True, null=True)
+    id_usuario = models.ForeignKey(Usuarios, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'contactos'
+
+    def __str__(self):
+        return self.dato_contacto or str(self.id_contacto)

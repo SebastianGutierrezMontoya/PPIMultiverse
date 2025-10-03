@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>{{ object.nombre }}</h2>
+<ul>
+    <li>Primer apellido: {{ object.primer_apellido }}</li>
+    <li>Segundo apellido: {{ object.segundo_apellido }}</li>
+    <li>Fecha nacimiento: {{ object.fecha_nacimiento }}</li>
+    <li>Rol: {{ object.usuario_id_rol.nombre }}</li>
+    <li>Estado: {{ object.usuario_id_estado.nombre }}</li>
+</ul>
+<a href="{% url 'usuarios_update' object.pk %}">Editar</a>
+<a href="#" onclick="showDeleteModal('{{ object.pk }}', '{{ object.nombre }}'); return false;">Eliminar</a>
+<a href="{% url 'usuarios_list' %}">Volver al listado</a>
+
+<!-- Modal de confirmación de borrado -->
+<div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">
+    <div style="background:#fff; padding:30px; max-width:400px; margin:100px auto; border-radius:8px; position:relative;">
+        <h3>Eliminar Usuario</h3>
+        <p id="deleteMessage"></p>
+        <form id="deleteForm" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit">Sí, eliminar</button>
+            <button type="button" onclick="hideDeleteModal()">Cancelar</button>
+        </form>
+    </div>
+</div>
+<script>
+    function showDeleteModal(pk, nombre) {
+        document.getElementById('deleteMessage').textContent = '¿Estás seguro de que deseas eliminar "' + nombre + '"?';
+        var form = document.getElementById('deleteForm');
+        form.action = '/usuarios/' + pk + '/eliminar/';
+        document.getElementById('deleteModal').style.display = 'block';
+    }
+    function hideDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+</script>
+{% endblock %}

@@ -7,6 +7,8 @@
     {{ form.as_p }}
 
     <label for="productos">Productos:</label>
+
+    {% if request.resolver_match.url_name == 'pedidos_create' %}
     <select id="productos" name="productos">
             <option value="">Seleccione un producto</option>
         {% for producto in Productos %}
@@ -19,7 +21,20 @@
     <div id="productosList">
         <!-- Aquí se mostrarán los productos agregados al pedido -->
     </div>
+    {% else %}
+        <ul>
+            {% for pp in productos_relacionados %}
+                
+                <div>{{ pp.prod }} - 
+                    ${{ pp.pped_precio_unitario }} - 
+                    x{{ pp.pped_cantidad }} - 
+                    Total: ${{ pp.total }}</div>
 
+            {% empty %}
+                <li>No hay productos relacionados.</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
     
 

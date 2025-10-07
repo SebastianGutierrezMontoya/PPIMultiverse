@@ -177,7 +177,7 @@ class Usuarios(models.Model):
     
 
 class Contactos(models.Model):
-    id_contacto = models.FloatField(primary_key=True)
+    id_contacto = models.FloatField(primary_key=True, )
     tipo_contacto = models.CharField(max_length=1, blank=True, null=True)
     dato_contacto = models.CharField(max_length=100, blank=True, null=True)
     id_usuario = models.ForeignKey(Usuarios, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)

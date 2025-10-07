@@ -1,5 +1,5 @@
 from django import forms
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos
 from datetime import date as Date
 
 
@@ -45,3 +45,31 @@ class PedidosProductosForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['pped_cantidad'].widget.attrs.update({'min': 1})
+
+
+class UsuariosForm(forms.ModelForm):
+    class Meta:
+        model = Usuarios
+        fields = [
+            'id_usuario', 'nombre', 'primer_apellido', 'segundo_apellido',
+            'fecha_nacimiento', 'password_hash', 'usuario_id_sexo', 'usuario_id_rol', 'activo'
+        ]
+        widgets = {
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+            'password_hash': forms.PasswordInput(render_value=True),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['usuario_id_sexo'].queryset = Sexos.objects.all()
+        self.fields['usuario_id_sexo'].label_from_instance = lambda obj: obj.nombre_sexo
+        self.fields['usuario_id_rol'].queryset = Roles.objects.all()
+        self.fields['usuario_id_rol'].label_from_instance = lambda obj: obj.nombre
+        self.fields['id_usuario'].widget.attrs['readonly'] = True
+        self.fields['id_usuario'].initial = Usuarios.objects.count() + 1
+        self.fields['activo'].widget.attrs.update({'min': 0, 'max': 1, 'step': '1'})
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+        self.fields['fecha_nacimiento'].widget.attrs.update({'class': 'form-control datepicker'})
+        self.fields['password_hash'].widget.attrs.update({'placeholder': 'Contraseña'})
+        self.fields['activo'].required = False

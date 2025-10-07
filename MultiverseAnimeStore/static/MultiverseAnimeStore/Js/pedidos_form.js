@@ -5,13 +5,6 @@
         const TotalInput = document.querySelector('input[name="ped_total"]');
 
 
-        // productosSelect.addEventListener('change', function() {
-        //     console.log('Producto seleccionado:', this.value);
-        // });
-
-        // cantidadInput.addEventListener('input', function() {
-        //     console.log('Cantidad ingresada:', this.value);
-        // });
 
         document.getElementById('addProducto').addEventListener('click', function() {
             const selectedOption = productosSelect.options[productosSelect.selectedIndex];

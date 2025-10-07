@@ -6,7 +6,7 @@
     {% for item in object_list %}
         <li>
             Pedido: {{ item.ped }} - Producto: {{ item.prod }}
-            (<a href="{% url 'pedidos_productos_update' item.ped item.prod %}">Editar</a>,
+            (<a href="{% url 'pedidos_productos_update' item.ped %}">Editar</a>,
              <a href="#" onclick="showDeleteModal('{{ item.pk }}', 'Pedido: {{ item.ped }} - Producto: {{ item.prod }}'); return false;">Eliminar</a>)
         </li>
     {% endfor %}

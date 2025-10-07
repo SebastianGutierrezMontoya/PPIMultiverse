@@ -19,10 +19,10 @@
         <nav>
             <ul>
                 <li><a href="{% url 'categoria_list' %}">Categorías</a></li>
-                <li><a href="{% url 'contactos_list' %}">Contactos</a></li>
+                <!-- <li><a href="{% url 'contactos_list' %}">Contactos</a></li> -->
                 <li><a href="{% url 'productos_list' %}">productos</a></li>
                 <li><a href="{% url 'pedidos_list' %}">pedidos</a></li>
-                <li><a href="{% url 'pedidos_productos_list' %}">pedidosproductos</a></li>
+                <!-- <li><a href="{% url 'pedidos_productos_list' %}">pedidosproductos</a></li> -->
                 <li><a href="{% url 'usuarios_list' %}">usuarios</a></li>
             </ul>
             <!-- Agrega más enlaces de navegación aquí si lo necesitas -->
@@ -42,4 +42,12 @@
 
 {% if request.resolver_match.url_name == 'pedidos_create' %}
     <script src="{% static 'MultiverseAnimeStore/Js/pedidos_form.js' %}"></script>
+{% endif %}
+
+{% if request.resolver_match.url_name == 'usuarios_create' %}
+    <script src="{% static 'MultiverseAnimeStore/Js/usuarios_form.js' %}"></script>
+{% endif %}
+
+{% if request.resolver_match.url_name == 'usuarios_update' %}
+    <script src="{% static 'MultiverseAnimeStore/Js/usuarios_form.js' %}"></script>
 {% endif %}

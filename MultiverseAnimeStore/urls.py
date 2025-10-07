@@ -41,14 +41,14 @@ urlpatterns = [
 
     path('contactos/', ContactosListView.as_view(), name='contactos_list'),
     path('contactos/<int:pk>/', ContactosDetailView.as_view(), name='contactos_detail'),
-    path('contactos/crear/', ContactosCreateView.as_view(), name='contactos_create'),
-    path('contactos/<int:pk>/editar/', ContactosUpdateView.as_view(), name='contactos_update'),
-    path('contactos/<int:pk>/eliminar/', ContactosDeleteView.as_view(), name='contactos_delete'),
+    path('contactos/crear/', ContactosCreateView, name='contactos_create'),
+    path('contactos/<int:pk>/editar/', ContactosUpdateView, name='contactos_update'),
+    path('contactos/<int:pk>/eliminar/', ContactosDeleteView, name='contactos_delete'),
 
     path('pedidos/', PedidosListView.as_view(), name='pedidos_list'),
     path('pedidos/<int:pk>/', PedidosDetailView.as_view(), name='pedidos_detail'),
     path('pedidos/crear/', PedidosCreateView, name='pedidos_create'),
-    path('pedidos/<int:pk>/editar/', PedidosUpdateView.as_view(), name='pedidos_update'),
+    path('pedidos/<int:pk>/editar/', PedidosUpdateView, name='pedidos_update'),
     path('pedidos/<int:pk>/eliminar/', PedidosDeleteView.as_view(), name='pedidos_delete'),
 
     path('productos/', ProductosListView.as_view(), name='productos_list'),
@@ -59,13 +59,13 @@ urlpatterns = [
 
     path('usuarios/', UsuariosListView.as_view(), name='usuarios_list'),
     path('usuarios/<int:pk>/', UsuariosDetailView.as_view(), name='usuarios_detail'),
-    path('usuarios/crear/', UsuariosCreateView.as_view(), name='usuarios_create'),
-    path('usuarios/<int:pk>/editar/', UsuariosUpdateView.as_view(), name='usuarios_update'),
+    path('usuarios/crear/', UsuariosCreateView, name='usuarios_create'),
+    path('usuarios/<int:pk>/editar/', UsuariosUpdateView, name='usuarios_update'),
     path('usuarios/<int:pk>/eliminar/', UsuariosDeleteView.as_view(), name='usuarios_delete'),
 
     path('pedidos_productos/', PedidosProductosListView.as_view(), name='pedidos_productos_list'),
     path('pedidos_productos/<int:pk>/', PedidosProductosDetailView.as_view(), name='pedidos_productos_detail'),
     path('pedidos_productos/crear/', PedidosProductosCreateView, name='pedidos_productos_create'),
-    path('pedidos_productos/<int:id_pedido>/<int:id_producto>/editar/', PedidosProductosUpdateView, name='pedidos_productos_update'), 
+    path('pedidos_productos/<int:id_pedido>/editar/', PedidosProductosUpdateView, name='pedidos_productos_update'), 
     path('pedidos_productos/<int:pk>/eliminar/', PedidosProductosDeleteView.as_view(), name='pedidos_productos_delete'),
 ]

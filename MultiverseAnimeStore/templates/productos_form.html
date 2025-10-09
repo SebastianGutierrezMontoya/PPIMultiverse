@@ -1,11 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{% if object %}Editar{% else %}Crear{% endif %} Producto</h2>
+
 
 <form method="post">
+    <h2 class="form-header">{% if object %}Editar{% else %}Crear{% endif %} Producto</h2>
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Guardar</button>
+
+    <div class="form-linear form-center">
+        <button type="submit">Guardar</button>
+        <a href="{% url 'productos_list' %}" class="btn-link">Volver al listado</a>
+    </div>
 </form>
-<a href="{% url 'productos_list' %}">Volver al listado</a>
+
 {% endblock %}

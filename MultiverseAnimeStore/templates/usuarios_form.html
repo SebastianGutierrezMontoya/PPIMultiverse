@@ -1,26 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>{% if object %}Editar{% else %}Crear{% endif %} Usuario</h2>
+
 <form method="post">
+    <h2 class="form-header">{% if object %}Editar{% else %}Crear{% endif %} Usuario</h2>
     {% csrf_token %}
     {{ form.as_p }}
 
-    <p> Contactos :</p>
+    
 
-
-    <div id="contactosContainer">
-        <div class="contacto-row">
-        <select name="tipo_contacto">
-            <option value="">Tipo de contacto</option>
-            <option value="c">Correo</option>
-            <option value="t">Telefono</option>
-            <option value="d">Direccion</option>
-            <option value="p">Postal</option>
-        </select>
-        <span><label> Dato :</label> <input type="text" name="dato_contacto"></span>
+    <div class="form-list">
+    <div id="contactosContainer" class="form-contactos">
+        <div class="contacto-row form-linear">
+            <p> Contacto:</p>
+            <select name="tipo_contacto">
+                <option value="">Tipo de contacto</option>
+                <option value="c">Correo</option>
+                <option value="t">Telefono</option>
+                <option value="d">Direccion</option>
+                <option value="p">Postal</option>
+            </select>
+            <label> Dato:</label> <input type="text" name="dato_contacto" class="form-dato-contacto">
+        </div>
+        <button type="button" id="addContacto">Agregar Contacto</button>
     </div>
-    </div>
-    <button type="button" id="addContacto">Agregar Contacto</button>
+    
 
     {% if request.resolver_match.url_name == 'usuarios_update' %}
 
@@ -50,9 +53,17 @@
 
     {% endif %}
 
-    <button type="submit">Guardar</button>
+    </div>
+
+    <div class="form-linear form-center">
+        
+        <button type="submit">Guardar</button>
+
+        <a href="{% url 'usuarios_list' %}" class="btn-link">Volver al listado</a>
+        
+    </div>
 </form>
 
 
-<a href="{% url 'usuarios_list' %}">Volver al listado</a>
+
 {% endblock %}

@@ -15,8 +15,12 @@ addEventListener('DOMContentLoaded', function() {
         if (tipo && dato) {
             // Muestra el contacto agregado con botón eliminar
             const contactoDiv = document.createElement('div');
+            const contactoTexto = document.createElement('span');
             let tipoTexto = tipoSelect.options[tipoSelect.selectedIndex].text;
-            contactoDiv.textContent = `${tipoTexto}: ${dato} `;
+            contactoTexto.textContent = `${tipoTexto}: ${dato} `;
+
+            contactoTexto.classList.add('form-span');
+            contactoDiv.appendChild(contactoTexto);
 
             // Botón eliminar
             const removeBtn = document.createElement('button');
@@ -31,6 +35,8 @@ addEventListener('DOMContentLoaded', function() {
             hiddenInput.name = 'contactos_relacionados';
             hiddenInput.value = `${tipo},${dato}`;
             contactoDiv.appendChild(hiddenInput);
+
+            contactoDiv.classList.add('form-linear','form-contacto');
 
             contactosContainer.appendChild(contactoDiv);
 

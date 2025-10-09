@@ -1,3 +1,46 @@
+:root {
+    --fontcolor: white;
+    --main-bg: #eae6e6;
+    --sidebar-bg: rgb(255, 255, 255);
+    --sidebar-link: #1d1d1d;
+    --sidebar-link-hover: #b2ebf2;
+    --formcolor: #f8f8f8;
+}
+
 .hidden {
     display: none;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: var(--main-bg);
+    color: var(--sidebar-link);
+}
+
+button {
+    background-color: var(--sidebar-link);
+    color: var(--fontcolor);
+    border: none;
+    padding: 15px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 150px;
+    font-size:14px;
+}
+
+input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
 }

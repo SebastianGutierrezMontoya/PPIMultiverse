@@ -1,0 +1,130 @@
+form {
+    max-width: 500px;
+    margin: 40px auto;
+    padding: 24px 32px;
+    background: var(--formcolor);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.433);
+    border-color: var(--sidebar-link);
+    display: flex
+;
+    flex-direction: column;
+    align-items: center;
+    min-width: 400px;
+    width: fit-content;
+}
+
+form > * {
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+form button[type="submit"], form button, form input[type="button"] {
+    width: auto;
+    margin: 0 auto;
+    display: block;
+}
+
+form label {
+    text-align: left;
+    width: 100%;
+}
+
+.form-header {
+    text-align: center;
+    margin-bottom: 24px;
+    font-size: 2rem;
+    color: var(--sidebar-link);
+}
+
+.form-linear {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.form-linear label {
+    margin-bottom: 0;
+    white-space: nowrap;
+}
+
+.form-linear input[type="number"] {
+    width: 200%;
+}
+
+.form-linear button {
+    margin:0;
+}
+.form-linear .btn-link {
+
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-block;
+    text-align: center;
+
+    background-color: var(--sidebar-link);
+    color: var(--fontcolor);
+    border: none;
+    padding: 15px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 150px;
+    font-size:14px;
+    margin:auto;
+}
+
+.form-linear .btn-link:hover,
+.form-linear button:hover {
+    background: #007c91;
+}
+
+.form-span {
+    width: 100%;
+}
+
+
+@media (max-width: 600px) {
+    form {
+        max-width: 95vw;
+        padding: 16px 8px;
+    }
+}
+
+.form-contactos {
+    width: 100%;
+    margin-bottom: 16px;
+    border-color: var(--sidebar-link);
+}
+
+.form-contacto {
+    border: 1px solid #ccc;
+    padding: 3px;
+    margin-top: 7px;
+    margin-bottom: 7px;
+}
+
+.form-productos {
+    width: 400%;
+}
+
+.form-dato-contacto {
+    width: 400%;
+}
+
+.form-list {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+.form-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+

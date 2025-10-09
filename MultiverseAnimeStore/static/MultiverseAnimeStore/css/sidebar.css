@@ -1,3 +1,5 @@
+
+
 body {
     margin: 0;
     padding: 0;
@@ -9,12 +11,14 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    background: #222;
-    color: #fff;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-link);
     padding: 20px 10px;
     transition: width 0.3s ease;
     z-index: 1000;
     overflow-x: hidden;
+    text-decoration: none;
+
 }
 .sidebar.closed {
     width: 40px;
@@ -35,8 +39,8 @@ body {
 }
 .sidebar-toggle {
     display: block;
-    background: #222;
-    color: #fff;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-link);
     border: none;
     padding: 8px 12px;
     cursor: pointer;
@@ -61,6 +65,27 @@ footer {
 .sidebar.closed ~ footer {
     margin-left: 60px;
 }
+.sidebar nav a,
+.sidebar nav a:visited {
+    color: var(--sidebar-link);
+    text-decoration: none;
+}
+.sidebar nav a:hover {
+    text-decoration: none;
+    background: var(--sidebar-link-hover);
+}
+.sidebar nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.sidebar nav ul li {
+    border-top: 1px solid var(--sidebar-link);
+    padding: 14px 0;
+    margin: 0;
+    align-items: center;
+}
+
 @media (max-width: 600px) {
     .sidebar, .sidebar.closed, main, footer {
         margin-left: 0 !important;

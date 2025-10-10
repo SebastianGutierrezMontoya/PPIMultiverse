@@ -28,6 +28,9 @@ class PedidosForm(forms.ModelForm):
         self.fields['ped_total'].widget.attrs.update({'class': 'form-control', 'step': '0.01'})
         self.fields['ped_fecha_pedido'].initial = Date.today()
         self.fields['ped_notas'].required = False
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
         
 
 class PedidosProductosForm(forms.ModelForm):
@@ -73,3 +76,41 @@ class UsuariosForm(forms.ModelForm):
         self.fields['fecha_nacimiento'].widget.attrs.update({'class': 'form-control datepicker'})
         self.fields['password_hash'].widget.attrs.update({'placeholder': 'Contraseña'})
         self.fields['activo'].required = False
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
+
+
+class CategoriaForm(forms.ModelForm):
+    class Meta:
+        model = Categoria
+        fields = ['cat_id', 'cat_nombre', 'cat_descripcion']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['cat_id'].widget.attrs['readonly'] = True
+        self.fields['cat_id'].initial = Categoria.objects.count() + 1
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
+
+
+class ProductosForm(forms.ModelForm):
+    class Meta:
+        model = Productos
+        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock', 'cat']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['cat'].queryset = Categoria.objects.all()
+        self.fields['cat'].label_from_instance = lambda obj: obj.cat_nombre
+        self.fields['prod_id'].widget.attrs['readonly'] = True
+        self.fields['prod_id'].initial = Productos.objects.count() + 1
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+        self.fields['prod_precio_venta'].widget.attrs.update({'step': '0.01'})
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})

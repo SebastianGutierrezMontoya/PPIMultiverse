@@ -5,7 +5,7 @@
 <ul>
     {% for pedido in object_list %}
         <li>
-            <a href="{% url 'pedidos_detail' pedido.pk %}">Pedido {{ pedido.ped_id }}</a>
+            <a href="{% url 'pedidos_detail' pedido.pk %}">{{ pedido.usu.nombre }} Pedido {{ pedido.ped_id }} </a>
             (<a href="{% url 'pedidos_update' pedido.pk %}">Editar</a>,
              <a href="#" onclick="showDeleteModal('{{ pedido.pk }}', 'Pedido {{ pedido.ped_id }}'); return false;">Eliminar</a>)
         </li>
@@ -19,8 +19,10 @@
         <p id="deleteMessage"></p>
         <form id="deleteForm" method="post" style="display:inline;">
             {% csrf_token %}
-            <button type="submit">Sí, eliminar</button>
-            <button type="button" onclick="hideDeleteModal()">Cancelar</button>
+            <div class="form-linear form-center">
+                <button type="submit">Sí, eliminar</button>
+                <button type="button" onclick="hideDeleteModal()">Cancelar</button>
+            </div>
         </form>
     </div>
 </div>

@@ -17,8 +17,11 @@
         <p id="deleteMessage"></p>
         <form id="deleteForm" method="post" style="display:inline;">
             {% csrf_token %}
-            <button type="submit">Sí, eliminar</button>
-            <button type="button" onclick="hideDeleteModal()">Cancelar</button>
+            <div class="form-linear form-center">
+                <button type="submit">Sí, eliminar</button>
+                <button type="button" onclick="hideDeleteModal()">Cancelar</button>
+            </div>
+
         </form>
     </div>
 </div>

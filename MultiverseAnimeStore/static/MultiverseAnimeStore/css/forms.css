@@ -1,4 +1,4 @@
-form {
+.form-container {
     max-width: 500px;
     margin: 40px auto;
     padding: 24px 32px;
@@ -14,18 +14,18 @@ form {
     width: fit-content;
 }
 
-form > * {
+.form-container > * {
     width: 100%;
     margin-bottom: 16px;
 }
 
-form button[type="submit"], form button, form input[type="button"] {
+.form-container button[type="submit"], form button, form input[type="button"] {
     width: auto;
     margin: 0 auto;
     display: block;
 }
 
-form label {
+.form-container label {
     text-align: left;
     width: 100%;
 }
@@ -81,8 +81,8 @@ form label {
     background: #007c91;
 }
 
-.form-span {
-    width: 100%;
+.form-control textarea {
+    width: 98%;
 }
 
 
@@ -104,6 +104,7 @@ form label {
     padding: 3px;
     margin-top: 7px;
     margin-bottom: 7px;
+    justify-content: space-between;
 }
 
 .form-productos {
@@ -125,6 +126,46 @@ form label {
     align-items: center;
     gap: 12px;
     margin-top: 24px;
+}
+.form-control {
+    width: 100%;
+}
+
+
+
+
+.form-floating {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.form-floating label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  font-size: 0.85rem;
+  color: #666;
+  background: white;
+  padding: 0 4px;
+  pointer-events: none;
+  transition: 0.2s ease all;
+}
+
+.form-floating input, .form-floating select {
+  width: 100%;
+  padding: 22px 10px 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.form-floating input:focus + label,
+.form-floating input:not(:placeholder-shown) + label,
+.form-floating select:focus + label,
+.form-floating select:not(:placeholder-shown) + label {
+  top: -8px;
+  font-size: 0.75rem;
+  color: var(--sidebar-link);
 }
 
 

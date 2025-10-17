@@ -44,3 +44,66 @@ select {
     border-radius: 5px;
     box-sizing: border-box;
 }
+
+.container {
+    
+    margin: 40px auto;
+    padding: 24px 32px;
+    background: var(--formcolor);
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.433);
+    border-color: var(--sidebar-link);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 400px;
+    width: fit-content;
+}
+
+
+.btn-link {
+
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-block;
+    text-align: center;
+    background-color: var(--sidebar-link);
+    color: var(--fontcolor);
+    border: none;
+    padding: 15px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 150px;
+    font-size:14px;
+    margin:auto;
+}
+
+.btn-link2 {
+
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: inline-block;
+    text-align: center;
+    background-color: var(--fontcolor);
+    color: var(--sidebar-link);
+    border: 2px solid var(--sidebar-link);
+    padding: 12px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    min-width: 150px;
+    margin:auto;
+}
+
+.btn-link:hover,
+button:hover,
+.btn-link2:hover {
+    background: var(--sidebar-link-hover);
+}
+
+.container ul li {
+    margin-bottom: 10px;
+}

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios
-from .forms import PedidosForm, PedidosProductosForm, UsuariosForm
+from .forms import PedidosForm, PedidosProductosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum
 from django.http import HttpResponseRedirect
 
@@ -15,22 +15,32 @@ class CategoriaDetailView(DetailView):
     model = Categoria
     template_name = 'categoria_detail.html'
 
-class CategoriaCreateView(CreateView):
-    model = Categoria
-    fields = '__all__'
-    template_name = 'categoria_form.html'
-    success_url = reverse_lazy('categoria_list')
-
-class CategoriaUpdateView(UpdateView):
-    model = Categoria
-    fields = '__all__'
-    template_name = 'categoria_form.html'
-    success_url = reverse_lazy('categoria_list')
-
 class CategoriaDeleteView(DeleteView):
     model = Categoria
     template_name = 'categoria_confirm_delete.html'
     success_url = reverse_lazy('categoria_list')
+
+def CategoriaCreateView(request):
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('categoria_list')
+    else:
+        form = CategoriaForm()
+    return render(request, 'categoria_form.html', {'form': form})
+
+def CategoriaUpdateView(request, pk):
+    categoria = get_object_or_404(Categoria, pk=pk)
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST, instance=categoria)
+        if form.is_valid():
+            form.save()
+            return redirect('categoria_list')
+    else:
+        form = CategoriaForm(instance=categoria)
+    return render(request, 'categoria_form.html', {'form': form, 'object': categoria})
+
 
 
 
@@ -130,7 +140,7 @@ def PedidosProductosUpdateView(request, id_pedido):
         form = PedidosProductosForm(request.POST, instance=obj)
         if form.is_valid():
             form.save()
-            return redirect('pedidos_productos_list')  # o la vista a la que quieras volver
+            return redirect('pedidos_productos_list') 
     else:
         form = PedidosProductosForm(instance=obj)
 
@@ -159,18 +169,27 @@ class ProductosDetailView(DetailView):
     model = Productos
     template_name = 'productos_detail.html'
 
-class ProductosCreateView(CreateView):
-    model = Productos
-    fields = '__all__'
-    template_name = 'productos_form.html'
-    success_url = reverse_lazy('productos_list')
-    
 
-class ProductosUpdateView(UpdateView):
-    model = Productos
-    fields = '__all__'
-    template_name = 'productos_form.html'
-    success_url = reverse_lazy('productos_list')
+def ProductosCreateView(request):
+    if request.method == 'POST':
+        form = ProductosForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('productos_list')
+    else:
+        form = ProductosForm()
+    return render(request, 'productos_form.html', {'form': form})
+
+def ProductosUpdateView(request, pk):
+    producto = get_object_or_404(Productos, pk=pk)
+    if request.method == 'POST':
+        form = ProductosForm(request.POST, request.FILES, instance=producto)
+        if form.is_valid():
+            form.save()
+            return redirect('productos_list')
+    else:
+        form = ProductosForm(instance=producto)
+    return render(request, 'productos_form.html', {'form': form, 'object': producto})
 
 class ProductosDeleteView(DeleteView):
     model = Productos
@@ -306,3 +325,41 @@ def ContactosDeleteView(request, pk):
     contacto = get_object_or_404(Contactos, pk=pk)
     contacto.delete()
     return HttpResponseRedirect(reverse_lazy('usuarios_list'))
+
+#Roles
+
+class RolesListView(ListView):
+    model = Roles
+    template_name = 'roles_list.html'
+
+class RolesDetailView(DetailView):
+    model = Roles
+    template_name = 'roles_detail.html'
+
+
+def RolesCreateView(request):
+    if request.method == 'POST':
+        form = RolesForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('roles_list')
+    else:
+        form = RolesForm()
+    return render(request, 'roles_form.html', {'form': form})
+
+def RolesUpdateView(request, pk):
+    role = get_object_or_404(Roles, pk=pk)
+    if request.method == 'POST':
+        form = RolesForm(request.POST, instance=role)
+        if form.is_valid():
+            form.save()
+            return redirect('roles_list')
+    else:
+        form = RolesForm(instance=role)
+    return render(request, 'roles_form.html', {'form': form, 'object': role})
+
+class RolesDeleteView(DeleteView):
+    model = Roles
+    template_name = 'roles_confirm_delete.html'
+    success_url = reverse_lazy('roles_list')
+

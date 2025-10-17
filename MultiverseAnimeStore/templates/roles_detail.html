@@ -1,22 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-<h2>Categorías</h2>
-<a href="{% url 'categoria_create' %}" class="btn-link">Crear nueva categoría</a>
+<h2>Roles</h2>
+<a href="{% url 'roles_create' %}" class="btn-link">Crear nuevo rol</a>
 <ul>
-    {% for categoria in object_list %}
+    {% for rol in object_list %}
         <li>
-            <a href="{% url 'categoria_detail' categoria.pk %}" class="btn-link2">{{ categoria.cat_nombre }}</a>
-            (<a href="{% url 'categoria_update' categoria.pk %}" class="btn-link">Editar</a>,
-             <a href="#" onclick="showDeleteModal('{{ categoria.pk }}', '{{ categoria.cat_nombre }}'); return false;" class="btn-link">Eliminar</a>)
+            <a href="{% url 'roles_detail' rol.pk %}" class="btn-link2">{{ rol.nombre }}</a>
+            (<a href="{% url 'roles_update' rol.pk %}" class="btn-link">Editar</a>,
+             <a href="#" onclick="showDeleteModal('{{ rol.pk }}', '{{ rol.nombre }}'); return false;" class="btn-link">Eliminar</a>)
         </li>
     {% endfor %}
 </ul>
 </div>
+
 <!-- Modal de confirmación de borrado -->
 <div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">
     <div style="background:#fff; padding:30px; max-width:400px; margin:100px auto; border-radius:8px; position:relative;">
-        <h3>Eliminar Categoría</h3>
+        <h3>Eliminar Rol</h3>
         <p id="deleteMessage"></p>
         <form id="deleteForm" method="post" style="display:inline;">
             {% csrf_token %}
@@ -26,16 +27,18 @@
             </div>
         </form>
     </div>
+
 </div>
 <script>
     function showDeleteModal(pk, nombre) {
         document.getElementById('deleteMessage').textContent = '¿Estás seguro de que deseas eliminar "' + nombre + '"?';
         var form = document.getElementById('deleteForm');
-        form.action = '/categorias/' + pk + '/eliminar/';
+        form.action = '/roles/' + pk + '/eliminar/';
         document.getElementById('deleteModal').style.display = 'block';
     }
     function hideDeleteModal() {
         document.getElementById('deleteModal').style.display = 'none';
     }
 </script>
+
 {% endblock %}

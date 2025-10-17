@@ -114,3 +114,19 @@ class ProductosForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})
+
+
+class RolesForm(forms.ModelForm):
+    class Meta:
+        model = Roles
+        fields = ['id_rol', 'nombre', 'descripcion']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['id_rol'].widget.attrs['readonly'] = True
+        self.fields['id_rol'].initial = Roles.objects.count() + 1
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})

@@ -30,13 +30,18 @@ from .views import (
     PedidosProductosCreateView,
     PedidosProductosUpdateView,
     PedidosProductosDeleteView,
+    RolesListView,
+    RolesDetailView,
+    RolesCreateView,
+    RolesUpdateView,
+    RolesDeleteView,
 )
 
 urlpatterns = [
     path('categorias/', CategoriaListView.as_view(), name='categoria_list'),
     path('categorias/<int:pk>/', CategoriaDetailView.as_view(), name='categoria_detail'),
-    path('categorias/crear/', CategoriaCreateView.as_view(), name='categoria_create'),
-    path('categorias/<int:pk>/editar/', CategoriaUpdateView.as_view(), name='categoria_update'),
+    path('categorias/crear/', CategoriaCreateView, name='categoria_create'),
+    path('categorias/<int:pk>/editar/', CategoriaUpdateView, name='categoria_update'),
     path('categorias/<int:pk>/eliminar/', CategoriaDeleteView.as_view(), name='categoria_delete'),
 
     path('contactos/', ContactosListView.as_view(), name='contactos_list'),
@@ -53,8 +58,8 @@ urlpatterns = [
 
     path('productos/', ProductosListView.as_view(), name='productos_list'),
     path('productos/<int:pk>/', ProductosDetailView.as_view(), name='productos_detail'),
-    path('productos/crear/', ProductosCreateView.as_view(), name='productos_create'),
-    path('productos/<int:pk>/editar/', ProductosUpdateView.as_view(), name='productos_update'),
+    path('productos/crear/', ProductosCreateView, name='productos_create'),
+    path('productos/<int:pk>/editar/', ProductosUpdateView, name='productos_update'),
     path('productos/<int:pk>/eliminar/', ProductosDeleteView.as_view(), name='productos_delete'),
 
     path('usuarios/', UsuariosListView.as_view(), name='usuarios_list'),
@@ -68,4 +73,11 @@ urlpatterns = [
     path('pedidos_productos/crear/', PedidosProductosCreateView, name='pedidos_productos_create'),
     path('pedidos_productos/<int:id_pedido>/editar/', PedidosProductosUpdateView, name='pedidos_productos_update'), 
     path('pedidos_productos/<int:pk>/eliminar/', PedidosProductosDeleteView.as_view(), name='pedidos_productos_delete'),
+
+    path('roles/', RolesListView.as_view(), name='roles_list'),
+    path('roles/<int:pk>/', RolesDetailView.as_view(), name='roles_detail'),
+    path('roles/crear/', RolesCreateView, name='roles_create'),
+    path('roles/<int:pk>/editar/', RolesUpdateView, name='roles_update'),
+    path('roles/<int:pk>/eliminar/', RolesDeleteView.as_view(), name='roles_delete'),
+    
 ]

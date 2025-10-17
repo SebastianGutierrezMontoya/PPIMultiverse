@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+
+<form method="post" class="form-container">
+    <h2 class="form-header">{% if object %}Editar{% else %}Crear{% endif %} Rol</h2>
+    {% csrf_token %}
+    <!-- {{ form.as_p }} -->
+
+    {% for field in form %}
+        <div class="form-floating">
+          {{ field }}
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        </div>
+    {% endfor %}
+    <div class="form-linear form-center">
+        <button type="submit">{% if object %}Actualizar{% else %}Crear{% endif %}</button>
+        <a href="{% url 'roles_list' %}" class="btn-link" style="margin:auto;">Cancelar</a>
+    </div>
+</form>
+
+{% endblock %}

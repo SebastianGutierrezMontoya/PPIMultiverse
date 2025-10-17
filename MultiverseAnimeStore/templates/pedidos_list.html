@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="container">
 <h2>Pedidos</h2>
-<a href="{% url 'pedidos_create' %}">Crear nuevo pedido</a>
+<a href="{% url 'pedidos_create' %}" class="btn-link">Crear nuevo pedido</a>
 <ul>
     {% for pedido in object_list %}
         <li>
-            <a href="{% url 'pedidos_detail' pedido.pk %}">{{ pedido.usu.nombre }} Pedido {{ pedido.ped_id }} </a>
-            (<a href="{% url 'pedidos_update' pedido.pk %}">Editar</a>,
-             <a href="#" onclick="showDeleteModal('{{ pedido.pk }}', 'Pedido {{ pedido.ped_id }}'); return false;">Eliminar</a>)
+            <a href="{% url 'pedidos_detail' pedido.pk %}" class="btn-link2">{{ pedido.usu.nombre }} Pedido {{ pedido.ped_id }} </a>
+            (<a href="{% url 'pedidos_update' pedido.pk %}" class="btn-link">Editar</a>,
+             <a href="#" onclick="showDeleteModal('{{ pedido.pk }}', 'Pedido {{ pedido.ped_id }}'); return false;" class="btn-link">Eliminar</a>)
         </li>
     {% endfor %}
 </ul>
+</div>
 
 <!-- Modal de confirmación de borrado -->
 <div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">

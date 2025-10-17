@@ -1,16 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="container">
 <h2>Usuarios</h2>
-<a href="{% url 'usuarios_create' %}">Crear nuevo usuario</a>
+<a href="{% url 'usuarios_create' %}" class="btn-link">Crear nuevo usuario</a>
 <ul>
     {% for usuario in object_list %}
         <li>
-            <a href="{% url 'usuarios_detail' usuario.pk %}">{{ usuario.nombre }}</a>
-            (<a href="{% url 'usuarios_update' usuario.pk %}">Editar</a>,
-             <a href="#" onclick="showDeleteModal('{{ usuario.pk }}', '{{ usuario.nombre }}'); return false;">Eliminar</a>)
+            <a href="{% url 'usuarios_detail' usuario.pk %}" class="btn-link2">{{ usuario.nombre }}</a>
+            (<a href="{% url 'usuarios_update' usuario.pk %}" class="btn-link">Editar</a>,
+             <a href="#" onclick="showDeleteModal('{{ usuario.pk }}', '{{ usuario.nombre }}'); return false;" class="btn-link">Eliminar</a>)
         </li>
     {% endfor %}
 </ul>
+</div>
 
 <!-- Modal de confirmación de borrado -->
 <div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">

@@ -5,6 +5,24 @@ from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, 
 from .forms import PedidosForm, PedidosProductosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum
 from django.http import HttpResponseRedirect
+from django.db import DatabaseError, transaction
+from django.contrib import messages
+import re
+
+# Función para extraer mensajes de error de Oracle
+def _extract_db_message(exc):
+    """Extrae el mensaje amigable de una excepción Oracle (p. ej. RAISE_APPLICATION_ERROR)."""
+    text = str(exc) or ''
+    # Busca 'ORA-XXXXX: mensaje...' y captura el 'mensaje' hasta un salto de línea o la siguiente 'ORA-'
+    m = re.search(r'ORA-\d{5}:\s*(.+?)(?:\n|ORA-|$)', text, re.DOTALL)
+    if m:
+        return m.group(1).strip()
+    # Si no hay ORA-... devuelve la primera línea no vacía
+    for line in text.splitlines():
+        line = line.strip()
+        if line:
+            return line
+    return text.strip() or 'Error de base de datos.'
 
 #Categorias
 class CategoriaListView(ListView):
@@ -63,10 +81,15 @@ def PedidosCreateView(request):
 
         form = PedidosForm(request.POST)
         if form.is_valid():
-            
-            form.save()
-            PedidosProductosCreateView(productos_seleccionados, id_pedido)
-            return redirect('pedidos_list')
+            try:
+                with transaction.atomic():
+                    pedido = form.save()
+                    # crear relaciones dentro de la misma transacción
+                    PedidosProductosCreateView(productos_seleccionados, id_pedido)
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                return redirect('pedidos_list')
     else:
         Prod = Productos.objects.values('prod_id', 'prod_nombre', 'prod_precio_venta', 'prod_stock')
         Json['Productos'] = Prod
@@ -95,8 +118,17 @@ def PedidosUpdateView(request, pk):
     if request.method == 'POST':
         form = PedidosForm(request.POST, instance=pedido)
         if form.is_valid():
-            form.save()
-            return redirect('pedidos_list')
+            try:
+                with transaction.atomic():
+                    pedido = form.save()
+                    # si en edición recibes productos nuevos, manejarlos aquí (opcional)
+                    productos_seleccionados = request.POST.getlist('productos_seleccionados')
+                    if productos_seleccionados:
+                        PedidosProductosCreateView(productos_seleccionados, pedido.ped_id)
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                return redirect('pedidos_list')
     else:
         form = PedidosForm(instance=pedido)
 
@@ -174,8 +206,13 @@ def ProductosCreateView(request):
     if request.method == 'POST':
         form = ProductosForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
-            return redirect('productos_list')
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                return redirect('productos_list')
     else:
         form = ProductosForm()
     return render(request, 'productos_form.html', {'form': form})
@@ -185,8 +222,13 @@ def ProductosUpdateView(request, pk):
     if request.method == 'POST':
         form = ProductosForm(request.POST, request.FILES, instance=producto)
         if form.is_valid():
-            form.save()
-            return redirect('productos_list')
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                return redirect('productos_list')
     else:
         form = ProductosForm(instance=producto)
     return render(request, 'productos_form.html', {'form': form, 'object': producto})
@@ -212,13 +254,17 @@ def UsuariosCreateView(request):
 
     if request.method == 'POST':
         contactos_relacionados = request.POST.getlist('contactos_relacionados')
-        id_usuario = request.POST.get('id_usuario')
-
         form = UsuariosForm(request.POST)
         if form.is_valid():
-            form.save()
-            ContactosCreateView(contactos_relacionados, id_usuario)
-            return redirect('usuarios_list')
+            try:
+                with transaction.atomic():
+                    usuario = form.save()
+                    # crear contactos dentro de la misma transacción
+                    ContactosCreateView(contactos_relacionados, usuario.id_usuario)
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                return redirect('usuarios_list')
     else:
         form = UsuariosForm()
 
@@ -226,45 +272,44 @@ def UsuariosCreateView(request):
     return render(request, 'usuarios_form.html', Json )
 
 def UsuariosUpdateView(request, pk):
-   
     usuario = get_object_or_404(Usuarios, pk=pk)
     contactos_relacionados = Contactos.objects.filter(id_usuario=usuario)
-    # contactos_relacionados_editados = request.POST.getlist('contactos_relacionados_editados')
     
-
     if request.method == 'POST':
         form = UsuariosForm(request.POST, instance=usuario)
         contactos_relacionados_nuevo = request.POST.getlist('contactos_relacionados')
-        print("Contactos nuevos recibidos:", contactos_relacionados_nuevo)
         if form.is_valid():
-            form.save()
-            # Recibe los datos como lista de strings tipo "tipo_contacto,dato_contacto,id_contacto"
-            contactos_data = request.POST.getlist('contactos_relacionados_editados')
-            contactos_actualizar = []
-            for item in contactos_data:
-                # Si envías el id_contacto también, separa por coma
-                # Ejemplo: "c,nuevo@email.com,1"
-                parts = item.split(',')
-                if len(parts) == 3:
-                    tipo_contacto, dato_contacto, id_contacto = parts
-                    contactos_actualizar.append({
-                        'id_contacto': id_contacto,
-                        'tipo_contacto': tipo_contacto,
-                        'dato_contacto': dato_contacto,
-                    })
-                elif len(parts) == 2:
-                    tipo_contacto, dato_contacto = parts
-                    # Si no hay id_contacto, omite o busca por otro criterio
-                    contactos_actualizar.append({
-                        'tipo_contacto': tipo_contacto,
-                        'dato_contacto': dato_contacto,
-                    })
-            ContactosUpdateView(contactos_actualizar)
-            if contactos_relacionados_nuevo:
-                ContactosCreateView(contactos_relacionados_nuevo, usuario.id_usuario)
-            return redirect('usuarios_list')
+            try:
+                with transaction.atomic():
+                    form.save()
+                    # procesar contactos sólo si el guardado de usuario tuvo éxito
+                    contactos_data = request.POST.getlist('contactos_relacionados_editados')
+                    contactos_actualizar = []
+                    for item in contactos_data:
+                        parts = item.split(',')
+                        if len(parts) == 3:
+                            tipo_contacto, dato_contacto, id_contacto = parts
+                            contactos_actualizar.append({
+                                'id_contacto': id_contacto,
+                                'tipo_contacto': tipo_contacto,
+                                'dato_contacto': dato_contacto,
+                            })
+                        elif len(parts) == 2:
+                            tipo_contacto, dato_contacto = parts
+                            contactos_actualizar.append({
+                                'tipo_contacto': tipo_contacto,
+                                'dato_contacto': dato_contacto,
+                            })
+                    # actualizar y crear dentro de la transacción
+                    if contactos_actualizar:
+                        ContactosUpdateView(contactos_actualizar)
+                    if contactos_relacionados_nuevo:
+                        ContactosCreateView(contactos_relacionados_nuevo, usuario.id_usuario)
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                return redirect('usuarios_list')
     else:
-   
         form = UsuariosForm(instance=usuario)
 
     return render(request, 'usuarios_form.html', {
@@ -289,41 +334,56 @@ class ContactosDetailView(DetailView):
     template_name = 'contactos_detail.html'
 
 def ContactosCreateView(contactos_relacionados, id_usuario):
-    print("Contactos a crear:", contactos_relacionados)
+    errors = []
     for item in contactos_relacionados:
-        id_con = Contactos.objects.count() + 1
-        tipo_contacto, dato_contacto = item.split(',')
-        usuario = get_object_or_404(Usuarios, pk=id_usuario)
+        try:
+            id_con = Contactos.objects.count() + 1
+            tipo_contacto, dato_contacto = item.split(',')
+            usuario = get_object_or_404(Usuarios, pk=id_usuario)
 
-        Contactos.objects.create(
-            id_contacto=id_con,
-            tipo_contacto=tipo_contacto,
-            dato_contacto=dato_contacto,
-            id_usuario=usuario
-        )
-    
+            Contactos.objects.create(
+                id_contacto=id_con,
+                tipo_contacto=tipo_contacto,
+                dato_contacto=dato_contacto,
+                id_usuario=usuario
+            )
+        except DatabaseError as e:
+            errors.append(_extract_db_message(e))
+        except Exception as e:
+            errors.append(str(e))
+    if errors:
+        # lanzar un DatabaseError con el mensaje combinado para que lo capture la vista que llamó
+        raise DatabaseError('; '.join(errors))
 
 def ContactosUpdateView(contactos_actualizar):
-    print("Contactos a actualizar:", contactos_actualizar)
-    """
-    contactos_actualizar: lista de diccionarios con los campos a actualizar, por ejemplo:
-    [
-        {'id_contacto': 1, 'tipo_contacto': 'c', 'dato_contacto': 'nuevo@email.com'},
-        {'id_contacto': 2, 'tipo_contacto': 't', 'dato_contacto': '123456789'},
-        ...
-    ]
-    """
+    errors = []
     for contacto_data in contactos_actualizar:
-        contacto = get_object_or_404(Contactos, pk=contacto_data['id_contacto'])
-        contacto.tipo_contacto = contacto_data.get('tipo_contacto', contacto.tipo_contacto)
-        contacto.dato_contacto = contacto_data.get('dato_contacto', contacto.dato_contacto)
-        contacto.save()
-
-    
+        try:
+            contacto = get_object_or_404(Contactos, pk=contacto_data['id_contacto'])
+            contacto.tipo_contacto = contacto_data.get('tipo_contacto', contacto.tipo_contacto)
+            contacto.dato_contacto = contacto_data.get('dato_contacto', contacto.dato_contacto)
+            contacto.save()
+        except DatabaseError as e:
+            errors.append(_extract_db_message(e))
+        except Exception as e:
+            errors.append(str(e))
+    if errors:
+        raise DatabaseError('; '.join(errors))
 
 def ContactosDeleteView(request, pk):
     contacto = get_object_or_404(Contactos, pk=pk)
-    contacto.delete()
+    user_pk = contacto.id_usuario.pk if contacto.id_usuario else None
+    try:
+        contacto.delete()
+    except DatabaseError as e:
+        # mostrar sólo el mensaje del trigger y redirigir de vuelta al usuario (si aplica)
+        messages.error(request, _extract_db_message(e))
+        if user_pk:
+            return redirect('usuarios_update', pk=user_pk)
+        return redirect('usuarios_list')
+    # si todo ok, volver a la edición del usuario cuando aplique
+    if user_pk:
+        return redirect('usuarios_update', pk=user_pk)
     return HttpResponseRedirect(reverse_lazy('usuarios_list'))
 
 #Roles

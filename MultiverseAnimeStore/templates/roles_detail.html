@@ -1,18 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-<h2>Roles</h2>
-<a href="{% url 'roles_create' %}" class="btn-link">Crear nuevo rol</a>
-<ul>
-    {% for rol in object_list %}
-        <li>
-            <a href="{% url 'roles_detail' rol.pk %}" class="btn-link2">{{ rol.nombre }}</a>
-            (<a href="{% url 'roles_update' rol.pk %}" class="btn-link">Editar</a>,
-             <a href="#" onclick="showDeleteModal('{{ rol.pk }}', '{{ rol.nombre }}'); return false;" class="btn-link">Eliminar</a>)
-        </li>
-    {% endfor %}
-</ul>
-</div>
+<h2>{{ object.nombre }}</h2>
+<p><strong>Descripción:</strong> {{ object.descripcion }}</p>
+<p><strong>Permisos:</strong>
+    <ul>
+        {% for permiso in object.permisos.all %}
+            <li>{{ permiso.nombre }} - {{ permiso.descripcion }}</li>
+        {% empty %}
+            <li>No hay permisos asignados.</li>
+        {% endfor %}
+    </ul>
+</p>
+
+
 
 <!-- Modal de confirmación de borrado -->
 <div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">

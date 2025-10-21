@@ -25,11 +25,6 @@ from .views import (
     UsuariosCreateView,
     UsuariosUpdateView,
     UsuariosDeleteView,
-    PedidosProductosListView,
-    PedidosProductosDetailView,
-    PedidosProductosCreateView,
-    PedidosProductosUpdateView,
-    PedidosProductosDeleteView,
     RolesListView,
     RolesDetailView,
     RolesCreateView,
@@ -68,11 +63,6 @@ urlpatterns = [
     path('usuarios/<int:pk>/editar/', UsuariosUpdateView, name='usuarios_update'),
     path('usuarios/<int:pk>/eliminar/', UsuariosDeleteView.as_view(), name='usuarios_delete'),
 
-    path('pedidos_productos/', PedidosProductosListView.as_view(), name='pedidos_productos_list'),
-    path('pedidos_productos/<int:pk>/', PedidosProductosDetailView.as_view(), name='pedidos_productos_detail'),
-    path('pedidos_productos/crear/', PedidosProductosCreateView, name='pedidos_productos_create'),
-    path('pedidos_productos/<int:id_pedido>/editar/', PedidosProductosUpdateView, name='pedidos_productos_update'), 
-    path('pedidos_productos/<int:pk>/eliminar/', PedidosProductosDeleteView.as_view(), name='pedidos_productos_delete'),
 
     path('roles/', RolesListView.as_view(), name='roles_list'),
     path('roles/<int:pk>/', RolesDetailView.as_view(), name='roles_detail'),

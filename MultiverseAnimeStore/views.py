@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios
-from .forms import PedidosForm, PedidosProductosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm
+from .forms import PedidosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction
@@ -143,53 +143,6 @@ class PedidosDeleteView(DeleteView):
     template_name = 'pedidos_confirm_delete.html'
     success_url = reverse_lazy('pedidos_list')
 
-#PedidosProductos
-
-def PedidosProductosCreateView(productos_seleccionados, id_pedido):
-
-    for item in productos_seleccionados:
-        prod_id, cantidad = item.split(',')
-        producto = get_object_or_404(Productos, pk=prod_id)
-        pedido = get_object_or_404(Pedidos, pk=id_pedido)
-        pped_precio_unitario = producto.prod_precio_venta
-        pped_cantidad = int(cantidad)
-
-        PedidosProductos.objects.create(
-
-            ped=pedido,
-            prod=producto,
-            pped_cantidad=pped_cantidad,
-            pped_precio_unitario=pped_precio_unitario
-        )
-
-    
-
-def PedidosProductosUpdateView(request, id_pedido):
-
-    obj = get_object_or_404(PedidosProductos, id_pedido=id_pedido)
-
-    if request.method == 'POST':
-        form = PedidosProductosForm(request.POST, instance=obj)
-        if form.is_valid():
-            form.save()
-            return redirect('pedidos_productos_list') 
-    else:
-        form = PedidosProductosForm(instance=obj)
-
-    return render(request, 'pedidos_productos_form.html', {'form': form})
-
-class PedidosProductosDeleteView(DeleteView):
-    model = PedidosProductos
-    template_name = 'pedidos_productos_confirm_delete.html'
-    success_url = reverse_lazy('pedidos_productos_list')
-
-class PedidosProductosListView(ListView):
-    model = PedidosProductos
-    template_name = 'pedidos_productos_list.html'
-
-class PedidosProductosDetailView(DetailView):
-    model = PedidosProductos
-    template_name = 'pedidos_productos_detail.html'
 
 #Productos
 

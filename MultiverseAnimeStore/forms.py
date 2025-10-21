@@ -1,6 +1,30 @@
 from django import forms
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos
 from datetime import date as Date
+from django.db import connection
+
+
+def next_int_id(model, field_name):
+    """
+    Devuelve max(TO_NUMBER(field)) + 1 usando una consulta que solo considera valores totalmente numéricos.
+    Fallback: devuelve model.objects.count() + 1 si hay cualquier problema.
+    """
+    table = model._meta.db_table
+    # Consulta compatible con Oracle: toma solo valores que son enteros (regex) y obtiene el máximo
+    sql = f"""
+        SELECT MAX(
+            CASE WHEN REGEXP_LIKE({field_name}, '^[0-9]+$') THEN TO_NUMBER({field_name}) ELSE NULL END
+        ) FROM {table}
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            row = cursor.fetchone()
+            maxval = row[0] if row else None
+            return int(maxval or 0) + 1
+    except Exception:
+        # fallback seguro
+        return model.objects.count() + 1
 
 
 class PedidosForm(forms.ModelForm):
@@ -16,7 +40,8 @@ class PedidosForm(forms.ModelForm):
         self.fields['usu'].queryset = Usuarios.objects.all()
         self.fields['usu'].label_from_instance = lambda obj: f"{obj.nombre} {obj.primer_apellido}"
         self.fields['ped_id'].widget.attrs['readonly'] = True
-        self.fields['ped_id'].initial = Pedidos.objects.count() + 1
+        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['ped_id'].initial = next_int_id(Pedidos, 'ped_id')
         self.fields['ped_total'].widget.attrs['readonly'] = True
         self.fields['ped_total'].initial = 0.00
         self.fields['ped_direccion_envio'].widget.attrs.update({'placeholder': 'Ingrese la dirección de envío'})
@@ -69,7 +94,8 @@ class UsuariosForm(forms.ModelForm):
         self.fields['usuario_id_rol'].queryset = Roles.objects.all()
         self.fields['usuario_id_rol'].label_from_instance = lambda obj: obj.nombre
         self.fields['id_usuario'].widget.attrs['readonly'] = True
-        self.fields['id_usuario'].initial = Usuarios.objects.count() + 1
+        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['id_usuario'].initial = next_int_id(Usuarios, 'id_usuario')
         self.fields['activo'].widget.attrs.update({'min': 0, 'max': 1, 'step': '1'})
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
@@ -89,7 +115,8 @@ class CategoriaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['cat_id'].widget.attrs['readonly'] = True
-        self.fields['cat_id'].initial = Categoria.objects.count() + 1
+        # ...cambiado: usar next_int_id (cat_id es char; la función maneja solo valores numéricos)...
+        self.fields['cat_id'].initial = str(next_int_id(Categoria, 'cat_id'))
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -107,7 +134,8 @@ class ProductosForm(forms.ModelForm):
         self.fields['cat'].queryset = Categoria.objects.all()
         self.fields['cat'].label_from_instance = lambda obj: obj.cat_nombre
         self.fields['prod_id'].widget.attrs['readonly'] = True
-        self.fields['prod_id'].initial = Productos.objects.count() + 1
+        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['prod_id'].initial = str(next_int_id(Productos, 'prod_id'))
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['prod_precio_venta'].widget.attrs.update({'step': '0.01'})
@@ -124,7 +152,8 @@ class RolesForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['id_rol'].widget.attrs['readonly'] = True
-        self.fields['id_rol'].initial = Roles.objects.count() + 1
+        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['id_rol'].initial = next_int_id(Roles, 'id_rol')
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 

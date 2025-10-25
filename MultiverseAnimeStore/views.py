@@ -59,8 +59,23 @@ def CategoriaUpdateView(request, pk):
         form = CategoriaForm(instance=categoria)
     return render(request, 'categoria_form.html', {'form': form, 'object': categoria})
 
+#PedidosProductos
+def PedidosProductosCreateView(productos_seleccionados, id_pedido):
 
+    for item in productos_seleccionados:
+        prod_id, cantidad = item.split(',')
+        producto = get_object_or_404(Productos, pk=prod_id)
+        pedido = get_object_or_404(Pedidos, pk=id_pedido)
+        pped_precio_unitario = producto.prod_precio_venta
+        pped_cantidad = int(cantidad)
 
+        PedidosProductos.objects.create(
+
+            ped=pedido,
+            prod=producto,
+            pped_cantidad=pped_cantidad,
+            pped_precio_unitario=pped_precio_unitario
+        )
 
 #Pedidos
 

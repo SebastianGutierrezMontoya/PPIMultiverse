@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+<h2>{{ object.est_nombre|default:object.est_id }}</h2>
+<p>ID: {{ object.est_id }}</p>
+<a href="{% url 'estado_pedidos_update' object.pk %}">Editar</a>
+<a href="{% url 'estado_pedidos_delete' object.pk %}">Eliminar</a>
+<a href="{% url 'estado_pedidos_list' %}">Volver al listado</a>
+</div>
+{% endblock %}

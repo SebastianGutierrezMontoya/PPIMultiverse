@@ -1,8 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="container">
 <h2>{{ object.cat_nombre }}</h2>
 <p>{{ object.cat_descripcion }}</p>
 <a href="{% url 'categoria_update' object.pk %}">Editar</a>
 <a href="{% url 'categoria_delete' object.pk %}">Eliminar</a>
 <a href="{% url 'categoria_list' %}">Volver al listado</a>
+</div>
 {% endblock %}

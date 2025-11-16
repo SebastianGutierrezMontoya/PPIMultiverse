@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="container">
 <h2>Pedido {{ object.ped_id }}</h2>
 <ul>
     <li>Usuario: {{ object.usu }}</li>
@@ -26,6 +27,7 @@
             </div>
         </form>
     </div>
+</div>
 </div>
 <script>
     function showDeleteModal(pk, nombre) {

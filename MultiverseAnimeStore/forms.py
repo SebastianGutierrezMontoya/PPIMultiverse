@@ -1,5 +1,5 @@
 from django import forms
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos
 from datetime import date as Date
 from django.db import connection
 
@@ -30,7 +30,7 @@ def next_int_id(model, field_name):
 class PedidosForm(forms.ModelForm):
     class Meta:
         model = Pedidos
-        fields = ['ped_id','usu', 'ped_fecha_pedido', 'ped_total', 'ped_direccion_envio', 'ped_notas']
+        fields = ['ped_id','usu', 'ped_fecha_pedido', 'ped_total', 'ped_direccion_envio', 'ped_notas', 'ped_estado']
         widgets = {
             'ped_fecha_pedido': forms.DateInput(attrs={'type': 'date'}),
             'ped_notas': forms.Textarea(attrs={'rows': 4}),
@@ -54,6 +54,10 @@ class PedidosForm(forms.ModelForm):
         self.fields['ped_fecha_pedido'].initial = Date.today()
         self.fields['ped_notas'].required = False
 
+        self.fields['ped_estado'].queryset = EstadoPedidos.objects.all()
+        self.fields['ped_estado'].label_from_instance = lambda obj: f"{obj.est_nombre}"
+        self.fields['ped_estado'].initial = 1
+
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})
         
@@ -61,7 +65,7 @@ class PedidosForm(forms.ModelForm):
 class PedidosProductosForm(forms.ModelForm):
     class Meta:
         model = PedidosProductos
-        fields = ['ped', 'prod', 'pped_cantidad', 'pped_precio_unitario']
+        fields = ['ped', 'prod', 'pped_cantidad', 'pped_precio_unitario', 'pped_descuento', 'pped_estado']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -73,6 +77,11 @@ class PedidosProductosForm(forms.ModelForm):
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['pped_cantidad'].widget.attrs.update({'min': 1})
+
+        self.fields['pped_descuento'].widget.attrs['readonly'] = True
+        self.fields['pped_estado'].queryset = EstadoPedidos.objects.all()
+        self.fields['pped_estado'].label_from_instance = lambda obj: f"{obj.est_nombre}"
+        self.fields['pped_estado'].initial = 1
 
 
 class UsuariosForm(forms.ModelForm):
@@ -127,7 +136,7 @@ class CategoriaForm(forms.ModelForm):
 class ProductosForm(forms.ModelForm):
     class Meta:
         model = Productos
-        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock', 'cat']
+        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock','prod_descuento', 'cat']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -23,14 +23,24 @@ class Categoria(models.Model):
 
 
 
+class EstadoPedidos(models.Model):
+    est_id = models.FloatField(primary_key=True)
+    est_nombre = models.CharField(max_length=50, blank=True, null=True)
 
+    class Meta:
+        managed = False
+        db_table = 'estadopedidos'
+
+    def __str__(self):
+        return self.est_nombre or str(self.id_estado)
 
 class Pedidos(models.Model):
     ped_id = models.IntegerField(primary_key=True)
     usu = models.ForeignKey('Usuarios', models.DO_NOTHING)
     ped_fecha_pedido = models.DateField(blank=True, null=True)
     ped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    ped_estado = models.IntegerField(max_length=1, blank=True, null=True, default=1)
+    # ped_estado = models.IntegerField(max_length=1, blank=True, null=True, default=1)
+    ped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='ped_estado')
     ped_direccion_envio = models.CharField(max_length=200, blank=True, null=True)
     ped_notas = models.CharField(max_length=200, blank=True, null=True)
 
@@ -48,6 +58,8 @@ class PedidosProductos(models.Model):
     prod = models.ForeignKey('Productos', models.DO_NOTHING)
     pped_cantidad = models.IntegerField(blank=True, null=True)
     pped_precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    pped_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0)
+    pped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='pped_estado')
 
     class Meta:
         managed = False
@@ -98,7 +110,7 @@ class Productos(models.Model):
     prod_precio_venta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     prod_stock = models.IntegerField(blank=True, null=True)
     prod_imagen_url = models.CharField(max_length=500, blank=True, null=True)
-    prod_descuento = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    prod_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0)
 
     class Meta:
         managed = False

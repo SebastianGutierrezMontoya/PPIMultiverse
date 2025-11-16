@@ -30,6 +30,16 @@ from .views import (
     RolesCreateView,
     RolesUpdateView,
     RolesDeleteView,
+    SexosListView,
+    SexosDetailView,
+    SexosCreateView,
+    SexosUpdateView,
+    SexosDeleteView,
+    EstadoPedidosListView,
+    EstadoPedidosDetailView,
+    EstadoPedidosCreateView,
+    EstadoPedidosUpdateView,
+    EstadoPedidosDeleteView,
 )
 
 urlpatterns = [
@@ -49,7 +59,7 @@ urlpatterns = [
     path('pedidos/<int:pk>/', PedidosDetailView.as_view(), name='pedidos_detail'),
     path('pedidos/crear/', PedidosCreateView, name='pedidos_create'),
     path('pedidos/<int:pk>/editar/', PedidosUpdateView, name='pedidos_update'),
-    path('pedidos/<int:pk>/eliminar/', PedidosDeleteView.as_view(), name='pedidos_delete'),
+    path('pedidos/<int:pk>/eliminar/', PedidosDeleteView, name='pedidos_delete'),
 
     path('productos/', ProductosListView.as_view(), name='productos_list'),
     path('productos/<int:pk>/', ProductosDetailView.as_view(), name='productos_detail'),
@@ -69,5 +79,17 @@ urlpatterns = [
     path('roles/crear/', RolesCreateView, name='roles_create'),
     path('roles/<int:pk>/editar/', RolesUpdateView, name='roles_update'),
     path('roles/<int:pk>/eliminar/', RolesDeleteView.as_view(), name='roles_delete'),
+
+    path('sexos/', SexosListView.as_view(), name='sexos_list'),
+    path('sexos/<int:pk>/', SexosDetailView.as_view(), name='sexos_detail'),
+    path('sexos/crear/', SexosCreateView.as_view(), name='sexos_create'),
+    path('sexos/<int:pk>/editar/', SexosUpdateView.as_view(), name='sexos_update'),
+    path('sexos/<int:pk>/eliminar/', SexosDeleteView.as_view(), name='sexos_delete'),
+
+    path('estado_pedidos/', EstadoPedidosListView.as_view(), name='estado_pedidos_list'),
+    path('estado_pedidos/<int:pk>/', EstadoPedidosDetailView.as_view(), name='estado_pedidos_detail'),
+    path('estado_pedidos/crear/', EstadoPedidosCreateView.as_view(), name='estado_pedidos_create'),
+    path('estado_pedidos/<int:pk>/editar/', EstadoPedidosUpdateView.as_view(), name='estado_pedidos_update'),
+    path('estado_pedidos/<int:pk>/eliminar/', EstadoPedidosDeleteView.as_view(), name='estado_pedidos_delete'),
     
 ]

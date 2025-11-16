@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos
 from .forms import PedidosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum
 from django.http import HttpResponseRedirect
@@ -67,6 +67,7 @@ def PedidosProductosCreateView(productos_seleccionados, id_pedido):
         producto = get_object_or_404(Productos, pk=prod_id)
         pedido = get_object_or_404(Pedidos, pk=id_pedido)
         pped_precio_unitario = producto.prod_precio_venta
+        pped_descuento = producto.prod_descuento
         pped_cantidad = int(cantidad)
 
         PedidosProductos.objects.create(
@@ -74,7 +75,8 @@ def PedidosProductosCreateView(productos_seleccionados, id_pedido):
             ped=pedido,
             prod=producto,
             pped_cantidad=pped_cantidad,
-            pped_precio_unitario=pped_precio_unitario
+            pped_precio_unitario=pped_precio_unitario,
+            pped_descuento=pped_descuento
         )
 
 #Pedidos
@@ -153,10 +155,17 @@ def PedidosUpdateView(request, pk):
         'productos_relacionados': productos_relacionados,
     })
 
-class PedidosDeleteView(DeleteView):
-    model = Pedidos
-    template_name = 'pedidos_confirm_delete.html'
-    success_url = reverse_lazy('pedidos_list')
+def PedidosDeleteView(request, pk):
+    pedido = get_object_or_404(Pedidos, pk=pk)
+    pedidos_productos_relacionados = PedidosProductos.objects.filter(ped=pedido)
+    
+    try:
+        pedidos_productos_relacionados.delete()
+        pedido.delete()
+    except DatabaseError as e:
+        messages.error(request, _extract_db_message(e))
+        return redirect('pedidos_list')
+    return redirect('pedidos_list')
 
 
 #Productos
@@ -390,4 +399,58 @@ class RolesDeleteView(DeleteView):
     model = Roles
     template_name = 'roles_confirm_delete.html'
     success_url = reverse_lazy('roles_list')
+
+
+# Sexos
+class SexosListView(ListView):
+    model = Sexos
+    template_name = 'sexos_list.html'
+
+class SexosDetailView(DetailView):
+    model = Sexos
+    template_name = 'sexos_detail.html'
+
+class SexosCreateView(CreateView):
+    model = Sexos
+    fields = '__all__'
+    template_name = 'sexos_form.html'
+    success_url = reverse_lazy('sexos_list')
+
+class SexosUpdateView(UpdateView):
+    model = Sexos
+    fields = '__all__'
+    template_name = 'sexos_form.html'
+    success_url = reverse_lazy('sexos_list')
+
+class SexosDeleteView(DeleteView):
+    model = Sexos
+    template_name = 'sexos_confirm_delete.html'
+    success_url = reverse_lazy('sexos_list')
+
+
+#EstadoPedidos
+class EstadoPedidosListView(ListView):
+    model = EstadoPedidos
+    template_name = 'estado_pedidos_list.html'
+
+class EstadoPedidosDetailView(DetailView):
+    model = EstadoPedidos
+    template_name = 'estado_pedidos_detail.html'
+
+class EstadoPedidosCreateView(CreateView):
+    model = EstadoPedidos
+    fields = '__all__'
+    template_name = 'estado_pedidos_form.html'
+    success_url = reverse_lazy('estado_pedidos_list')
+
+class EstadoPedidosUpdateView(UpdateView):
+    model = EstadoPedidos
+    fields = '__all__'
+    template_name = 'estado_pedidos_form.html'
+    success_url = reverse_lazy('estado_pedidos_list')
+
+class EstadoPedidosDeleteView(DeleteView):
+    model = EstadoPedidos
+    template_name = 'estado_pedidos_confirm_delete.html'
+    success_url = reverse_lazy('estado_pedidos_list')
 

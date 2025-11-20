@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+<h2>{{ object.nombre_contacto }}</h2>
+<ul>
+  <li>ID: {{ object.id_regla }}</li>
+  <li>Descripción: {{ object.descripcion }}</li>
+  <li>Regex: {{ object.regex_val }}</li>
+  <li>Longitud mínima: {{ object.min_length }}</li>
+  <li>Longitud máxima: {{ object.max_length }}</li>
+  <li>Mensaje de error: {{ object.mensaje_error }}</li>
+</ul>
+<a href="{% url 'config_contacto_update' object.pk %}">Editar</a>
+<a href="{% url 'config_contacto_list' %}">Volver al listado</a>
+</div>
+{% endblock %}

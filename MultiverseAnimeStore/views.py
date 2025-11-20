@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Config_Contacto
 from .forms import PedidosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction
 from django.contrib import messages
 import re
+from django.forms import modelform_factory
 
 # Función para extraer mensajes de error de Oracle
 def _extract_db_message(exc):
@@ -244,7 +245,9 @@ def UsuariosCreateView(request):
                 return redirect('usuarios_list')
     else:
         form = UsuariosForm()
-
+        
+    Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
+    Json['Tipo_Contacto'] = Tipo_Contacto
     Json['form'] = form
     return render(request, 'usuarios_form.html', Json )
 
@@ -289,16 +292,29 @@ def UsuariosUpdateView(request, pk):
     else:
         form = UsuariosForm(instance=usuario)
 
+    Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
+    
     return render(request, 'usuarios_form.html', {
         'form': form,
         'object': usuario,
         'contactos_relacionados': contactos_relacionados,
+        'Tipo_Contacto': Tipo_Contacto,
     })
 
-class UsuariosDeleteView(DeleteView):
-    model = Usuarios
-    template_name = 'usuarios_confirm_delete.html'
-    success_url = reverse_lazy('usuarios_list')
+def UsuariosDeleteView(request, pk):
+    usuario = get_object_or_404(Usuarios, pk=pk)
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # eliminar contactos ligados al usuario
+                Contactos.objects.filter(id_usuario=usuario).delete()
+                usuario.delete()
+        except DatabaseError as e:
+            messages.error(request, _extract_db_message(e))
+            return redirect('usuarios_detail', pk=pk)
+        return redirect('usuarios_list')
+    # GET: mostrar confirmación
+    return render(request, 'usuarios_confirm_delete.html', {'object': usuario})
 
 #Contactos
 
@@ -316,6 +332,7 @@ def ContactosCreateView(contactos_relacionados, id_usuario):
         try:
             id_con = Contactos.objects.count() + 1
             tipo_contacto, dato_contacto = item.split(',')
+            tipo_contacto = get_object_or_404(Config_Contacto, pk=tipo_contacto)
             usuario = get_object_or_404(Usuarios, pk=id_usuario)
 
             Contactos.objects.create(
@@ -337,7 +354,8 @@ def ContactosUpdateView(contactos_actualizar):
     for contacto_data in contactos_actualizar:
         try:
             contacto = get_object_or_404(Contactos, pk=contacto_data['id_contacto'])
-            contacto.tipo_contacto = contacto_data.get('tipo_contacto', contacto.tipo_contacto)
+            # contacto.tipo_contacto = contacto_data.get('tipo_contacto', contacto.tipo_contacto)
+            contacto.tipo_contacto = get_object_or_404(Config_Contacto, pk=contacto.tipo_contacto.pk)
             contacto.dato_contacto = contacto_data.get('dato_contacto', contacto.dato_contacto)
             contacto.save()
         except DatabaseError as e:
@@ -453,4 +471,43 @@ class EstadoPedidosDeleteView(DeleteView):
     model = EstadoPedidos
     template_name = 'estado_pedidos_confirm_delete.html'
     success_url = reverse_lazy('estado_pedidos_list')
+
+
+# Config_Contacto CRUD
+class ConfigContactoListView(ListView):
+    model = Config_Contacto
+    template_name = 'config_contacto_list.html'
+
+class ConfigContactoDetailView(DetailView):
+    model = Config_Contacto
+    template_name = 'config_contacto_detail.html'
+
+# Reemplaza la clase ConfigContactoCreateView por función que prellena id_regla
+def ConfigContactoCreateView(request):
+    FormClass = modelform_factory(Config_Contacto, fields='__all__')
+    if request.method == 'POST':
+        form = FormClass(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                return redirect('config_contacto_list')
+    else:
+        initial = {'id_regla': Config_Contacto.next_id()}
+        form = FormClass(initial=initial)
+    return render(request, 'config_contacto_form.html', {'form': form})
+
+class ConfigContactoUpdateView(UpdateView):
+    model = Config_Contacto
+    fields = '__all__'
+    template_name = 'config_contacto_form.html'
+    success_url = reverse_lazy('config_contacto_list')
+
+class ConfigContactoDeleteView(DeleteView):
+    model = Config_Contacto
+    template_name = 'config_contacto_confirm_delete.html'
+    success_url = reverse_lazy('config_contacto_list')
 

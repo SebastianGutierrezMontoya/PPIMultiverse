@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+<h2>Configuración de Contactos</h2>
+<a href="{% url 'config_contacto_create' %}" class="btn-link">Crear nueva regla</a>
+<ul>
+  {% for regla in object_list %}
+    <li>
+      <a href="{% url 'config_contacto_detail' regla.pk %}" class="btn-link2">{{ regla.nombre_contacto }}</a>
+      (<a href="{% url 'config_contacto_update' regla.pk %}" class="btn-link">Editar</a>,
+       <a href="{% url 'config_contacto_delete' regla.pk %}" class="btn-link" onclick="return confirm('Eliminar esta regla?');">Eliminar</a>)
+    </li>
+  {% endfor %}
+</ul>
+</div>
+{% endblock %}

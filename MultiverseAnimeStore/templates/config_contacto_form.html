@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<form method="post" class="form-container">
+  <h2 class="form-header">{% if object %}Editar{% else %}Crear{% endif %} Regla de Contacto</h2>
+  {% csrf_token %}
+  {% if form.non_field_errors %}
+    <div class="form-errors">
+      {% for err in form.non_field_errors %}
+        <div class="error-item">{{ err }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+  {% for field in form %}
+    <div class="form-floating">
+      {{ field }}
+      <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    </div>
+  {% endfor %}
+  <div class="form-linear form-center">
+    <button type="submit">Guardar</button>
+    <a href="{% url 'config_contacto_list' %}" class="btn-link">Volver al listado</a>
+  </div>
+</form>
+{% endblock %}

@@ -30,10 +30,9 @@
             <p> Contacto:</p>
             <select name="tipo_contacto">
                 <option value="">Tipo de contacto</option>
-                <option value="c">Correo</option>
-                <option value="t">Telefono</option>
-                <option value="d">Direccion</option>
-                <option value="p">Postal</option>
+                {% for tipo in Tipo_Contacto %}
+                    <option value="{{ tipo.id_regla }}">{{ tipo.nombre_contacto }}</option>
+                {% endfor %}
             </select>
             <label> Dato:</label> <input type="text" name="dato_contacto" class="form-dato-contacto">
         </div>

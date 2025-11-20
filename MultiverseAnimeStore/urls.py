@@ -40,6 +40,11 @@ from .views import (
     EstadoPedidosCreateView,
     EstadoPedidosUpdateView,
     EstadoPedidosDeleteView,
+    ConfigContactoListView,
+    ConfigContactoDetailView,
+    ConfigContactoCreateView,
+    ConfigContactoUpdateView,
+    ConfigContactoDeleteView,
 )
 
 urlpatterns = [
@@ -71,7 +76,7 @@ urlpatterns = [
     path('usuarios/<int:pk>/', UsuariosDetailView.as_view(), name='usuarios_detail'),
     path('usuarios/crear/', UsuariosCreateView, name='usuarios_create'),
     path('usuarios/<int:pk>/editar/', UsuariosUpdateView, name='usuarios_update'),
-    path('usuarios/<int:pk>/eliminar/', UsuariosDeleteView.as_view(), name='usuarios_delete'),
+    path('usuarios/<int:pk>/eliminar/', UsuariosDeleteView, name='usuarios_delete'),
 
 
     path('roles/', RolesListView.as_view(), name='roles_list'),
@@ -91,5 +96,10 @@ urlpatterns = [
     path('estado_pedidos/crear/', EstadoPedidosCreateView.as_view(), name='estado_pedidos_create'),
     path('estado_pedidos/<int:pk>/editar/', EstadoPedidosUpdateView.as_view(), name='estado_pedidos_update'),
     path('estado_pedidos/<int:pk>/eliminar/', EstadoPedidosDeleteView.as_view(), name='estado_pedidos_delete'),
-    
+
+    path('config_contacto/', ConfigContactoListView.as_view(), name='config_contacto_list'),
+    path('config_contacto/<int:pk>/', ConfigContactoDetailView.as_view(), name='config_contacto_detail'),
+    path('config_contacto/crear/', ConfigContactoCreateView, name='config_contacto_create'),
+    path('config_contacto/<int:pk>/editar/', ConfigContactoUpdateView.as_view(), name='config_contacto_update'),
+    path('config_contacto/<int:pk>/eliminar/', ConfigContactoDeleteView.as_view(), name='config_contacto_delete'),
 ]

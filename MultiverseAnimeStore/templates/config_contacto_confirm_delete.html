@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Eliminar Regla de Contacto</h2>
+<p>¿Estás seguro de que deseas eliminar "{{ object.nombre_contacto }}"?</p>
+<form method="post">
+  {% csrf_token %}
+  <div class="form-linear form-center">
+    <button type="submit">Sí, eliminar</button>
+    <a href="{% url 'config_contacto_list' %}" class="btn-link">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

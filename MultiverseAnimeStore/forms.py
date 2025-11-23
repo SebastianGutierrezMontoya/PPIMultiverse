@@ -1,5 +1,5 @@
 from django import forms
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Perfiles
 from datetime import date as Date
 from django.db import connection
 
@@ -54,8 +54,7 @@ class PedidosForm(forms.ModelForm):
         self.fields['ped_fecha_pedido'].initial = Date.today()
         self.fields['ped_notas'].required = False
 
-        self.fields['ped_estado'].queryset = EstadoPedidos.objects.all()
-        self.fields['ped_estado'].label_from_instance = lambda obj: f"{obj.est_nombre}"
+        
         self.fields['ped_estado'].initial = 1
 
         for field in self.fields.values():
@@ -65,7 +64,7 @@ class PedidosForm(forms.ModelForm):
 class PedidosProductosForm(forms.ModelForm):
     class Meta:
         model = PedidosProductos
-        fields = ['ped', 'prod', 'pped_cantidad', 'pped_precio_unitario', 'pped_descuento', 'pped_estado']
+        fields = ['ped', 'prod', 'pped_cantidad', 'pped_precio_unitario', 'pped_total', 'pped_descuento', 'pped_estado']
         
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -74,6 +73,7 @@ class PedidosProductosForm(forms.ModelForm):
         self.fields['prod'].queryset = Productos.objects.all()
         self.fields['prod'].label_from_instance = lambda obj: f"{obj.prod_nombre} (ID: {obj.prod_id})"
         self.fields['pped_precio_unitario'].widget.attrs['readonly'] = True
+        self.fields['pped_total'].widget.attrs['readonly'] = True
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['pped_cantidad'].widget.attrs.update({'min': 1})
@@ -84,12 +84,48 @@ class PedidosProductosForm(forms.ModelForm):
         self.fields['pped_estado'].initial = 1
 
 
+class PedidoProductoUpdateForm(forms.ModelForm):
+    class Meta:
+        model = PedidosProductos
+        fields = [
+            'ped',                 # solo lectura
+            'prod',                # solo lectura
+            'pped_cantidad',       # solo lectura
+            'pped_precio_unitario',# solo lectura
+            'pped_descuento',      # solo lectura
+            'pped_total',          # solo lectura
+            'pped_fecha_entrega',  # editable
+            'pped_estado',         # editable
+        ]
+        widgets = {
+            'pped_fecha_entrega': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    # Campos que deben mostrarse pero no deben poder modificarse
+    read_only_fields = [
+        'ped',
+        'prod',
+        'pped_cantidad',
+        'pped_precio_unitario',
+        'pped_descuento',
+        'pped_total'
+    ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # Hacer los campos solo lectura
+        for field_name in self.read_only_fields:
+            field = self.fields[field_name]
+            field.disabled = True 
+
+
 class UsuariosForm(forms.ModelForm):
     class Meta:
         model = Usuarios
         fields = [
             'id_usuario', 'nombre', 'primer_apellido', 'segundo_apellido',
-            'fecha_nacimiento', 'password_hash', 'usuario_id_sexo', 'usuario_id_rol', 'activo'
+            'fecha_nacimiento', 'password_hash', 'usuario_id_sexo', 'usuario_id_perfil', 'activo'
         ]
         widgets = {
             'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
@@ -100,8 +136,8 @@ class UsuariosForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['usuario_id_sexo'].queryset = Sexos.objects.all()
         self.fields['usuario_id_sexo'].label_from_instance = lambda obj: obj.nombre_sexo
-        self.fields['usuario_id_rol'].queryset = Roles.objects.all()
-        self.fields['usuario_id_rol'].label_from_instance = lambda obj: obj.nombre
+        self.fields['usuario_id_perfil'].queryset = Perfiles.objects.all()
+        self.fields['usuario_id_perfil'].label_from_instance = lambda obj: obj.nombre
         self.fields['id_usuario'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['id_usuario'].initial = next_int_id(Usuarios, 'id_usuario')

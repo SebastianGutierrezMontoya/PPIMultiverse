@@ -45,6 +45,7 @@ from .views import (
     ConfigContactoCreateView,
     ConfigContactoUpdateView,
     ConfigContactoDeleteView,
+    PedidoProductoUpdateFormView,
 )
 
 urlpatterns = [
@@ -102,4 +103,10 @@ urlpatterns = [
     path('config_contacto/crear/', ConfigContactoCreateView, name='config_contacto_create'),
     path('config_contacto/<int:pk>/editar/', ConfigContactoUpdateView.as_view(), name='config_contacto_update'),
     path('config_contacto/<int:pk>/eliminar/', ConfigContactoDeleteView.as_view(), name='config_contacto_delete'),
+
+    path(
+        'pedidos/<int:ped_id>/producto/<int:prod_id>/editar/',
+        PedidoProductoUpdateFormView,
+        name='pedido_producto_update'
+    ),
 ]

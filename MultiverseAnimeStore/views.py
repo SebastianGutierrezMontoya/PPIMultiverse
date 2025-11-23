@@ -2,13 +2,14 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Config_Contacto
-from .forms import PedidosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm
+from .forms import PedidosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum
 from django.http import HttpResponseRedirect
-from django.db import DatabaseError, transaction
+from django.db import DatabaseError, transaction, connection
 from django.contrib import messages
 import re
 from django.forms import modelform_factory
+import oracledb
 
 # Función para extraer mensajes de error de Oracle
 def _extract_db_message(exc):
@@ -63,22 +64,55 @@ def CategoriaUpdateView(request, pk):
 #PedidosProductos
 def PedidosProductosCreateView(productos_seleccionados, id_pedido):
 
-    for item in productos_seleccionados:
-        prod_id, cantidad = item.split(',')
-        producto = get_object_or_404(Productos, pk=prod_id)
-        pedido = get_object_or_404(Pedidos, pk=id_pedido)
-        pped_precio_unitario = producto.prod_precio_venta
-        pped_descuento = producto.prod_descuento
-        pped_cantidad = int(cantidad)
+    with transaction.atomic():
 
-        PedidosProductos.objects.create(
+        for item in productos_seleccionados:
+            prod_id, cantidad = item.split(',')
+            producto = get_object_or_404(Productos, pk=prod_id)
+            pedido = get_object_or_404(Pedidos, pk=id_pedido)
 
-            ped=pedido,
-            prod=producto,
-            pped_cantidad=pped_cantidad,
-            pped_precio_unitario=pped_precio_unitario,
-            pped_descuento=pped_descuento
-        )
+            pped_precio_unitario = producto.prod_precio_venta
+            pped_descuento = producto.prod_descuento
+            pped_cantidad = int(cantidad)
+            pped_total = (pped_precio_unitario - (pped_precio_unitario * (pped_descuento/100))) * pped_cantidad
+
+            pped_estado = get_object_or_404(EstadoPedidos, pk=1)  
+
+            PedidosProductos.objects.create(
+                ped=pedido,
+                prod=producto,
+                pped_cantidad=pped_cantidad,
+                pped_precio_unitario=pped_precio_unitario,
+                pped_total=pped_total,
+                pped_descuento=pped_descuento,
+                pped_estado=pped_estado
+            )
+
+        # VALIDACIÓN FINAL DEL PEDIDO EN ORACLE
+        cursor = connection.cursor()
+        try:
+            cursor.callproc("pkg_calculos.sp_cerrar_pedido", [id_pedido])
+        except Exception as e:
+            # Esto fuerza rollback de toda la transacción
+            raise DatabaseError(e)
+        
+
+
+def PedidoProductoUpdateFormView(request, ped_id, prod_id):
+    objeto = get_object_or_404(PedidosProductos, ped_id=ped_id, prod_id=prod_id)
+
+    if request.method == 'POST':
+        form = PedidoProductoUpdateForm(request.POST, instance=objeto)
+        if form.is_valid():
+            form.save()
+            return redirect('pedidos_update', pk=ped_id)  # ajusta a tu URL final
+    else:
+        form = PedidoProductoUpdateForm(instance=objeto)
+
+    return render(request, 'pedidos_productos_form.html', {
+        'form': form,
+        'objeto': objeto
+    })
 
 #Pedidos
 
@@ -109,7 +143,7 @@ def PedidosCreateView(request):
             else:
                 return redirect('pedidos_list')
     else:
-        Prod = Productos.objects.values('prod_id', 'prod_nombre', 'prod_precio_venta', 'prod_stock')
+        Prod = Productos.objects.values('prod_id', 'prod_nombre', 'prod_precio_venta', 'prod_stock', 'prod_descuento')
         Json['Productos'] = Prod
         form = PedidosForm()
     # success_url = reverse_lazy('pedidos_list')
@@ -120,18 +154,21 @@ def PedidosCreateView(request):
 
 def PedidosUpdateView(request, pk):
     pedido = get_object_or_404(Pedidos, pk=pk)
-    productos_relacionados = PedidosProductos.objects.filter(ped=pedido).aggregate()
+    productos_relacionados = PedidosProductos.objects.filter(ped=pedido)
 
-    productos_relacionados = (
-    PedidosProductos.objects
-    .filter(ped=pedido)
-    .annotate(
-        total=ExpressionWrapper(
-            F('pped_precio_unitario') * F('pped_cantidad'),
-            output_field=DecimalField(max_digits=12, decimal_places=2)
+    Estado = None
+    
+    cursor = connection.cursor()
+    try:
+
+        Estado = cursor.callfunc(
+        "pkg_auditoria.fn_estado_pedido",
+        oracledb.DB_TYPE_VARCHAR,   # Tipo de retorno
+        [pedido.ped_id]             # Parámetros de entrada)
         )
-    )
-)
+    except Exception as e:
+        # Esto fuerza rollback de toda la transacción
+        raise DatabaseError(e)
 
     if request.method == 'POST':
         form = PedidosForm(request.POST, instance=pedido)
@@ -154,6 +191,7 @@ def PedidosUpdateView(request, pk):
         'form': form,
         'object': pedido,
         'productos_relacionados': productos_relacionados,
+        'Estado': Estado,
     })
 
 def PedidosDeleteView(request, pk):

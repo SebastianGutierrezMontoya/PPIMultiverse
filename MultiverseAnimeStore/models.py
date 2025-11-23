@@ -39,9 +39,10 @@ class Pedidos(models.Model):
     ped_id = models.IntegerField(primary_key=True)
     usu = models.ForeignKey('Usuarios', models.DO_NOTHING)
     ped_fecha_pedido = models.DateField(blank=True, null=True)
-    ped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    ped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
     # ped_estado = models.IntegerField(max_length=1, blank=True, null=True, default=1)
-    ped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='ped_estado')
+    #ped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='ped_estado')
+    ped_estado = models.FloatField(max_length=1, blank=True, null=True, default=1)
     ped_direccion_envio = models.CharField(max_length=200, blank=True, null=True)
     ped_notas = models.CharField(max_length=200, blank=True, null=True)
 
@@ -57,9 +58,11 @@ class PedidosProductos(models.Model):
     pk = models.CompositePrimaryKey('ped_id', 'prod_id')
     ped = models.ForeignKey(Pedidos, models.DO_NOTHING)
     prod = models.ForeignKey('Productos', models.DO_NOTHING)
+    pped_fecha_entrega = models.DateField(blank=True, null=True)
     pped_cantidad = models.IntegerField(blank=True, null=True)
     pped_precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    pped_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0)
+    pped_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=False, default=0)
+    pped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=False)
     pped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='pped_estado')
 
     class Meta:
@@ -80,27 +83,34 @@ class Perfiles(models.Model):
         return self.nombre or str(self.id_perfil)
 
 
+class Modulos(models.Model):
+    id_mod = models.AutoField(primary_key=True)
+    nombre_mod = models.CharField(unique=True, max_length=100, blank=True, null=False)
+    descripcion = models.CharField(max_length=200, blank=True, null=True)
+    url_mod = models.CharField(max_length=200, blank=True, null=False)
+    padre_mod = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+
+
+    class Meta:
+        managed = False
+        db_table = 'modulos'
+
+    def __str__(self):
+        return self.nombre_mod or str(self.id_mod)
+
 class Perfilpermisos(models.Model):
     id_perfil_permiso = models.FloatField(primary_key=True)
-    perfil = models.ForeignKey(Perfiles, models.DO_NOTHING)
-    permiso = models.ForeignKey('Permisos', models.DO_NOTHING)
+    perfil_id = models.ForeignKey(Perfiles, models.DO_NOTHING)
+    mod_id = models.ForeignKey('Modulos', models.DO_NOTHING)
+
+    can_create = models.CharField(max_length=1, blank=True, null=True, default='N')
+    can_read = models.CharField(max_length=1, blank=True, null=True, default='Y')
+    can_update = models.CharField(max_length=1, blank=True, null=True, default='N')
+    can_delete = models.CharField(max_length=1, blank=True, null=True, default='N')
 
     class Meta:
         managed = False
         db_table = 'perfilpermisos'
-
-
-class Permisos(models.Model):
-    id_permiso = models.FloatField(primary_key=True)
-    nombre_permiso = models.CharField(unique=True, max_length=100, blank=True, null=True)
-    descripcion_permiso = models.CharField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        managed = False
-        db_table = 'permisos'
-
-    def __str__(self):
-        return self.nombre_permiso or str(self.id_permiso)
 
 
 class Productos(models.Model):
@@ -144,15 +154,6 @@ class Roles(models.Model):
         return self.nombre or str(self.id_rol)
 
 
-class Rolperfiles(models.Model):
-    id_rol_perfil = models.FloatField(primary_key=True)
-    rol = models.ForeignKey(Roles, models.DO_NOTHING)
-    perfil = models.ForeignKey(Perfiles, models.DO_NOTHING)
-
-    class Meta:
-        managed = False
-        db_table = 'rolperfiles'
-
 
 class Sexos(models.Model):
     id_sexo = models.FloatField(primary_key=True)
@@ -174,7 +175,7 @@ class Usuarios(models.Model):
     fecha_nacimiento = models.DateField(blank=True, null=True)
     password_hash = models.CharField(max_length=255, blank=True, null=True)
     usuario_id_sexo = models.ForeignKey(Sexos, models.DO_NOTHING, db_column='usuario_id_sexo')
-    usuario_id_rol = models.ForeignKey(Roles, models.DO_NOTHING, db_column='usuario_id_rol')
+    usuario_id_perfil = models.ForeignKey(Perfiles, models.DO_NOTHING, db_column='usuario_id_perfil')
     activo = models.FloatField(max_length=1, blank=True, null=True, default=1)
 
     class Meta:

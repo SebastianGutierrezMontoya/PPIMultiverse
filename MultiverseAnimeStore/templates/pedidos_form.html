@@ -4,6 +4,7 @@
 
 <form method="post" class="form-container">
     <h2 class="form-header">{% if object %}Editar{% else %}Crear{% endif %} Pedido</h2>
+    <p> {{ Estado }} </p>
     {% csrf_token %}
 
     {# Mostrar errores no asociados (mensajes del trigger) #}
@@ -32,13 +33,17 @@
         <select id="productos" name="productos" class="form-productos">
                 <option value="">Seleccione un producto</option>
             {% for producto in Productos %}
-                <option value="{{ producto.prod_id }}">{{ producto.prod_nombre }} - ${{ producto.prod_precio_venta }}</option>
+                <option value="{{ producto.prod_id }}"
+                        data-price="{{ producto.prod_precio_venta }}"
+                        data-discount="{{ producto.prod_descuento|default:0 }}">
+                    {{ producto.prod_nombre }} - ${{ producto.prod_precio_venta }} - %{{ producto.prod_descuento|default:"0" }}
+                </option>
             {% endfor %}
         </select>
     </div> <!-- cierre div form-linear dentro del IF  -->
 
         <div class="form-linear">
-            <label> Cantidad :</label> <input type="number" name="Cantidad">
+            <label> Cantidad :</label> <input type="number" name="Cantidad" min="1" value="1">
             <button type="button" id="addProducto">Agregar Producto</button>
         </div>
     <div id="productosList">
@@ -48,18 +53,27 @@
 
     {% else %}
     </div>  <!-- cierre div form-linear fuera del IF  -->
-        <ul>
+
             {% for pp in productos_relacionados %}
                 
-                <div>{{ pp.prod }} - 
+                <div class="form-linear form-contacto">
+                    <span>
+                    {{ pp.prod }} - 
                     ${{ pp.pped_precio_unitario }} - 
-                    x{{ pp.pped_cantidad }} - 
-                    Total: ${{ pp.total }}</div>
+                    Cantidad: x{{ pp.pped_cantidad }} <br>
+                    descuento: %{{ pp.pped_descuento }} -
+                    Total: ${{ pp.pped_total }}
 
+                    </span>
+                    <a href="{% url 'pedido_producto_update' ped_id=object.ped_id prod_id=pp.prod.prod_id %}" 
+                    class="btn-link" style="min-width: 70px !important;">Editar</a>
+                </div>
+                
+                
             {% empty %}
-                <li>No hay productos relacionados.</li>
+                <p>No hay productos relacionados.</p>
             {% endfor %}
-        </ul>
+
     {% endif %}
 
     </div>

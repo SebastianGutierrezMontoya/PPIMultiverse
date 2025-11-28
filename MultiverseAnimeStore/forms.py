@@ -1,5 +1,5 @@
 from django import forms
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Perfiles
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Perfiles, Consultas_Dinamicas, EstadoPedidos
 from datetime import date as Date
 from django.db import connection
 
@@ -27,10 +27,22 @@ def next_int_id(model, field_name):
         return model.objects.count() + 1
 
 
+def next_consecutive_id(model, field):
+    ids = list(model.objects.order_by(field).values_list(field, flat=True))
+    expected = 1
+
+    for id_val in ids:
+        if id_val != expected:
+            return expected
+        expected += 1
+
+    return expected
+
+
 class PedidosForm(forms.ModelForm):
     class Meta:
         model = Pedidos
-        fields = ['ped_id','usu', 'ped_fecha_pedido', 'ped_total', 'ped_direccion_envio', 'ped_notas', 'ped_estado']
+        fields = ['ped_id','usu', 'ped_fecha_pedido', 'ped_total', 'ped_direccion_envio', 'ped_notas']
         widgets = {
             'ped_fecha_pedido': forms.DateInput(attrs={'type': 'date'}),
             'ped_notas': forms.Textarea(attrs={'rows': 4}),
@@ -55,7 +67,8 @@ class PedidosForm(forms.ModelForm):
         self.fields['ped_notas'].required = False
 
         
-        self.fields['ped_estado'].initial = 1
+        # self.fields['ped_estado'].initial = 1
+        # self.fields['ped_notas'].widget.attrs.update({'class': 'form-control', 'rows': 4})
 
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})
@@ -204,3 +217,50 @@ class RolesForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})
+
+
+class EstadoPedidosForm(forms.ModelForm):
+    class Meta:
+        model = EstadoPedidos
+        fields = ['est_id', 'est_nombre']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['est_id'].widget.attrs['readonly'] = True
+        # ...cambiado: usar next_int_id en vez de count()+1...
+        # self.fields['est_id'].initial = next_int_id(EstadoPedidos, 'est_id') # cambio aca
+        self.fields['est_id'].initial = next_consecutive_id(EstadoPedidos, 'est_id')
+        self.fields['est_id'].widget.attrs.update({'title': 'La id del estado de Entregado debe ser la mayor de todas' })
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
+
+
+class ConsultasDinamicasForm(forms.ModelForm):
+    class Meta:
+        model = Consultas_Dinamicas
+        fields = ['cons_id', 'cons_nombre', 'cons_descripcion', 'cons_sql']
+        widgets = {
+            'cons_sql': forms.Textarea(attrs={'rows': 5}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['cons_id'].widget.attrs['readonly'] = True
+        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['cons_id'].initial = next_int_id(Consultas_Dinamicas, 'cons_id')
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
+
+        self.fields['cons_sql'].widget.attrs.update({'class': 'form-control', 'rows': 5})
+
+    def clean_sql_consulta(self):
+        sql = self.cleaned_data['cons_sql']
+        # Aquí podrías agregar validaciones adicionales para la consulta SQL si es necesario
+        return sql
+    

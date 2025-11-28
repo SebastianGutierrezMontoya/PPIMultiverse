@@ -6,7 +6,7 @@
     background: var(--formcolor);
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.433);
-    border-color: var(--sidebar-link);
+    border-color: var(--primary-color);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -34,7 +34,7 @@
     text-align: center;
     margin-bottom: 24px;
     font-size: 2rem;
-    color: var(--sidebar-link);
+    color: var(--primary-color);
 }
 
 .form-linear {
@@ -73,7 +73,7 @@
 .form-contactos {
     width: 100%;
     margin-bottom: 16px;
-    border-color: var(--sidebar-link);
+    border-color: var(--primary-color);
 }
 
 .form-contacto {
@@ -150,7 +150,7 @@
 .form-floating textarea:not(:placeholder-shown) + label {
   top: -8px;
   font-size: 0.75rem;
-  color: var(--sidebar-link);
+  color: var(--primary-color);
 }
 
 

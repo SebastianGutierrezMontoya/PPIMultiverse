@@ -1,8 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Config_Contacto
-from .forms import PedidosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
+from .forms import PedidosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
@@ -11,10 +11,12 @@ import re
 from django.forms import modelform_factory
 import oracledb
 
+
 # Función para extraer mensajes de error de Oracle
 def _extract_db_message(exc):
     """Extrae el mensaje amigable de una excepción Oracle (p. ej. RAISE_APPLICATION_ERROR)."""
     text = str(exc) or ''
+    print("DEBUG: Mensaje de error completo:", text)
     # Busca 'ORA-XXXXX: mensaje...' y captura el 'mensaje' hasta un salto de línea o la siguiente 'ORA-'
     m = re.search(r'ORA-\d{5}:\s*(.+?)(?:\n|ORA-|$)', text, re.DOTALL)
     if m:
@@ -61,6 +63,16 @@ def CategoriaUpdateView(request, pk):
         form = CategoriaForm(instance=categoria)
     return render(request, 'categoria_form.html', {'form': form, 'object': categoria})
 
+
+
+def desactivar_trigger():
+    with connection.cursor() as cursor:
+        cursor.execute("BEGIN pkg_auditoria.disable_producto_auditoria := TRUE; END; /")
+
+def activar_trigger():
+    with connection.cursor() as cursor:
+        cursor.execute("BEGIN pkg_auditoria.disable_producto_auditoria := FALSE; END; /")
+
 #PedidosProductos
 def PedidosProductosCreateView(productos_seleccionados, id_pedido):
 
@@ -90,11 +102,14 @@ def PedidosProductosCreateView(productos_seleccionados, id_pedido):
 
         # VALIDACIÓN FINAL DEL PEDIDO EN ORACLE
         cursor = connection.cursor()
+        desactivar_trigger()
         try:
             cursor.callproc("pkg_calculos.sp_cerrar_pedido", [id_pedido])
         except Exception as e:
             # Esto fuerza rollback de toda la transacción
             raise DatabaseError(e)
+        finally:
+            activar_trigger()
         
 
 
@@ -254,6 +269,34 @@ class ProductosDeleteView(DeleteView):
     template_name = 'productos_confirm_delete.html'
     success_url = reverse_lazy('productos_list')
 
+
+
+
+#productos auditoria
+def ProductosAuditoriaView(request):
+    # productos_auditoria = Productos_Auditoria.objects.all()
+    productos_auditoria_raw = Productos_Auditoria.objects.raw(
+    "SELECT rownum AS id, creation_date, au_type, auditoria FROM productos_auditoria"
+    )
+
+
+
+
+# Convertimos los objetos y reemplazamos au_type por texto
+    productos_auditoria = []
+    for p in productos_auditoria_raw:
+       if p.au_type == 1:
+           p.au_type_text = "Creación"
+       elif p.au_type == 2:
+           p.au_type_text = "Modificación"
+       elif p.au_type == 3:
+           p.au_type_text = "Eliminación"
+       else:
+           p.au_type_text = "Desconocido"
+
+       productos_auditoria.append(p)
+
+    return render(request, 'productos_auditoria.html', {'productos_auditoria': productos_auditoria})
 
 #Usuarios
 
@@ -495,7 +538,7 @@ class EstadoPedidosDetailView(DetailView):
 
 class EstadoPedidosCreateView(CreateView):
     model = EstadoPedidos
-    fields = '__all__'
+    form_class = EstadoPedidosForm
     template_name = 'estado_pedidos_form.html'
     success_url = reverse_lazy('estado_pedidos_list')
 
@@ -549,3 +592,76 @@ class ConfigContactoDeleteView(DeleteView):
     template_name = 'config_contacto_confirm_delete.html'
     success_url = reverse_lazy('config_contacto_list')
 
+
+#Consultas_Dinamicas
+
+class ConsultasDinamicasListView(ListView):
+    model = Consultas_Dinamicas
+    template_name = 'ConsultasDinamicas/consultas_dinamicas_list.html'
+
+class ConsultasDinamicasDetailView(DetailView):
+    model = Consultas_Dinamicas
+    template_name = 'ConsultasDinamicas/consultas_dinamicas_detail.html'
+
+def ConsultasDinamicasCreateView(request):
+    if request.method == 'POST':
+        # form = modelform_factory(ConsultasDinamicasForm, fields='__all__')(request.POST)
+        form = ConsultasDinamicasForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('consultas_dinamicas_list')
+    else:
+        # form = modelform_factory(ConsultasDinamicasForm, fields='__all__')()
+        form = ConsultasDinamicasForm(request.POST)
+    return render(request, 'ConsultasDinamicas/consultas_dinamicas_form.html', {'form': form})
+
+# def ConsultasDinamicasUpdateView(request, pk):
+#     consulta = get_object_or_404(Consultas_Dinamicas, pk=pk)
+#     if request.method == 'POST':
+#         # form = modelform_factory(ConsultasDinamicasForm, fields='__all__')(request.POST, instance=consulta)
+#         form = ConsultasDinamicasForm(request.POST, instance=consulta)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('consultas_dinamicas_list')
+#     else:
+#         # form = modelform_factory(ConsultasDinamicasForm, fields='__all__')(instance=consulta)
+#         form = ConsultasDinamicasForm(request.POST, instance=consulta)
+#     return render(request, 'ConsultasDinamicas/consultas_dinamicas_form.html', {'form': form, 'object': consulta})
+
+class ConsultasDinamicasUpdateView(UpdateView):
+    model = Consultas_Dinamicas
+    form_class = ConsultasDinamicasForm
+    template_name = 'ConsultasDinamicas/consultas_dinamicas_form.html'
+    success_url = reverse_lazy('consultas_dinamicas_list')
+
+class ConsultasDinamicasDeleteView(DeleteView):
+    model = Consultas_Dinamicas
+    template_name = 'ConsultasDinamicas/consultas_dinamicas_confirm_delete.html'
+    success_url = reverse_lazy('consultas_dinamicas_list')
+
+
+def ejecutar_reporte(id_reporte):
+
+    with connection.cursor() as cursor:
+
+        # Cursor que recibirá el refcursor
+        out_cursor = cursor.connection.cursor()
+
+        # Llamar la función (retorna un refcursor)
+        ref = cursor.callfunc(
+            "pkg_reportes.fn_ejecutar_reporte",
+            oracledb.CURSOR,
+            [id_reporte]
+        )
+
+        columnas = [col[0] for col in ref.description]
+        resultados = []
+
+        for fila in ref:
+            resultados.append(dict(zip(columnas, fila)))
+
+        return resultados
+    
+def reporte_view(request, id):
+    data = ejecutar_reporte(id)
+    return render(request, "ConsultasDinamicas/consultas_reporte.html", {"resultado": data})

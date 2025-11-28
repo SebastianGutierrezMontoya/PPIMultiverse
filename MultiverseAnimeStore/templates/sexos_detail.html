@@ -3,8 +3,10 @@
 <div class="container">
 <h2>{{ object.nombre_sexo }}</h2>
 <p>ID: {{ object.id_sexo }}</p>
-<a href="{% url 'sexos_update' object.pk %}">Editar</a>
-<a href="{% url 'sexos_delete' object.pk %}">Eliminar</a>
-<a href="{% url 'sexos_list' %}">Volver al listado</a>
+<div class="form-linear">
+    <a class="btn-link" href="{% url 'sexos_update' object.pk %}">Editar</a>
+    <a class="btn-link" href="{% url 'sexos_delete' object.pk %}">Eliminar</a>
+    <a class="btn-link" href="{% url 'sexos_list' %}">Volver al listado</a>
+</div>
 </div>
 {% endblock %}

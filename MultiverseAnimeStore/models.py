@@ -9,6 +9,19 @@ from django.db import models
 from django.db.models import Max
 
 
+class Consultas_Dinamicas(models.Model):
+    cons_id = models.FloatField(primary_key=True)
+    cons_nombre = models.CharField(unique=True, max_length=50, blank=False, null=False)
+    cons_sql = models.CharField(max_length=4000, blank=False, null=False)
+    cons_descripcion = models.CharField(max_length=200, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'consultas_dinamicas'
+
+    def __str__(self):
+        return self.cons_nombre or str(self.cons_id)
+
 class Categoria(models.Model):
     cat_id = models.CharField(primary_key=True, max_length=10)
     cat_nombre = models.CharField(unique=True, max_length=50, blank=True, null=True)
@@ -131,7 +144,8 @@ class Productos(models.Model):
         return self.prod_nombre or str(self.prod_id)
 
 
-class ProductosAuditoria(models.Model):
+class Productos_Auditoria(models.Model):
+    dummy_id = models.AutoField(primary_key=True),
     creation_date = models.DateField(blank=True, null=True)
     au_type = models.IntegerField(blank=True, null=True)
     auditoria = models.CharField(max_length=500, blank=True, null=True)

@@ -6,10 +6,11 @@
     <li>Tipo: {{ object.tipo_contacto }}</li>
     <li>Dato: {{ object.dato_contacto }}</li>
 </ul>
-<a href="{% url 'contactos_update' object.pk %}">Editar</a>
-<a href="#" onclick="showDeleteModal('{{ object.pk }}', '{{ object.dato_contacto }}'); return false;">Eliminar</a>
-<a href="{% url 'contactos_list' %}">Volver al listado</a>
-
+<div class="form-linear">
+    <a class="btn-link" href="{% url 'contactos_update' object.pk %}">Editar</a>
+    <a class="btn-link" href="#" onclick="showDeleteModal('{{ object.pk }}', '{{ object.dato_contacto }}'); return false;">Eliminar</a>
+    <a class="btn-link" href="{% url 'contactos_list' %}">Volver al listado</a>
+</div>
 <!-- Modal de confirmación de borrado -->
 <div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">
     <div style="background:#fff; padding:30px; max-width:400px; margin:100px auto; border-radius:8px; position:relative;">

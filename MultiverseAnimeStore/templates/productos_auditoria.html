@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="width: auto !important;">
+    <h2>Auditoría de Productos</h2>
+</div>
+    <table class="table-auditoria">
+        <thead>
+            <tr>
+                <th>Fecha de Creación</th>
+                <th>Tipo de Auditoría</th>
+                <th>Detalles de Auditoría</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if productos_auditoria %}
+            {% for producto in productos_auditoria %}
+            <tr>
+                <td>{{ producto.creation_date }}</td>
+                <td>{{ producto.au_type_text }}</td>
+                <td>{{ producto.auditoria }}</td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+        </tbody>
+
+
+
+{% endblock %}

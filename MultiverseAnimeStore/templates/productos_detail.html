@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="container">
 <h2>{{ object.prod_nombre }}</h2>
 <p>{{ object.prod_descripcion }}</p>
 <p>Precio: {{ object.prod_precio_venta }}</p>
 <p>Stock: {{ object.prod_stock }}</p>
-<a href="{% url 'productos_update' object.pk %}">Editar</a>
-<a href="#" onclick="showDeleteModal('{{ object.pk }}', '{{ object.prod_nombre }}'); return false;">Eliminar</a>
-<a href="{% url 'productos_list' %}">Volver al listado</a>
-
+<div class="form-linear">
+    <a class="btn-link" href="{% url 'productos_update' object.pk %}">Editar</a>
+    <a class="btn-link" href="#" onclick="showDeleteModal('{{ object.pk }}', '{{ object.prod_nombre }}'); return false;">Eliminar</a>
+    <a class="btn-link" href="{% url 'productos_list' %}">Volver al listado</a>
+</div>
 <!-- Modal de confirmación de borrado -->
 <div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">
     <div style="background:#fff; padding:30px; max-width:400px; margin:100px auto; border-radius:8px; position:relative;">
@@ -21,6 +23,7 @@
             </div>
         </form>
     </div>
+</div>
 </div>
 <script>
     function showDeleteModal(pk, nombre) {

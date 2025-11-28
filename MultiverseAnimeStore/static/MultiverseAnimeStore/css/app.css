@@ -5,6 +5,8 @@
     --sidebar-link: #1d1d1d;
     --sidebar-link-hover: #b2ebf2;
     --formcolor: #f8f8f8;
+    --primary-color: #1d1d1d;
+    --primary-color-hover: #b2ebf2;
 }
 
 .hidden {
@@ -20,7 +22,7 @@ html, body {
 }
 
 button {
-    background-color: var(--sidebar-link);
+    background-color: var(--primary-color);
     color: var(--fontcolor);
     border: none;
     padding: 15px 20px;
@@ -52,7 +54,7 @@ select {
     background: var(--formcolor);
     border-radius: 12px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.433);
-    border-color: var(--sidebar-link);
+    border-color: var(--primary-color);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -68,7 +70,7 @@ select {
     transition: background 0.2s;
     display: inline-block;
     text-align: center;
-    background-color: var(--sidebar-link);
+    background-color: var(--primary-color);
     color: var(--fontcolor);
     border: none;
     padding: 15px 12px;
@@ -88,8 +90,8 @@ select {
     display: inline-block;
     text-align: center;
     background-color: var(--fontcolor);
-    color: var(--sidebar-link);
-    border: 2px solid var(--sidebar-link);
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
     padding: 12px 12px;
     border-radius: 5px;
     cursor: pointer;
@@ -106,4 +108,51 @@ button:hover,
 
 .container ul li {
     margin-bottom: 10px;
+}
+
+
+
+table {
+    width: 100%;
+    border-collapse: separate; 
+    border-spacing: 0;
+    font-family: Arial, sans-serif;
+    border: 1px solid var(--primary-color);
+    background-color: var(--formcolor);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Bordes negros */
+th, td {
+    border-bottom: 1px solid var(--primary-color);
+}
+
+/* Encabezado: fondo negro, texto blanco */
+thead th {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 8px;
+    text-align: center;
+}
+
+/* Columnas pares con fondo gris claro */
+tbody tr:nth-child(even) {
+    background-color: #e2e2e2;
+}
+
+/* Última fila sin borde inferior doble */
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+
+td {
+    padding: 8px;
+    
+}
+
+td:nth-child(even) {
+    border-left: 1px solid var(--primary-color);
+    border-right: 1px solid var(--primary-color);
 }

@@ -46,14 +46,21 @@ from .views import (
     ConfigContactoUpdateView,
     ConfigContactoDeleteView,
     PedidoProductoUpdateFormView,
+    ProductosAuditoriaView,
+    ConsultasDinamicasCreateView,
+    ConsultasDinamicasDeleteView,
+    ConsultasDinamicasDetailView,
+    ConsultasDinamicasListView,
+    ConsultasDinamicasUpdateView,
+    reporte_view,
 )
 
 urlpatterns = [
     path('categorias/', CategoriaListView.as_view(), name='categoria_list'),
-    path('categorias/<int:pk>/', CategoriaDetailView.as_view(), name='categoria_detail'),
+    path('categorias/<str:pk>/', CategoriaDetailView.as_view(), name='categoria_detail'),
     path('categorias/crear/', CategoriaCreateView, name='categoria_create'),
-    path('categorias/<int:pk>/editar/', CategoriaUpdateView, name='categoria_update'),
-    path('categorias/<int:pk>/eliminar/', CategoriaDeleteView.as_view(), name='categoria_delete'),
+    path('categorias/<str:pk>/editar/', CategoriaUpdateView, name='categoria_update'),
+    path('categorias/<str:pk>/eliminar/', CategoriaDeleteView.as_view(), name='categoria_delete'),
 
     path('contactos/', ContactosListView.as_view(), name='contactos_list'),
     path('contactos/<int:pk>/', ContactosDetailView.as_view(), name='contactos_detail'),
@@ -68,10 +75,12 @@ urlpatterns = [
     path('pedidos/<int:pk>/eliminar/', PedidosDeleteView, name='pedidos_delete'),
 
     path('productos/', ProductosListView.as_view(), name='productos_list'),
-    path('productos/<int:pk>/', ProductosDetailView.as_view(), name='productos_detail'),
+    path('productos/<str:pk>/', ProductosDetailView.as_view(), name='productos_detail'),
     path('productos/crear/', ProductosCreateView, name='productos_create'),
-    path('productos/<int:pk>/editar/', ProductosUpdateView, name='productos_update'),
-    path('productos/<int:pk>/eliminar/', ProductosDeleteView.as_view(), name='productos_delete'),
+    path('productos/<str:pk>/editar/', ProductosUpdateView, name='productos_update'),
+    path('productos/<str:pk>/eliminar/', ProductosDeleteView.as_view(), name='productos_delete'),
+    
+    path('productos_auditoria/', ProductosAuditoriaView, name='productos_auditoria'),
 
     path('usuarios/', UsuariosListView.as_view(), name='usuarios_list'),
     path('usuarios/<int:pk>/', UsuariosDetailView.as_view(), name='usuarios_detail'),
@@ -104,9 +113,15 @@ urlpatterns = [
     path('config_contacto/<int:pk>/editar/', ConfigContactoUpdateView.as_view(), name='config_contacto_update'),
     path('config_contacto/<int:pk>/eliminar/', ConfigContactoDeleteView.as_view(), name='config_contacto_delete'),
 
-    path(
-        'pedidos/<int:ped_id>/producto/<int:prod_id>/editar/',
-        PedidoProductoUpdateFormView,
-        name='pedido_producto_update'
-    ),
+    path('pedidos/<int:ped_id>/producto/<str:prod_id>/editar/', PedidoProductoUpdateFormView, name='pedido_producto_update'),
+
+
+    path('consultas_dinamicas/', ConsultasDinamicasListView.as_view(), name='consultas_dinamicas_list'),
+    path('consultas_dinamicas/<int:pk>/', ConsultasDinamicasDetailView.as_view(), name='consultas_dinamicas_detail'),
+    path('consultas_dinamicas/crear/', ConsultasDinamicasCreateView, name='consultas_dinamicas_create'),
+    path('consultas_dinamicas/<int:pk>/editar/', ConsultasDinamicasUpdateView.as_view(), name='consultas_dinamicas_update'),
+    path('consultas_dinamicas/<int:pk>/eliminar/', ConsultasDinamicasDeleteView.as_view(), name='consultas_dinamicas_delete'),
+
+    path('consultas_dinamicas/reporte/<int:id>/', reporte_view, name='consultas_dinamicas_reporte'),
+
 ]

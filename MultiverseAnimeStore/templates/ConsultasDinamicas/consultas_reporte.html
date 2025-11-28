@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+<h2>{{ object.nombre_contacto }}</h2>
+<table>
+    <thead>
+        <tr>
+            {% for col in resultado.0.keys %}
+                <th>{{ col }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for fila in resultado %}
+            <tr>
+                {% for valor in fila.values %}
+                    <td>{{ valor }}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+<div class="form-linear">
+  <a class="btn-link" href="{% url 'consultas_dinamicas_list' %}">Volver al listado</a>
+</div>
+</div>
+{% endblock %}

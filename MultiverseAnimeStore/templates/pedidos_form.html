@@ -4,7 +4,7 @@
 
 <form method="post" class="form-container">
     <h2 class="form-header">{% if object %}Editar{% else %}Crear{% endif %} Pedido</h2>
-    <p> {{ Estado }} </p>
+    <p> Estado : {{ Estado }} </p>
     {% csrf_token %}
 
     {# Mostrar errores no asociados (mensajes del trigger) #}

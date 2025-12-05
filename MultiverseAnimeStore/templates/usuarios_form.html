@@ -45,23 +45,21 @@
     <h3>Contactos relacionados</h3>
     
         {% for contacto in contactos_relacionados %}
-            
-                <!-- {{ contacto.dato_contacto }} ({{ contacto.tipo_contacto }}) -->
-                <div class="form-linear">
+            <div class="form-linear">
                 <label>Tipo:</label>
                 <select name="tipo_contacto_editado_{{ contacto.id_contacto }}" class="tipo-contacto-editado">
-                    <option value="c" {% if contacto.tipo_contacto == 'c' %}selected{% endif %}>Correo</option>
-                    <option value="t" {% if contacto.tipo_contacto == 't' %}selected{% endif %}>Telefono</option>
-                    <option value="d" {% if contacto.tipo_contacto == 'd' %}selected{% endif %}>Direccion</option>
-                    <option value="p" {% if contacto.tipo_contacto == 'p' %}selected{% endif %}>Postal</option>
+                    <option value=1 {% if contacto.tipo_contacto.id_regla == 1 %}selected{% endif %}>Correo</option>
+                    <option value=2 {% if contacto.tipo_contacto.id_regla == 2 %}selected{% endif %}>Telefono</option>
+                    <option value=3 {% if contacto.tipo_contacto.id_regla == 3 %}selected{% endif %}>Direccion</option>
+                    <option value=4 {% if contacto.tipo_contacto.id_regla == 4 %}selected{% endif %}>Postal</option>
                 </select>
-                
-                    <label> Dato :</label>
-                    <input type="text" name="dato_contacto_editado_{{ contacto.id_contacto }}" class="dato-contacto-editado" value="{{ contacto.dato_contacto }}">
-                    <a href="{% url 'contactos_delete' contacto.pk %}" onclick="return confirm('¿Seguro que deseas eliminar este contacto? \n no se guardaran los demas cambios realizados.');" class="btn btn-danger">Eliminar</a>
-                </div>
-                <input type="hidden" name="contactos_relacionados_editados" id="contacto_editado_{{ contacto.id_contacto }}"
-                    value="{{ contacto.tipo_contacto }},{{ contacto.dato_contacto }},{{ contacto.id_contacto }}">
+
+                <label> Dato :</label>
+                <input type="text" name="dato_contacto_editado_{{ contacto.id_contacto }}" class="dato-contacto-editado" value="{{ contacto.dato_contacto }}">
+                <a href="{% url 'contactos_delete' contacto.pk %}" onclick="return confirm('¿Seguro que deseas eliminar este contacto? \n no se guardaran los demas cambios realizados.');" class="btn btn-danger">Eliminar</a>
+            </div>
+            <input type="hidden" name="contactos_relacionados_editados" id="contacto_editado_{{ contacto.id_contacto }}"
+                value="{{ contacto.tipo_contacto.id_regla }},{{ contacto.dato_contacto }},{{ contacto.id_contacto }}">
                 
             
         {% empty %}

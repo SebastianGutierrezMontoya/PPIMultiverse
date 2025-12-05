@@ -13,23 +13,19 @@ addEventListener('DOMContentLoaded', function() {
         const dato = datoInput.value;
 
         if (tipo && dato) {
-            // Muestra el contacto agregado con botón eliminar
             const contactoDiv = document.createElement('div');
             const contactoTexto = document.createElement('span');
             let tipoTexto = tipoSelect.options[tipoSelect.selectedIndex].text;
             contactoTexto.textContent = `${tipoTexto}: ${dato} `;
-
             contactoTexto.classList.add('form-span');
             contactoDiv.appendChild(contactoTexto);
 
-            // Botón eliminar
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.textContent = 'Eliminar';
             removeBtn.onclick = removeContacto;
             contactoDiv.appendChild(removeBtn);
 
-            // Input oculto para enviar al backend
             const hiddenInput = document.createElement('input');
             hiddenInput.type = 'hidden';
             hiddenInput.name = 'contactos_relacionados';
@@ -37,10 +33,8 @@ addEventListener('DOMContentLoaded', function() {
             contactoDiv.appendChild(hiddenInput);
 
             contactoDiv.classList.add('form-linear','form-contacto');
-
             contactosContainer.appendChild(contactoDiv);
 
-            // Limpia los campos
             tipoSelect.selectedIndex = 0;
             datoInput.value = '';
         } else {
@@ -48,15 +42,25 @@ addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Actualizar hidden de contactos editados: obtener id desde el atributo name
+    function updateHiddenForId(id) {
+        const select = document.querySelector('select[name="tipo_contacto_editado_' + id + '"]');
+        const input = document.querySelector('input[name="dato_contacto_editado_' + id + '"]');
+        const hidden = document.getElementById('contacto_editado_' + id);
+        if (!hidden) return;
+        const tipoVal = select ? select.value : '';
+        const datoVal = input ? input.value : '';
+        hidden.value = `${tipoVal},${datoVal},${id}`;
+    }
 
+    // attach listeners to existing edited fields
     document.querySelectorAll('.tipo-contacto-editado, .dato-contacto-editado').forEach(function(el) {
-                el.addEventListener('change', function() {
-                    var li = el.closest('li');
-                    var select = li.querySelector('.tipo-contacto-editado');
-                    var input = li.querySelector('.dato-contacto-editado');
-                    var hidden = li.querySelector('input[type="hidden"][name="contactos_relacionados_editados"]');
-                    var id = hidden.id.split('_')[2];
-                    hidden.value = select.value + ',' + input.value + ',' + id;
-                });
-            });
+        el.addEventListener('change', function() {
+            // name expected like 'tipo_contacto_editado_<id>' or 'dato_contacto_editado_<id>'
+            const m = el.name.match(/_(\d+)$/);
+            if (!m) return;
+            const id = m[1];
+            updateHiddenForId(id);
+        });
+    });
 });

@@ -438,6 +438,7 @@ def ContactosUpdateView(contactos_actualizar):
             # contacto.tipo_contacto = contacto_data.get('tipo_contacto', contacto.tipo_contacto)
             contacto.tipo_contacto = get_object_or_404(Config_Contacto, pk=contacto.tipo_contacto.pk)
             contacto.dato_contacto = contacto_data.get('dato_contacto', contacto.dato_contacto)
+
             contacto.save()
         except DatabaseError as e:
             errors.append(_extract_db_message(e))

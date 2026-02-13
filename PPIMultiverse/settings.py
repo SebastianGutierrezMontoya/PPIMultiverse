@@ -73,14 +73,42 @@ WSGI_APPLICATION = 'PPIMultiverse.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.oracle',
+#         'NAME': 'XE',  # Nombre del servicio de Oracle XE
+#         'USER': 'PPIMultiverse',  # Reemplaza con tu usuario de Oracle
+#         'PASSWORD': 'qwer12345',  # Reemplaza con tu contraseña de Oracle
+#         'HOST': 'localhost',  # Dirección del host
+#         'PORT': '1521',  # Puerto predeterminado de Oracle
+#     }
+# }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'mssql',
+#         'NAME': 'PPIMultiverse',     # nombre de la BD
+#         'USER': 'sa',                # usuario SQL Server
+#         'PASSWORD': 'TuPassword',
+#         'HOST': 'localhost',         # o IP
+#         'PORT': '1433',
+#         'OPTIONS': {
+#             'driver': 'ODBC Driver 17 for SQL Server',
+#             'TrustServerCertificate': 'yes',
+#         },
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.oracle',
-        'NAME': 'XE',  # Nombre del servicio de Oracle XE
-        'USER': 'PPIMultiverse',  # Reemplaza con tu usuario de Oracle
-        'PASSWORD': 'qwer12345',  # Reemplaza con tu contraseña de Oracle
-        'HOST': 'localhost',  # Dirección del host
-        'PORT': '1521',  # Puerto predeterminado de Oracle
+        'ENGINE': 'mssql',
+        'NAME': 'MultiverseAnimeStore',     # nombre de la BD
+        'HOST': 'localhost\SQLEXPRESS',
+        'OPTIONS': {
+            'driver': 'ODBC Driver 17 for SQL Server',
+            'trusted_connection': 'yes',
+            'TrustServerCertificate': 'yes',
+        },
     }
 }
 

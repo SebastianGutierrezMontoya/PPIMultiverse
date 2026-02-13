@@ -9,23 +9,31 @@ from django.db import DatabaseError, transaction, connection
 from django.contrib import messages
 import re
 from django.forms import modelform_factory
-import oracledb
+import pyodbc
 
 
-# Función para extraer mensajes de error de Oracle
+# Función para extraer mensajes de error de SQL Server
 def _extract_db_message(exc):
-    """Extrae el mensaje amigable de una excepción Oracle (p. ej. RAISE_APPLICATION_ERROR)."""
+    """Extrae el mensaje amigable de una excepción SQL Server."""
     text = str(exc) or ''
-    print("DEBUG: Mensaje de error completo:", text)
-    # Busca 'ORA-XXXXX: mensaje...' y captura el 'mensaje' hasta un salto de línea o la siguiente 'ORA-'
-    m = re.search(r'ORA-\d{5}:\s*(.+?)(?:\n|ORA-|$)', text, re.DOTALL)
+    # print("DEBUG: Mensaje de error completo:", text)
+    
+    # Buscar patrón: [SQL Server]mensaje(código)(SQLExecDirectW)
+    m = re.search(r'\[SQL Server\](.+?)\s*\(\d+\)\s*\(SQLExecDirectW\)', text)
     if m:
         return m.group(1).strip()
-    # Si no hay ORA-... devuelve la primera línea no vacía
+    
+    # Si no encuentra el patrón anterior, busca [SQL Server]mensaje(código)
+    m = re.search(r'\[SQL Server\](.+?)\s*\(\d+\)', text)
+    if m:
+        return m.group(1).strip()
+    
+    # Fallback: primera línea no vacía
     for line in text.splitlines():
         line = line.strip()
-        if line:
+        if line and not line.startswith('['):
             return line
+    
     return text.strip() or 'Error de base de datos.'
 
 #Categorias
@@ -64,14 +72,18 @@ def CategoriaUpdateView(request, pk):
     return render(request, 'categoria_form.html', {'form': form, 'object': categoria})
 
 
-
 def desactivar_trigger():
     with connection.cursor() as cursor:
-        cursor.execute("BEGIN pkg_auditoria.disable_producto_auditoria := TRUE; END; /")
+        cursor.execute(
+            "EXEC sp_set_session_context @key=N'disable_auditoria_producto', @value=1"
+        )
 
 def activar_trigger():
     with connection.cursor() as cursor:
-        cursor.execute("BEGIN pkg_auditoria.disable_producto_auditoria := FALSE; END; /")
+        cursor.execute(
+            "EXEC sp_set_session_context @key=N'disable_auditoria_producto', @value=NULL"
+        )
+
 
 #PedidosProductos
 def PedidosProductosCreateView(productos_seleccionados, id_pedido):
@@ -100,11 +112,11 @@ def PedidosProductosCreateView(productos_seleccionados, id_pedido):
                 pped_estado=pped_estado
             )
 
-        # VALIDACIÓN FINAL DEL PEDIDO EN ORACLE
+        # VALIDACIÓN FINAL DEL PEDIDO 
         cursor = connection.cursor()
         desactivar_trigger()
         try:
-            cursor.callproc("pkg_calculos.sp_cerrar_pedido", [id_pedido])
+            cursor.execute("EXEC sp_cerrar_pedido @id_pedido=?", [id_pedido])
         except Exception as e:
             # Esto fuerza rollback de toda la transacción
             raise DatabaseError(e)
@@ -175,15 +187,15 @@ def PedidosUpdateView(request, pk):
     
     cursor = connection.cursor()
     try:
+        cursor.execute("EXEC sp_obtener_estado_pedido @id_pedido=?", [pedido.ped_id])
+        resultado = cursor.fetchone()
+        Estado = resultado[0] if resultado else None
 
-        Estado = cursor.callfunc(
-        "pkg_auditoria.fn_estado_pedido",
-        oracledb.DB_TYPE_VARCHAR,   # Tipo de retorno
-        [pedido.ped_id]             # Parámetros de entrada)
-        )
     except Exception as e:
         # Esto fuerza rollback de toda la transacción
         raise DatabaseError(e)
+        
+
 
     if request.method == 'POST':
         form = PedidosForm(request.POST, instance=pedido)
@@ -275,11 +287,18 @@ class ProductosDeleteView(DeleteView):
 #productos auditoria
 def ProductosAuditoriaView(request):
     # productos_auditoria = Productos_Auditoria.objects.all()
-    productos_auditoria_raw = Productos_Auditoria.objects.raw(
-    "SELECT rownum AS id, creation_date, au_type, auditoria FROM productos_auditoria"
-    )
+    # productos_auditoria_raw = Productos_Auditoria.objects.raw(
+    # "SELECT rownum AS id, creation_date, au_type, auditoria FROM productos_auditoria"
+    # )
 
-
+    productos_auditoria_raw = Productos_Auditoria.objects.raw("""
+    SELECT 
+        ROW_NUMBER() OVER (ORDER BY creation_date DESC) AS id,
+        creation_date,
+        au_type,
+        auditoria
+    FROM productos_auditoria
+    """)
 
 
 # Convertimos los objetos y reemplazamos au_type por texto
@@ -641,24 +660,36 @@ class ConsultasDinamicasDeleteView(DeleteView):
     success_url = reverse_lazy('consultas_dinamicas_list')
 
 
+# def ejecutar_reporte(id_reporte):
+
+#     with connection.cursor() as cursor:
+
+#         # Cursor que recibirá el refcursor
+#         out_cursor = cursor.connection.cursor()
+
+#         # Llamar la función (retorna un refcursor)
+#         ref = cursor.callfunc(
+#             "pkg_reportes.fn_ejecutar_reporte",
+#             oracledb.CURSOR,
+#             [id_reporte]
+#         )
+
+#         columnas = [col[0] for col in ref.description]
+#         resultados = []
+
+#         for fila in ref:
+#             resultados.append(dict(zip(columnas, fila)))
+
+#         return resultados
+
 def ejecutar_reporte(id_reporte):
-
     with connection.cursor() as cursor:
+        cursor.execute("EXEC sp_ejecutar_reporte @id_consulta=%s", [id_reporte])
 
-        # Cursor que recibirá el refcursor
-        out_cursor = cursor.connection.cursor()
-
-        # Llamar la función (retorna un refcursor)
-        ref = cursor.callfunc(
-            "pkg_reportes.fn_ejecutar_reporte",
-            oracledb.CURSOR,
-            [id_reporte]
-        )
-
-        columnas = [col[0] for col in ref.description]
+        columnas = [col[0] for col in cursor.description]
         resultados = []
 
-        for fila in ref:
+        for fila in cursor.fetchall():
             resultados.append(dict(zip(columnas, fila)))
 
         return resultados

@@ -57,7 +57,7 @@ from .views import (
 
 urlpatterns = [
     path('categorias/', CategoriaListView.as_view(), name='categoria_list'),
-    path('categorias/<str:pk>/', CategoriaDetailView.as_view(), name='categoria_detail'),
+    path('categorias/<str:pk>/detalle/', CategoriaDetailView.as_view(), name='categoria_detail'),
     path('categorias/crear/', CategoriaCreateView, name='categoria_create'),
     path('categorias/<str:pk>/editar/', CategoriaUpdateView, name='categoria_update'),
     path('categorias/<str:pk>/eliminar/', CategoriaDeleteView.as_view(), name='categoria_delete'),
@@ -75,7 +75,7 @@ urlpatterns = [
     path('pedidos/<int:pk>/eliminar/', PedidosDeleteView, name='pedidos_delete'),
 
     path('productos/', ProductosListView.as_view(), name='productos_list'),
-    path('productos/<str:pk>/', ProductosDetailView.as_view(), name='productos_detail'),
+    path('productos/<str:pk>/detalle/', ProductosDetailView.as_view(), name='productos_detail'),
     path('productos/crear/', ProductosCreateView, name='productos_create'),
     path('productos/<str:pk>/editar/', ProductosUpdateView, name='productos_update'),
     path('productos/<str:pk>/eliminar/', ProductosDeleteView.as_view(), name='productos_delete'),

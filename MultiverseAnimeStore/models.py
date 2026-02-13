@@ -10,7 +10,7 @@ from django.db.models import Max
 
 
 class Consultas_Dinamicas(models.Model):
-    cons_id = models.FloatField(primary_key=True)
+    cons_id = models.IntegerField(primary_key=True)
     cons_nombre = models.CharField(unique=True, max_length=50, blank=False, null=False)
     cons_sql = models.CharField(max_length=4000, blank=False, null=False)
     cons_descripcion = models.CharField(max_length=200, blank=True, null=True)
@@ -38,7 +38,7 @@ class Categoria(models.Model):
 
 
 class EstadoPedidos(models.Model):
-    est_id = models.FloatField(primary_key=True)
+    est_id = models.IntegerField(primary_key=True)
     est_nombre = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
@@ -84,7 +84,7 @@ class PedidosProductos(models.Model):
 
 
 class Perfiles(models.Model):
-    id_perfil = models.FloatField(primary_key=True)
+    id_perfil = models.IntegerField(primary_key=True)
     nombre = models.CharField(unique=True, max_length=100, blank=True, null=True)
     descripcion = models.CharField(max_length=255, blank=True, null=True)
 
@@ -112,7 +112,7 @@ class Modulos(models.Model):
         return self.nombre_mod or str(self.id_mod)
 
 class Perfilpermisos(models.Model):
-    id_perfil_permiso = models.FloatField(primary_key=True)
+    id_perfil_permiso = models.IntegerField(primary_key=True)
     perfil_id = models.ForeignKey(Perfiles, models.DO_NOTHING)
     mod_id = models.ForeignKey('Modulos', models.DO_NOTHING)
 
@@ -156,7 +156,7 @@ class Productos_Auditoria(models.Model):
 
 
 class Roles(models.Model):
-    id_rol = models.FloatField(primary_key=True)
+    id_rol = models.IntegerField(primary_key=True)
     nombre = models.CharField(unique=True, max_length=50, blank=True, null=True)
     descripcion = models.CharField(max_length=255, blank=True, null=True)
 
@@ -170,7 +170,7 @@ class Roles(models.Model):
 
 
 class Sexos(models.Model):
-    id_sexo = models.FloatField(primary_key=True)
+    id_sexo = models.IntegerField(primary_key=True)
     nombre_sexo = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
@@ -182,7 +182,7 @@ class Sexos(models.Model):
 
 
 class Usuarios(models.Model):
-    id_usuario = models.FloatField(primary_key=True)
+    id_usuario = models.IntegerField(primary_key=True)
     nombre = models.CharField(max_length=300, blank=True, null=True)
     primer_apellido = models.CharField(max_length=50, blank=True, null=True)
     segundo_apellido = models.CharField(max_length=50, blank=True, null=True)
@@ -206,7 +206,7 @@ class Usuarios(models.Model):
 
 
 class Config_Contacto(models.Model):
-    id_regla = models.FloatField(primary_key=True, )
+    id_regla = models.IntegerField(primary_key=True, )
     nombre_contacto = models.CharField(max_length=50, blank=True, null=False)
     descripcion = models.CharField(max_length=100, blank=True, null=True)
     regex_val = models.CharField(max_length=200, blank=True, null=True)
@@ -239,7 +239,7 @@ class Config_Contacto(models.Model):
                 return 1
 
 class Contactos(models.Model):
-    id_contacto = models.FloatField(primary_key=True, )
+    id_contacto = models.IntegerField(primary_key=True, )
     tipo_contacto = models.ForeignKey(Config_Contacto, models.DO_NOTHING, db_column='tipo_contacto', blank=True, null=True)
     dato_contacto = models.CharField(max_length=100, blank=True, null=True)
     id_usuario = models.ForeignKey(Usuarios, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)

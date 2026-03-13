@@ -2,7 +2,7 @@
 {% block content %}
 <div class="container" style="width: auto !important;">
     <h2>Auditoría de Productos</h2>
-</div>
+
     <table class="table-auditoria">
         <thead>
             <tr>
@@ -17,12 +17,35 @@
             <tr>
                 <td>{{ producto.creation_date }}</td>
                 <td>{{ producto.au_type_text }}</td>
-                <td>{{ producto.auditoria }}</td>
+                <td>
+                    {% if producto.au_type == 2 and producto.differences %}
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Valor Anterior</th>
+                                    <th>Valor Nuevo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for diff in producto.differences %}
+                                <tr>
+                                    <td>{{ diff.field }}</td>
+                                    <td>{{ diff.old }}</td>
+                                    <td>{{ diff.new }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    {% else %}
+                        {{ producto.auditoria }}
+                    {% endif %}
+                </td>
             </tr>
             {% endfor %}
             {% endif %}
         </tbody>
+    </table>
 
-
-
+</div>
 {% endblock %}

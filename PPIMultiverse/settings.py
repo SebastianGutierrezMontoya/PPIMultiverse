@@ -101,14 +101,12 @@ WSGI_APPLICATION = 'PPIMultiverse.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'mssql',
-        'NAME': 'MultiverseAnimeStore',     # nombre de la BD
-        'HOST': 'localhost\SQLEXPRESS',
-        'OPTIONS': {
-            'driver': 'ODBC Driver 17 for SQL Server',
-            'trusted_connection': 'yes',
-            'TrustServerCertificate': 'yes',
-        },
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'postgres',
+        'USER': 'postgres',
+        'PASSWORD': 'qwer1234',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 

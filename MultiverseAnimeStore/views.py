@@ -9,7 +9,9 @@ from django.db import DatabaseError, transaction, connection
 from django.contrib import messages
 import re
 from django.forms import modelform_factory
-import pyodbc
+import psycopg2
+import json
+
 
 
 # Función para extraer mensajes de error de SQL Server
@@ -73,16 +75,14 @@ def CategoriaUpdateView(request, pk):
 
 
 def desactivar_trigger():
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "EXEC sp_set_session_context @key=N'disable_auditoria_producto', @value=1"
-        )
+    # with connection.cursor() as cursor:
+    #     cursor.execute("SET LOCAL disable_auditoria_producto = true")
+    print("DEBUG: Trigger de auditoría desactivado para esta sesión.")
 
 def activar_trigger():
-    with connection.cursor() as cursor:
-        cursor.execute(
-            "EXEC sp_set_session_context @key=N'disable_auditoria_producto', @value=NULL"
-        )
+    # with connection.cursor() as cursor:
+    #     cursor.execute("SET LOCAL disable_auditoria_producto = false")
+    print("DEBUG: Trigger de auditoría activado para esta sesión.")
 
 
 #PedidosProductos
@@ -116,7 +116,7 @@ def PedidosProductosCreateView(productos_seleccionados, id_pedido):
         cursor = connection.cursor()
         desactivar_trigger()
         try:
-            cursor.execute("EXEC sp_cerrar_pedido @id_pedido=?", [id_pedido])
+            cursor.execute("CALL sp_cerrar_pedido(%s)", [id_pedido])
         except Exception as e:
             # Esto fuerza rollback de toda la transacción
             raise DatabaseError(e)
@@ -187,7 +187,7 @@ def PedidosUpdateView(request, pk):
     
     cursor = connection.cursor()
     try:
-        cursor.execute("EXEC sp_obtener_estado_pedido @id_pedido=?", [pedido.ped_id])
+        cursor.execute("SELECT fn_estado_pedido(%s)", [pedido.ped_id])
         resultado = cursor.fetchone()
         Estado = resultado[0] if resultado else None
 
@@ -313,6 +313,28 @@ def ProductosAuditoriaView(request):
        else:
            p.au_type_text = "Desconocido"
 
+       # Parsear el JSON de auditoria
+       try:
+           parsed = json.loads(p.auditoria)
+           p.auditoria_parsed = parsed
+           if p.au_type == 2:  # Modificación
+               old = parsed.get('old', {})
+               new = parsed.get('new', {})
+               differences = []
+               for key in set(old.keys()) | set(new.keys()):
+                   if old.get(key) != new.get(key):
+                       differences.append({
+                           'field': key,
+                           'old': old.get(key, 'N/A'),
+                           'new': new.get(key, 'N/A')
+                       })
+               p.differences = differences
+           else:
+               p.differences = []
+       except json.JSONDecodeError:
+           p.auditoria_parsed = None
+           p.differences = []
+
        productos_auditoria.append(p)
 
     return render(request, 'productos_auditoria.html', {'productos_auditoria': productos_auditoria})
@@ -434,7 +456,7 @@ def ContactosCreateView(contactos_relacionados, id_usuario):
             tipo_contacto, dato_contacto = item.split(',')
             tipo_contacto = get_object_or_404(Config_Contacto, pk=tipo_contacto)
             usuario = get_object_or_404(Usuarios, pk=id_usuario)
-
+        
             Contactos.objects.create(
                 id_contacto=id_con,
                 tipo_contacto=tipo_contacto,
@@ -453,12 +475,35 @@ def ContactosUpdateView(contactos_actualizar):
     errors = []
     for contacto_data in contactos_actualizar:
         try:
-            contacto = get_object_or_404(Contactos, pk=contacto_data['id_contacto'])
-            # contacto.tipo_contacto = contacto_data.get('tipo_contacto', contacto.tipo_contacto)
-            contacto.tipo_contacto = get_object_or_404(Config_Contacto, pk=contacto.tipo_contacto.pk)
-            contacto.dato_contacto = contacto_data.get('dato_contacto', contacto.dato_contacto)
+            id_contacto = contacto_data['id_contacto']
+            tipo_contacto_id = contacto_data['tipo_contacto']
+            dato_contacto = contacto_data['dato_contacto']
+            
+            print(f"DEBUG ContactosUpdateView: id={id_contacto}, tipo_id={tipo_contacto_id}, dato={dato_contacto}")
+            
+            # Verificar que el contacto existe
+            contacto = get_object_or_404(Contactos, pk=id_contacto)
+            print(f"DEBUG: Contacto encontrado: {contacto.id_contacto}")
+            
+            # Intentar deshabilitar auditorías/triggers a nivel de sesión
+            try:
+                with connection.cursor() as cursor:
+                    cursor.execute("SET LOCAL disable_auditoria_contactos = true")
+                    cursor.execute("SET LOCAL disable_auditoria = true")
 
-            contacto.save()
+                    # Usar queryset.update() para forzar UPDATE sin insertar
+                    resultado = Contactos.objects.filter(pk=id_contacto).update(
+                        tipo_contacto_id=tipo_contacto_id,
+                        dato_contacto=dato_contacto
+                    )
+            finally:
+                # Restaurar el contexto de sesión
+                with connection.cursor() as cursor:
+                    cursor.execute("SET LOCAL disable_auditoria_contactos = false")
+                    cursor.execute("SET LOCAL disable_auditoria = false")
+
+            print(f"DEBUG: Registros actualizados: {resultado}")
+            
         except DatabaseError as e:
             errors.append(_extract_db_message(e))
         except Exception as e:
@@ -684,7 +729,9 @@ class ConsultasDinamicasDeleteView(DeleteView):
 
 def ejecutar_reporte(id_reporte):
     with connection.cursor() as cursor:
-        cursor.execute("EXEC sp_ejecutar_reporte @id_consulta=%s", [id_reporte])
+        cursor.execute("BEGIN")
+        cursor.execute("SELECT fn_ejecutar_reporte(%s)", [id_reporte])
+        cursor.execute('FETCH ALL FROM "<unnamed portal 1>"')
 
         columnas = [col[0] for col in cursor.description]
         resultados = []
@@ -692,6 +739,7 @@ def ejecutar_reporte(id_reporte):
         for fila in cursor.fetchall():
             resultados.append(dict(zip(columnas, fila)))
 
+        cursor.execute("COMMIT")
         return resultados
     
 def reporte_view(request, id):

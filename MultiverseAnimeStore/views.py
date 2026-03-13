@@ -41,15 +41,15 @@ def _extract_db_message(exc):
 #Categorias
 class CategoriaListView(ListView):
     model = Categoria
-    template_name = 'categoria_list.html'
+    template_name = 'Categoria/categoria_list.html'
 
 class CategoriaDetailView(DetailView):
     model = Categoria
-    template_name = 'categoria_detail.html'
+    template_name = 'Categoria/categoria_detail.html'
 
 class CategoriaDeleteView(DeleteView):
     model = Categoria
-    template_name = 'categoria_confirm_delete.html'
+    template_name = 'Categoria/categoria_confirm_delete.html'
     success_url = reverse_lazy('categoria_list')
 
 def CategoriaCreateView(request):
@@ -60,7 +60,7 @@ def CategoriaCreateView(request):
             return redirect('categoria_list')
     else:
         form = CategoriaForm()
-    return render(request, 'categoria_form.html', {'form': form})
+    return render(request, 'Categoria/categoria_form.html', {'form': form})
 
 def CategoriaUpdateView(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
@@ -71,7 +71,7 @@ def CategoriaUpdateView(request, pk):
             return redirect('categoria_list')
     else:
         form = CategoriaForm(instance=categoria)
-    return render(request, 'categoria_form.html', {'form': form, 'object': categoria})
+    return render(request, 'Categoria/categoria_form.html', {'form': form, 'object': categoria})
 
 
 def desactivar_trigger():
@@ -136,7 +136,7 @@ def PedidoProductoUpdateFormView(request, ped_id, prod_id):
     else:
         form = PedidoProductoUpdateForm(instance=objeto)
 
-    return render(request, 'pedidos_productos_form.html', {
+    return render(request, 'Pedidos/pedidos_productos_form.html', {
         'form': form,
         'objeto': objeto
     })
@@ -145,11 +145,11 @@ def PedidoProductoUpdateFormView(request, ped_id, prod_id):
 
 class PedidosListView(ListView):
     model = Pedidos
-    template_name = 'pedidos_list.html'
+    template_name = 'Pedidos/pedidos_list.html'
 
 class PedidosDetailView(DetailView):
     model = Pedidos
-    template_name = 'pedidos_detail.html'
+    template_name = 'Pedidos/pedidos_detail.html'
 
 def PedidosCreateView(request):
     Json = {}
@@ -177,7 +177,7 @@ def PedidosCreateView(request):
     
     Json['form'] = form
     
-    return render(request, 'pedidos_form.html', Json )
+    return render(request, 'Pedidos/pedidos_form.html', Json )
 
 def PedidosUpdateView(request, pk):
     pedido = get_object_or_404(Pedidos, pk=pk)
@@ -214,7 +214,7 @@ def PedidosUpdateView(request, pk):
     else:
         form = PedidosForm(instance=pedido)
 
-    return render(request, 'pedidos_form.html', {
+    return render(request, 'Pedidos/pedidos_form.html', {
         'form': form,
         'object': pedido,
         'productos_relacionados': productos_relacionados,
@@ -238,7 +238,7 @@ def PedidosDeleteView(request, pk):
 
 class ProductosListView(ListView):
     model = Productos
-    template_name = 'productos_list.html'
+    template_name = 'Productos/productos_list.html'
 
 class ProductosDetailView(DetailView):
     model = Productos
@@ -258,7 +258,7 @@ def ProductosCreateView(request):
                 return redirect('productos_list')
     else:
         form = ProductosForm()
-    return render(request, 'productos_form.html', {'form': form})
+    return render(request, 'Productos/productos_form.html', {'form': form})
 
 def ProductosUpdateView(request, pk):
     producto = get_object_or_404(Productos, pk=pk)
@@ -274,7 +274,7 @@ def ProductosUpdateView(request, pk):
                 return redirect('productos_list')
     else:
         form = ProductosForm(instance=producto)
-    return render(request, 'productos_form.html', {'form': form, 'object': producto})
+    return render(request, 'Productos/productos_form.html', {'form': form, 'object': producto})
 
 class ProductosDeleteView(DeleteView):
     model = Productos
@@ -337,13 +337,13 @@ def ProductosAuditoriaView(request):
 
        productos_auditoria.append(p)
 
-    return render(request, 'productos_auditoria.html', {'productos_auditoria': productos_auditoria})
+    return render(request, 'Productos/productos_auditoria.html', {'productos_auditoria': productos_auditoria})
 
 #Usuarios
 
 class UsuariosListView(ListView):
     model = Usuarios
-    template_name = 'usuarios_list.html'
+    template_name = 'Usuarios/usuarios_list.html'
 
 class UsuariosDetailView(DetailView):
     model = Usuarios
@@ -371,7 +371,7 @@ def UsuariosCreateView(request):
     Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
     Json['Tipo_Contacto'] = Tipo_Contacto
     Json['form'] = form
-    return render(request, 'usuarios_form.html', Json )
+    return render(request, 'Usuarios/usuarios_form.html', Json )
 
 def UsuariosUpdateView(request, pk):
     usuario = get_object_or_404(Usuarios, pk=pk)
@@ -416,7 +416,7 @@ def UsuariosUpdateView(request, pk):
 
     Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
     
-    return render(request, 'usuarios_form.html', {
+    return render(request, 'Usuarios/usuarios_form.html', {
         'form': form,
         'object': usuario,
         'contactos_relacionados': contactos_relacionados,
@@ -436,17 +436,17 @@ def UsuariosDeleteView(request, pk):
             return redirect('usuarios_detail', pk=pk)
         return redirect('usuarios_list')
     # GET: mostrar confirmación
-    return render(request, 'usuarios_confirm_delete.html', {'object': usuario})
+    return render(request, 'Usuarios/usuarios_confirm_delete.html', {'object': usuario})
 
 #Contactos
 
 class ContactosListView(ListView):
     model = Contactos
-    template_name = 'contactos_list.html'
+    template_name = 'Contactos/contactos_list.html'
 
 class ContactosDetailView(DetailView):
     model = Contactos
-    template_name = 'contactos_detail.html'
+    template_name = 'Contactos/contactos_detail.html'
 
 def ContactosCreateView(contactos_relacionados, id_usuario):
     errors = []
@@ -531,7 +531,7 @@ def ContactosDeleteView(request, pk):
 
 class RolesListView(ListView):
     model = Roles
-    template_name = 'roles_list.html'
+    template_name = 'Roles/roles_list.html'
 
 class RolesDetailView(DetailView):
     model = Roles
@@ -546,7 +546,7 @@ def RolesCreateView(request):
             return redirect('roles_list')
     else:
         form = RolesForm()
-    return render(request, 'roles_form.html', {'form': form})
+    return render(request, 'Roles/roles_form.html', {'form': form})
 
 def RolesUpdateView(request, pk):
     role = get_object_or_404(Roles, pk=pk)
@@ -557,7 +557,7 @@ def RolesUpdateView(request, pk):
             return redirect('roles_list')
     else:
         form = RolesForm(instance=role)
-    return render(request, 'roles_form.html', {'form': form, 'object': role})
+    return render(request, 'Roles/roles_form.html', {'form': form, 'object': role})
 
 class RolesDeleteView(DeleteView):
     model = Roles
@@ -568,34 +568,34 @@ class RolesDeleteView(DeleteView):
 # Sexos
 class SexosListView(ListView):
     model = Sexos
-    template_name = 'sexos_list.html'
+    template_name = 'Usuarios/sexos_list.html'
 
 class SexosDetailView(DetailView):
     model = Sexos
-    template_name = 'sexos_detail.html'
+    template_name = 'Usuarios/sexos_detail.html'
 
 class SexosCreateView(CreateView):
     model = Sexos
     fields = '__all__'
-    template_name = 'sexos_form.html'
+    template_name = 'Usuarios/sexos_form.html'
     success_url = reverse_lazy('sexos_list')
 
 class SexosUpdateView(UpdateView):
     model = Sexos
     fields = '__all__'
-    template_name = 'sexos_form.html'
+    template_name = 'Usuarios/sexos_form.html'
     success_url = reverse_lazy('sexos_list')
 
 class SexosDeleteView(DeleteView):
     model = Sexos
-    template_name = 'sexos_confirm_delete.html'
+    template_name = 'Usuarios/sexos_confirm_delete.html'
     success_url = reverse_lazy('sexos_list')
 
 
 #EstadoPedidos
 class EstadoPedidosListView(ListView):
     model = EstadoPedidos
-    template_name = 'estado_pedidos_list.html'
+    template_name = 'Pedidos/estado_pedidos_list.html'
 
 class EstadoPedidosDetailView(DetailView):
     model = EstadoPedidos
@@ -604,29 +604,29 @@ class EstadoPedidosDetailView(DetailView):
 class EstadoPedidosCreateView(CreateView):
     model = EstadoPedidos
     form_class = EstadoPedidosForm
-    template_name = 'estado_pedidos_form.html'
+    template_name = 'Pedidos/estado_pedidos_form.html'
     success_url = reverse_lazy('estado_pedidos_list')
 
 class EstadoPedidosUpdateView(UpdateView):
     model = EstadoPedidos
     fields = '__all__'
-    template_name = 'estado_pedidos_form.html'
+    template_name = 'Pedidos/estado_pedidos_form.html'
     success_url = reverse_lazy('estado_pedidos_list')
 
 class EstadoPedidosDeleteView(DeleteView):
     model = EstadoPedidos
-    template_name = 'estado_pedidos_confirm_delete.html'
+    template_name = 'Pedidos/estado_pedidos_confirm_delete.html'
     success_url = reverse_lazy('estado_pedidos_list')
 
 
 # Config_Contacto CRUD
 class ConfigContactoListView(ListView):
     model = Config_Contacto
-    template_name = 'config_contacto_list.html'
+    template_name = 'Contactos/config_contacto_list.html'
 
 class ConfigContactoDetailView(DetailView):
     model = Config_Contacto
-    template_name = 'config_contacto_detail.html'
+    template_name = 'Contactos/config_contacto_detail.html'
 
 # Reemplaza la clase ConfigContactoCreateView por función que prellena id_regla
 def ConfigContactoCreateView(request):
@@ -644,17 +644,17 @@ def ConfigContactoCreateView(request):
     else:
         initial = {'id_regla': Config_Contacto.next_id()}
         form = FormClass(initial=initial)
-    return render(request, 'config_contacto_form.html', {'form': form})
+    return render(request, 'Contactos/config_contacto_form.html', {'form': form})
 
 class ConfigContactoUpdateView(UpdateView):
     model = Config_Contacto
     fields = '__all__'
-    template_name = 'config_contacto_form.html'
+    template_name = 'Contactos/config_contacto_form.html'
     success_url = reverse_lazy('config_contacto_list')
 
 class ConfigContactoDeleteView(DeleteView):
     model = Config_Contacto
-    template_name = 'config_contacto_confirm_delete.html'
+    template_name = 'Contactos/config_contacto_confirm_delete.html'
     success_url = reverse_lazy('config_contacto_list')
 
 

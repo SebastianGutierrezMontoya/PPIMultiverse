@@ -83,10 +83,10 @@ urlpatterns = [
     path('productos_auditoria/', ProductosAuditoriaView, name='productos_auditoria'),
 
     path('usuarios/', UsuariosListView.as_view(), name='usuarios_list'),
-    path('usuarios/<int:pk>/', UsuariosDetailView.as_view(), name='usuarios_detail'),
+    path('usuarios/<str:pk>/detalle/', UsuariosDetailView.as_view(), name='usuarios_detail'),
     path('usuarios/crear/', UsuariosCreateView, name='usuarios_create'),
-    path('usuarios/<int:pk>/editar/', UsuariosUpdateView, name='usuarios_update'),
-    path('usuarios/<int:pk>/eliminar/', UsuariosDeleteView, name='usuarios_delete'),
+    path('usuarios/<str:pk>/editar/', UsuariosUpdateView, name='usuarios_update'),
+    path('usuarios/<str:pk>/eliminar/', UsuariosDeleteView, name='usuarios_delete'),
 
 
     path('roles/', RolesListView.as_view(), name='roles_list'),

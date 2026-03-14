@@ -182,7 +182,7 @@ class Sexos(models.Model):
 
 
 class Usuarios(models.Model):
-    id_usuario = models.IntegerField(primary_key=True)
+    id_usuario = models.CharField(max_length=50, primary_key=True)
     nombre = models.CharField(max_length=300, blank=True, null=True)
     primer_apellido = models.CharField(max_length=50, blank=True, null=True)
     segundo_apellido = models.CharField(max_length=50, blank=True, null=True)

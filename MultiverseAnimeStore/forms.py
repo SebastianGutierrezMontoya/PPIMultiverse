@@ -39,6 +39,35 @@ def next_consecutive_id(model, field):
     return expected
 
 
+#funcion para tener el siguiente valor de id de un capo de texto con formato "TEXTO-123"
+def get_next_id(value):
+
+    parts = value.split('-')
+    print(value)
+    if parts:
+        last_part = parts[-1]
+        try:
+            num = int(last_part)
+            return num + 1
+        except ValueError:
+            return None
+    return None
+
+
+def get_next_id_model_name(model, field_name):
+    """
+    Recibe un modelo y el nombre del campo, obtiene el último valor del campo,
+    lo parsea como string con número, y devuelve el siguiente valor numérico.
+    """
+    last_obj = model.objects.order_by(f'-{field_name}').first()
+    if last_obj:
+        value = getattr(last_obj, field_name)
+
+        return get_next_id(value)
+    else:
+        return 1
+
+
 class PedidosForm(forms.ModelForm):
     class Meta:
         model = Pedidos
@@ -153,7 +182,7 @@ class UsuariosForm(forms.ModelForm):
         self.fields['usuario_id_perfil'].label_from_instance = lambda obj: obj.nombre
         self.fields['id_usuario'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
-        self.fields['id_usuario'].initial = next_int_id(Usuarios, 'id_usuario')
+        self.fields['id_usuario'].initial = "USR-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
         self.fields['activo'].widget.attrs.update({'min': 0, 'max': 1, 'step': '1'})
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
@@ -174,7 +203,7 @@ class CategoriaForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['cat_id'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id (cat_id es char; la función maneja solo valores numéricos)...
-        self.fields['cat_id'].initial = str(next_int_id(Categoria, 'cat_id'))
+        self.fields['cat_id'].initial = "CAT-" + str(get_next_id_model_name(Categoria, 'cat_id'))
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -193,7 +222,9 @@ class ProductosForm(forms.ModelForm):
         self.fields['cat'].label_from_instance = lambda obj: obj.cat_nombre
         self.fields['prod_id'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
-        self.fields['prod_id'].initial = str(next_int_id(Productos, 'prod_id'))
+        "usr-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
+
+        self.fields['prod_id'].initial = "PROD-" + str(get_next_id_model_name(Productos, 'prod_id'))
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['prod_precio_venta'].widget.attrs.update({'step': '0.01'})

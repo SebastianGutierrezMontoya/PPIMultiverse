@@ -48,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'MultiverseAnimeStore.middleware.CustomAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'PPIMultiverse.urls'
@@ -129,6 +130,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+
+
+# AUTHENTICATION_BACKENDS = [
+#     'MultiverseAnimeStore.backends.CustomBackend'
+# ]
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

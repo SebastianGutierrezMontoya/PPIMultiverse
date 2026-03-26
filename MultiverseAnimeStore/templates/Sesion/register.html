@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<form method="post" class="form-container">
+    <h2 class="form-header">Registrar Usuario</h2>
+
+    {% csrf_token %}
+
+
+    {% if form.errors %}
+        <div class="error-container">
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="error-item">{{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+    {% endif %}
+
+    
+        <div class="form-floating">
+          <input type="text" name="usuario" value="" maxlength="50" class="form-control" placeholder=" " required="" id="id_id_usuario">
+          <label for="id_id_usuario">Nombre de Usuario</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="text" name="nombre" maxlength="300" class="form-control" placeholder=" " id="id_nombre">
+          <label for="id_nombre">Nombre</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="text" name="primer_apellido" maxlength="50" class="form-control" placeholder=" " id="id_primer_apellido">
+          <label for="id_primer_apellido">Primer apellido</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="text" name="segundo_apellido" maxlength="50" class="form-control" placeholder=" " id="id_segundo_apellido">
+          <label for="id_segundo_apellido">Segundo apellido</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="date" name="fecha_nacimiento" class="form-control datepicker" placeholder=" " id="id_fecha_nacimiento">
+          <label for="id_fecha_nacimiento">Fecha nacimiento</label>
+        </div>
+    
+        <div class="form-floating">
+          <input type="password" name="contraseña" maxlength="255" class="form-control" placeholder=" " id="id_password_hash">
+          <label for="id_password_hash">Contraseña</label>
+        </div>
+    
+        <div class="form-floating">
+          <select name="sexo" class="form-control" placeholder=" " required="" id="id_usuario_id_sexo">
+                <option value="" selected="">---------</option>
+                {% for sexo in Sexos %}
+                    <option value="{{ sexo.id_sexo }}">{{ sexo.nombre_sexo }}</option>
+                {% endfor %}
+
+
+            </select>
+          <label for="id_usuario_id_sexo">Usuario id sexo</label>
+        </div>
+    
+    
+
+    <div class="form-list">
+    <div id="contactosContainer" class="form-contactos">
+        <div class="contacto-row form-linear">
+            <p> Contacto:</p>
+            <select name="tipo_contacto">
+                <option value="">Tipo de contacto</option>
+                {% for tipo in Tipo_Contacto %}
+                    <option value="{{ tipo.id_regla }}">{{ tipo.nombre_contacto }}</option>
+                {% endfor %}
+            </select>
+            <label> Dato:</label> <input type="text" name="dato_contacto" class="form-dato-contacto">
+        </div>
+        <button type="button" id="addContacto">Agregar Contacto</button>
+    </div>
+    
+
+    
+
+    </div>
+
+    <div class="form-linear form-center">
+        
+        <button type="submit">Registrar</button>
+
+        <a href="/usuarios/" class="btn-link">Volver</a>
+        
+    </div>
+</form>
+
+
+{% endblock %}

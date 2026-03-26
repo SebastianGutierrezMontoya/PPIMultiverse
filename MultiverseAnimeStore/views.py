@@ -11,8 +11,18 @@ import re
 from django.forms import modelform_factory
 import psycopg2
 import json
+# from django.contrib.auth import authenticate, login, logout
+# from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
 
 
+def login_required_custom(view_func):
+    def wrapper(request, *args, **kwargs):
+        if not getattr(request.user, 'is_authenticated', False):
+            # return JsonResponse({'error': 'No autenticado'}, status=401)
+             return redirect('login')
+        return view_func(request, *args, **kwargs)
+    return wrapper
 
 # Función para extraer mensajes de error de SQL Server
 def _extract_db_message(exc):
@@ -38,20 +48,94 @@ def _extract_db_message(exc):
     
     return text.strip() or 'Error de base de datos.'
 
+# contraseña hashing 
+def hash_password(password):
+    import hashlib
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+
+# Login
+def login_view(request):
+    if request.method == 'POST':
+        usuario = request.POST.get('usuario')
+        contraseña = request.POST.get('contraseña')
+
+        try:
+            user = Usuarios.objects.get(id_usuario=usuario, password_hash=hash_password(contraseña))
+            # user = authenticate(request, username=usuario, password=hash_password(contraseña))  # Si usas el sistema de autenticación de Django
+            # login(request, user)  # Si usas el sistema de autenticación de Django
+            request.session['user_id'] = user.id_usuario
+            return redirect('pedidos_list')
+        except Usuarios.DoesNotExist:
+            messages.error(request, 'Credenciales inválidas. Inténtalo de nuevo.')
+
+    return render(request, 'Sesion/login.html', {'sidebar': 0})
+
+# registro 
+def register_view(request):
+    if request.method == 'POST':
+        usuario = request.POST.get('usuario')
+        contraseña = request.POST.get('contraseña')
+        nombre = request.POST.get('nombre')
+        primer_apellido = request.POST.get('primer_apellido')
+        segundo_apellido = request.POST.get('segundo_apellido')
+        fecha_nacimiento = request.POST.get('fecha_nacimiento')
+        sexo_id = request.POST.get('sexo')
+
+        contactos_relacionados = request.POST.getlist('contactos_relacionados')
+
+
+        if Usuarios.objects.filter(id_usuario=usuario).exists():
+            messages.error(request, 'El nombre de usuario ya existe. Elige otro.')
+        else:
+
+            sexo = get_object_or_404(Sexos, pk=sexo_id)
+
+            Usuarios.objects.create(
+                id_usuario=usuario,
+                password_hash=hash_password(contraseña),
+                nombre=nombre,
+                primer_apellido=primer_apellido,
+                segundo_apellido=segundo_apellido,
+                fecha_nacimiento=fecha_nacimiento,
+                usuario_id_sexo=sexo
+            )
+
+            ContactosCreateView(contactos_relacionados, usuario)
+            messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
+            return redirect('login')
+        
+    Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
+    Sexo = Sexos.objects.values('id_sexo', 'nombre_sexo')
+
+    return render(request, 'Sesion/register.html', {'sidebar': 0, 'Tipo_Contacto': Tipo_Contacto, 'Sexos': Sexo})
+
+# logout
+def logout_view(request):
+    # Aquí podrías limpiar la sesión o cualquier dato relacionado con el usuario
+    # logout(request)  # Si estás usando el sistema de autenticación de Django
+    request.session.flush()
+    messages.info(request, 'Has cerrado sesión exitosamente.')
+    return redirect('login')
+
 #Categorias
+
+@method_decorator(login_required_custom, name='dispatch')
 class CategoriaListView(ListView):
     model = Categoria
     template_name = 'Categoria/categoria_list.html'
 
+from django.utils.decorators import method_decorator
 class CategoriaDetailView(DetailView):
     model = Categoria
     template_name = 'Categoria/categoria_detail.html'
 
+from django.utils.decorators import method_decorator
 class CategoriaDeleteView(DeleteView):
     model = Categoria
     template_name = 'Categoria/categoria_confirm_delete.html'
     success_url = reverse_lazy('categoria_list')
 
+@login_required_custom
 def CategoriaCreateView(request):
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
@@ -347,7 +431,7 @@ class UsuariosListView(ListView):
 
 class UsuariosDetailView(DetailView):
     model = Usuarios
-    template_name = 'usuarios_detail.html'
+    template_name = 'Usuarios/usuarios_detail.html'
 
 def UsuariosCreateView(request):
     Json = {}

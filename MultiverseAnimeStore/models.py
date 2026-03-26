@@ -9,6 +9,8 @@ from django.db import models
 from django.db.models import Max
 
 
+
+
 class Consultas_Dinamicas(models.Model):
     cons_id = models.IntegerField(primary_key=True)
     cons_nombre = models.CharField(unique=True, max_length=50, blank=False, null=False)

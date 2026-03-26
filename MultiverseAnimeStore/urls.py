@@ -53,9 +53,18 @@ from .views import (
     ConsultasDinamicasListView,
     ConsultasDinamicasUpdateView,
     reporte_view,
+    logout_view,
+    login_view,
+    register_view
 )
 
 urlpatterns = [
+
+    path('login/', login_view, name='login'),
+    path('logout/', logout_view, name='logout'),
+    path('register/', register_view, name='register'),
+
+
     path('categorias/', CategoriaListView.as_view(), name='categoria_list'),
     path('categorias/<str:pk>/detalle/', CategoriaDetailView.as_view(), name='categoria_detail'),
     path('categorias/crear/', CategoriaCreateView, name='categoria_create'),

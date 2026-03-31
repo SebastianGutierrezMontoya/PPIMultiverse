@@ -88,6 +88,7 @@ class PedidosProductos(models.Model):
 class Perfiles(models.Model):
     id_perfil = models.IntegerField(primary_key=True)
     nombre = models.CharField(unique=True, max_length=100, blank=True, null=True)
+    rol_id = models.ForeignKey('Roles', models.DO_NOTHING, blank=True, null=True, db_column='rol_id')
     descripcion = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:

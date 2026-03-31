@@ -250,6 +250,25 @@ class RolesForm(forms.ModelForm):
             field.widget.attrs.update({'placeholder': ' '})
 
 
+class PerfilesForm(forms.ModelForm):
+    class Meta:
+        model = Perfiles
+        fields = ['id_perfil', 'nombre','rol_id', 'descripcion']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # roles = Roles.objects.values('id_rol', 'nombre')
+        self.fields['rol_id'].queryset = Roles.objects.all()
+        self.fields['rol_id'].label_from_instance = lambda obj: obj.nombre
+        self.fields['id_perfil'].widget.attrs['readonly'] = True
+        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['id_perfil'].initial = next_int_id(Perfiles, 'id_perfil')
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
+
 class EstadoPedidosForm(forms.ModelForm):
     class Meta:
         model = EstadoPedidos

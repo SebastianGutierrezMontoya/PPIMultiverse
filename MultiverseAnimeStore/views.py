@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
-from .forms import PedidosForm, UsuariosForm, RolesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm
-from django.db.models import F, ExpressionWrapper, DecimalField, Sum
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
+from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm
+from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
 from django.contrib import messages
@@ -230,6 +230,25 @@ def PedidoProductoUpdateFormView(request, ped_id, prod_id):
 class PedidosListView(ListView):
     model = Pedidos
     template_name = 'Pedidos/pedidos_list.html'
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Pedidos.objects.all().order_by('ped_id')
+        pedido_id = self.request.GET.get('pedido_id')
+
+        if pedido_id:
+            try:
+                pedido_id_int = int(pedido_id)
+                queryset = queryset.filter(ped_id=pedido_id_int)
+            except ValueError:
+                queryset = queryset.none()
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['pedido_id'] = self.request.GET.get('pedido_id', '')
+        return context
 
 class PedidosDetailView(DetailView):
     model = Pedidos
@@ -323,6 +342,28 @@ def PedidosDeleteView(request, pk):
 class ProductosListView(ListView):
     model = Productos
     template_name = 'Productos/productos_list.html'
+
+
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Productos.objects.all().order_by('prod_id')
+        producto_id = self.request.GET.get('producto_id')
+
+        if producto_id:
+            # try:
+            #     producto_id_int = int(producto_id)
+            #     queryset = queryset.filter(prod_id=producto_id_int)
+            # except ValueError:
+            #     queryset = queryset.none()
+            queryset = queryset.filter(prod_nombre__icontains=producto_id)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['producto_id'] = self.request.GET.get('producto_id', '')
+        return context
 
 class ProductosDetailView(DetailView):
     model = Productos
@@ -428,6 +469,32 @@ def ProductosAuditoriaView(request):
 class UsuariosListView(ListView):
     model = Usuarios
     template_name = 'Usuarios/usuarios_list.html'
+
+    paginate_by = 10
+
+    def get_queryset(self):
+        queryset = Usuarios.objects.all().order_by('id_usuario')
+        usuario_id = self.request.GET.get('usuario_id')
+        match_id = self.request.GET.get('match_id')
+
+        if usuario_id:
+            # try:
+            #     producto_id_int = int(producto_id)
+            #     queryset = queryset.filter(prod_id=producto_id_int)
+            # except ValueError:
+            #     queryset = queryset.none()
+            if match_id:
+                queryset = queryset.filter(id_usuario__iexact=usuario_id)
+            else:
+                queryset = queryset.filter(Q(nombre__icontains=usuario_id) | Q(id_usuario__icontains=usuario_id))
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['usuario_id'] = self.request.GET.get('usuario_id', '')
+        context['match_id'] = self.request.GET.get('match_id', '')
+        return context
 
 class UsuariosDetailView(DetailView):
     model = Usuarios
@@ -647,6 +714,44 @@ class RolesDeleteView(DeleteView):
     model = Roles
     template_name = 'roles_confirm_delete.html'
     success_url = reverse_lazy('roles_list')
+
+
+#perfiles 
+
+class PerfilesListView(ListView):
+    model = Perfiles
+    template_name = 'Perfiles/perfiles_list.html'
+
+class PerfilesDetailView(DetailView):
+    model = Perfiles
+    template_name = 'Perfiles/perfiles_detail.html'
+
+def PerfilesCreateView(request):
+    if request.method == 'POST':
+        form = PerfilesForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('perfiles_list')
+    else:
+        form = PerfilesForm()
+    return render(request, 'Perfiles/perfiles_form.html', {'form': form})
+
+def PerfilesUpdateView(request, pk):
+    perfil = get_object_or_404(Perfiles, pk=pk)
+    if request.method == 'POST':
+        form = PerfilesForm(request.POST, instance=perfil)
+        if form.is_valid():
+            form.save()
+            return redirect('perfiles_list')
+    else:
+        form = PerfilesForm(instance=perfil)
+    return render(request, 'Perfiles/perfiles_form.html', {'form': form, 'object': perfil})
+
+class PerfilesDeleteView(DeleteView):
+    model = Perfiles
+    template_name = 'perfiles_confirm_delete.html'
+    success_url = reverse_lazy('perfiles_list')
+
 
 
 # Sexos

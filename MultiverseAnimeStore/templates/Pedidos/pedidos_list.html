@@ -3,6 +3,16 @@
 <div class="container">
 <h2>Pedidos</h2>
 <a href="{% url 'pedidos_create' %}" class="btn-link">Crear nuevo pedido</a>
+<form method="get" style="margin-top:1rem; margin-bottom:1rem;">
+    <label for="pedido_id">Buscar por ID de pedido:</label>
+    <input type="text" name="pedido_id" id="pedido_id" value="{{ pedido_id|default:'' }}" placeholder="Ej. 123">
+    <button type="submit">Buscar</button>
+    {% if pedido_id %}
+    <a href="{% url 'pedidos_list' %}">Limpiar</a>
+    {% endif %}
+</form>
+
+{% if object_list %}
 <ul>
     {% for pedido in object_list %}
         <li>
@@ -12,7 +22,26 @@
         </li>
     {% endfor %}
 </ul>
+
+<div style="margin-top: 1rem;">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div>
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if pedido_id %}&pedido_id={{ pedido_id }}{% endif %}">Primera</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if pedido_id %}&pedido_id={{ pedido_id }}{% endif %}">Anterior</a>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if pedido_id %}&pedido_id={{ pedido_id }}{% endif %}">Siguiente</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if pedido_id %}&pedido_id={{ pedido_id }}{% endif %}">Última</a>
+        {% endif %}
+    </div>
 </div>
+</div>
+{% else %}
+    <p>No se encontraron pedidos.</p>
+</div>
+{% endif %}
 
 <!-- Modal de confirmación de borrado -->
 <div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">

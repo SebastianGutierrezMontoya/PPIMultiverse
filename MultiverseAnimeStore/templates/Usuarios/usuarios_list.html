@@ -3,6 +3,22 @@
 <div class="container">
 <h2>Usuarios</h2>
 <a href="{% url 'usuarios_create' %}" class="btn-link">Crear nuevo usuario</a>
+
+<form method="get" style="margin-top:1rem; margin-bottom:1rem;">
+    <div class="form-linear">
+    <label for="usuario_id">Buscar por Nombre de usuario:</label>
+    <input type="text" name="usuario_id" id="usuario_id" value="{{ usuario_id|default:'' }}" placeholder="Ej. Juan123">
+    <input type="checkbox" name="match_id" id="match_id" {% if match_id %}checked{% endif %} tooltip="Habilitar búsqueda exacta por ID de usuario">
+    <label for="match_id" >Búsqueda exacta</label>
+    <button type="submit">Buscar</button>
+    </div>
+    {% if usuario_id %}
+        <a href="{% url 'usuarios_list' %}">Limpiar</a>
+    {% endif %}
+</form>
+
+{% if object_list %}
+
 <ul>
     {% for usuario in object_list %}
         <li>
@@ -12,8 +28,26 @@
         </li>
     {% endfor %}
 </ul>
-</div>
 
+<div style="margin-top: 1rem;">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div>
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if usuario_id %}&usuario_id={{ usuario_id }}{% endif %}">Primera</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if usuario_id %}&usuario_id={{ usuario_id }}{% endif %}">Anterior</a>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if usuario_id %}&usuario_id={{ usuario_id }}{% endif %}">Siguiente</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if usuario_id %}&usuario_id={{ usuario_id }}{% endif %}">Última</a>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% else %}
+    <p>No se encontraron usuarios.</p>
+</div>
+{% endif %}
 <!-- Modal de confirmación de borrado -->
 <div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">
     <div style="background:#fff; padding:30px; max-width:400px; margin:100px auto; border-radius:8px; position:relative;">

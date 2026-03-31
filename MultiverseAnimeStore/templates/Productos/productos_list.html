@@ -6,6 +6,16 @@
 <a href="{% url 'productos_create' %}" class="btn-link">Crear nuevo producto</a>
 <a href="{% url 'productos_auditoria' %}" class="btn-link"> Auditoria</a>
 </div>
+<form method="get" style="margin-top:1rem; margin-bottom:1rem;">
+    <label for="producto_id">Buscar por Nombre del producto:</label>
+    <input type="text" name="producto_id" id="producto_id" value="{{ producto_id|default:'' }}" placeholder="Ej. 123">
+    <button type="submit">Buscar</button>
+    {% if pedido_id %}
+    <a href="{% url 'productos_list' %}">Limpiar</a>
+    {% endif %}
+</form>
+
+{% if object_list %}
 <ul>
     {% for producto in object_list %}
         <li>
@@ -16,7 +26,29 @@
         </li>
     {% endfor %}
 </ul>
+
+<div style="margin-top: 1rem;">
+    <span>Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}</span>
+    <div>
+        {% if page_obj.has_previous %}
+            <a href="?page=1{% if producto_id %}&producto_id={{ producto_id }}{% endif %}">Primera</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if producto_id %}&producto_id={{ producto_id }}{% endif %}">Anterior</a>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if producto_id %}&producto_id={{ producto_id }}{% endif %}">Siguiente</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if producto_id %}&producto_id={{ producto_id }}{% endif %}">Última</a>
+        {% endif %}
+    </div>
 </div>
+</div>
+{% else %}
+    <p>No se encontraron productos.</p>
+    </div>
+{% endif %}
+
+
+
 <!-- Modal de confirmación de borrado -->
 <div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">
     <div style="background:#fff; padding:30px; max-width:400px; margin:100px auto; border-radius:8px; position:relative;">
@@ -31,6 +63,11 @@
         </form>
     </div>
 </div>
+
+
+
+
+
 <script>
     function showDeleteModal(pk, nombre) {
         document.getElementById('deleteMessage').textContent = '¿Estás seguro de que deseas eliminar "' + nombre + '"?';

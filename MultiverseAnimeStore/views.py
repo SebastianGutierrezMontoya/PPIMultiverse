@@ -1,13 +1,14 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Perfilpermisos, Modulos, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
 from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
 from django.contrib import messages
 import re
+from functools import wraps
 from django.forms import modelform_factory
 import psycopg2
 import json
@@ -15,14 +16,41 @@ import json
 # from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 
+# @method_decorator(login_required_custom, name='dispatch')
 
-def login_required_custom(view_func):
-    def wrapper(request, *args, **kwargs):
-        if not getattr(request.user, 'is_authenticated', False):
-            # return JsonResponse({'error': 'No autenticado'}, status=401)
-             return redirect('login')
-        return view_func(request, *args, **kwargs)
-    return wrapper
+def login_required_custom(modulo, tipo, redirect_url='login'):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not getattr(request.user, 'is_authenticated', False):
+                return redirect(redirect_url)
+
+            # usuario = Usuarios.objects.filter(id_usuario=request.user.id_usuario).first()
+            # if not usuario or not usuario.usuario_id_perfil:
+            #     messages.error(request, 'No tienes perfil asignado. Contacta al administrador.')
+            #     return redirect(redirect_url)
+
+            # perfil = usuario.usuario_id_perfil
+            # modulo_obj = Modulos.objects.filter(nombre_mod__iexact=modulo).first()
+            # if not modulo_obj:
+            #     messages.error(request, f'Módulo "{modulo}" no configurado.')
+            #     return redirect(redirect_url)
+
+            # permiso_obj = Perfilpermisos.objects.filter(perfil_id=perfil, mod_id=modulo_obj).first()
+            # if not permiso_obj:
+            #     messages.error(request, 'No tienes permiso para acceder a este módulo.')
+            #     return redirect(redirect_url)
+
+            # permiso_value = getattr(permiso_obj, f'can_{tipo}', None)
+            # if permiso_value != 'Y':
+            #     messages.error(request, f'No tienes permiso para {tipo} en este módulo.')
+            #     return redirect(redirect_url)
+
+            return view_func(request, *args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 # Función para extraer mensajes de error de SQL Server
 def _extract_db_message(exc):
@@ -119,23 +147,23 @@ def logout_view(request):
 
 #Categorias
 
-@method_decorator(login_required_custom, name='dispatch')
+@method_decorator(login_required_custom('Categoria', 'read'), name='dispatch')
 class CategoriaListView(ListView):
     model = Categoria
     template_name = 'Categoria/categoria_list.html'
 
-from django.utils.decorators import method_decorator
+@method_decorator(login_required_custom('Categoria', 'read'), name='dispatch')
 class CategoriaDetailView(DetailView):
     model = Categoria
     template_name = 'Categoria/categoria_detail.html'
 
-from django.utils.decorators import method_decorator
+@method_decorator(login_required_custom('Categoria', 'delete'), name='dispatch')
 class CategoriaDeleteView(DeleteView):
     model = Categoria
     template_name = 'Categoria/categoria_confirm_delete.html'
     success_url = reverse_lazy('categoria_list')
 
-@login_required_custom
+@login_required_custom('Categoria', 'create')
 def CategoriaCreateView(request):
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
@@ -146,6 +174,7 @@ def CategoriaCreateView(request):
         form = CategoriaForm()
     return render(request, 'Categoria/categoria_form.html', {'form': form})
 
+@login_required_custom('Categoria', 'update')
 def CategoriaUpdateView(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
@@ -227,6 +256,7 @@ def PedidoProductoUpdateFormView(request, ped_id, prod_id):
 
 #Pedidos
 
+@method_decorator(login_required_custom('Pedidos', 'read'), name='dispatch')
 class PedidosListView(ListView):
     model = Pedidos
     template_name = 'Pedidos/pedidos_list.html'
@@ -250,10 +280,12 @@ class PedidosListView(ListView):
         context['pedido_id'] = self.request.GET.get('pedido_id', '')
         return context
 
+@method_decorator(login_required_custom('Pedidos', 'read'), name='dispatch')
 class PedidosDetailView(DetailView):
     model = Pedidos
     template_name = 'Pedidos/pedidos_detail.html'
 
+@login_required_custom('Pedidos', 'create')
 def PedidosCreateView(request):
     Json = {}
 
@@ -282,6 +314,7 @@ def PedidosCreateView(request):
     
     return render(request, 'Pedidos/pedidos_form.html', Json )
 
+@login_required_custom('Pedidos', 'update')
 def PedidosUpdateView(request, pk):
     pedido = get_object_or_404(Pedidos, pk=pk)
     productos_relacionados = PedidosProductos.objects.filter(ped=pedido)
@@ -324,6 +357,7 @@ def PedidosUpdateView(request, pk):
         'Estado': Estado,
     })
 
+@login_required_custom('Pedidos', 'delete')
 def PedidosDeleteView(request, pk):
     pedido = get_object_or_404(Pedidos, pk=pk)
     pedidos_productos_relacionados = PedidosProductos.objects.filter(ped=pedido)
@@ -338,7 +372,7 @@ def PedidosDeleteView(request, pk):
 
 
 #Productos
-
+@method_decorator(login_required_custom('Productos', 'read'), name='dispatch')
 class ProductosListView(ListView):
     model = Productos
     template_name = 'Productos/productos_list.html'
@@ -365,11 +399,12 @@ class ProductosListView(ListView):
         context['producto_id'] = self.request.GET.get('producto_id', '')
         return context
 
+@method_decorator(login_required_custom('Productos', 'read'), name='dispatch')
 class ProductosDetailView(DetailView):
     model = Productos
     template_name = 'productos_detail.html'
 
-
+@login_required_custom('Productos', 'create')
 def ProductosCreateView(request):
     if request.method == 'POST':
         form = ProductosForm(request.POST, request.FILES)
@@ -385,6 +420,7 @@ def ProductosCreateView(request):
         form = ProductosForm()
     return render(request, 'Productos/productos_form.html', {'form': form})
 
+@login_required_custom('Productos', 'update')
 def ProductosUpdateView(request, pk):
     producto = get_object_or_404(Productos, pk=pk)
     if request.method == 'POST':
@@ -401,6 +437,7 @@ def ProductosUpdateView(request, pk):
         form = ProductosForm(instance=producto)
     return render(request, 'Productos/productos_form.html', {'form': form, 'object': producto})
 
+@method_decorator(login_required_custom('Productos', 'delete'), name='dispatch')
 class ProductosDeleteView(DeleteView):
     model = Productos
     template_name = 'productos_confirm_delete.html'
@@ -410,6 +447,7 @@ class ProductosDeleteView(DeleteView):
 
 
 #productos auditoria
+@login_required_custom('Productos', 'read')
 def ProductosAuditoriaView(request):
     # productos_auditoria = Productos_Auditoria.objects.all()
     # productos_auditoria_raw = Productos_Auditoria.objects.raw(
@@ -465,7 +503,7 @@ def ProductosAuditoriaView(request):
     return render(request, 'Productos/productos_auditoria.html', {'productos_auditoria': productos_auditoria})
 
 #Usuarios
-
+@method_decorator(login_required_custom('Usuarios', 'read'), name='dispatch')
 class UsuariosListView(ListView):
     model = Usuarios
     template_name = 'Usuarios/usuarios_list.html'
@@ -496,10 +534,12 @@ class UsuariosListView(ListView):
         context['match_id'] = self.request.GET.get('match_id', '')
         return context
 
+@method_decorator(login_required_custom('Usuarios', 'read'), name='dispatch')
 class UsuariosDetailView(DetailView):
     model = Usuarios
     template_name = 'Usuarios/usuarios_detail.html'
 
+@login_required_custom('Usuarios', 'create')
 def UsuariosCreateView(request):
     Json = {}
 
@@ -524,6 +564,7 @@ def UsuariosCreateView(request):
     Json['form'] = form
     return render(request, 'Usuarios/usuarios_form.html', Json )
 
+@login_required_custom('Usuarios', 'update')
 def UsuariosUpdateView(request, pk):
     usuario = get_object_or_404(Usuarios, pk=pk)
     contactos_relacionados = Contactos.objects.filter(id_usuario=usuario)
@@ -574,6 +615,7 @@ def UsuariosUpdateView(request, pk):
         'Tipo_Contacto': Tipo_Contacto,
     })
 
+@login_required_custom('Usuarios', 'delete')
 def UsuariosDeleteView(request, pk):
     usuario = get_object_or_404(Usuarios, pk=pk)
     if request.method == 'POST':
@@ -591,14 +633,15 @@ def UsuariosDeleteView(request, pk):
 
 #Contactos
 
-class ContactosListView(ListView):
-    model = Contactos
-    template_name = 'Contactos/contactos_list.html'
+# class ContactosListView(ListView):
+#     model = Contactos
+#     template_name = 'Contactos/contactos_list.html'
 
-class ContactosDetailView(DetailView):
-    model = Contactos
-    template_name = 'Contactos/contactos_detail.html'
+# class ContactosDetailView(DetailView):
+#     model = Contactos
+#     template_name = 'Contactos/contactos_detail.html'
 
+@login_required_custom('Contactos', 'create')
 def ContactosCreateView(contactos_relacionados, id_usuario):
     errors = []
     for item in contactos_relacionados:
@@ -622,6 +665,7 @@ def ContactosCreateView(contactos_relacionados, id_usuario):
         # lanzar un DatabaseError con el mensaje combinado para que lo capture la vista que llamó
         raise DatabaseError('; '.join(errors))
 
+@login_required_custom('Contactos', 'update')
 def ContactosUpdateView(contactos_actualizar):
     errors = []
     for contacto_data in contactos_actualizar:
@@ -662,6 +706,7 @@ def ContactosUpdateView(contactos_actualizar):
     if errors:
         raise DatabaseError('; '.join(errors))
 
+@login_required_custom('Contactos', 'delete')
 def ContactosDeleteView(request, pk):
     contacto = get_object_or_404(Contactos, pk=pk)
     user_pk = contacto.id_usuario.pk if contacto.id_usuario else None
@@ -679,16 +724,17 @@ def ContactosDeleteView(request, pk):
     return HttpResponseRedirect(reverse_lazy('usuarios_list'))
 
 #Roles
-
+@method_decorator(login_required_custom('Roles', 'read'), name='dispatch')
 class RolesListView(ListView):
     model = Roles
     template_name = 'Roles/roles_list.html'
 
+@method_decorator(login_required_custom('Roles', 'read'), name='dispatch')
 class RolesDetailView(DetailView):
     model = Roles
     template_name = 'roles_detail.html'
 
-
+@login_required_custom('Roles', 'create')
 def RolesCreateView(request):
     if request.method == 'POST':
         form = RolesForm(request.POST)
@@ -699,6 +745,7 @@ def RolesCreateView(request):
         form = RolesForm()
     return render(request, 'Roles/roles_form.html', {'form': form})
 
+@login_required_custom('Roles', 'update')
 def RolesUpdateView(request, pk):
     role = get_object_or_404(Roles, pk=pk)
     if request.method == 'POST':
@@ -710,6 +757,7 @@ def RolesUpdateView(request, pk):
         form = RolesForm(instance=role)
     return render(request, 'Roles/roles_form.html', {'form': form, 'object': role})
 
+@method_decorator(login_required_custom('Roles', 'delete'), name='dispatch')
 class RolesDeleteView(DeleteView):
     model = Roles
     template_name = 'roles_confirm_delete.html'
@@ -718,14 +766,17 @@ class RolesDeleteView(DeleteView):
 
 #perfiles 
 
+@method_decorator(login_required_custom('Perfiles', 'read'), name='dispatch')
 class PerfilesListView(ListView):
     model = Perfiles
     template_name = 'Perfiles/perfiles_list.html'
 
+@method_decorator(login_required_custom('Perfiles', 'read'), name='dispatch')
 class PerfilesDetailView(DetailView):
     model = Perfiles
     template_name = 'Perfiles/perfiles_detail.html'
 
+@login_required_custom('Perfiles', 'create')
 def PerfilesCreateView(request):
     if request.method == 'POST':
         form = PerfilesForm(request.POST)
@@ -736,6 +787,7 @@ def PerfilesCreateView(request):
         form = PerfilesForm()
     return render(request, 'Perfiles/perfiles_form.html', {'form': form})
 
+@login_required_custom('Perfiles', 'update')
 def PerfilesUpdateView(request, pk):
     perfil = get_object_or_404(Perfiles, pk=pk)
     if request.method == 'POST':
@@ -747,6 +799,7 @@ def PerfilesUpdateView(request, pk):
         form = PerfilesForm(instance=perfil)
     return render(request, 'Perfiles/perfiles_form.html', {'form': form, 'object': perfil})
 
+@method_decorator(login_required_custom('Perfiles', 'delete'), name='dispatch')
 class PerfilesDeleteView(DeleteView):
     model = Perfiles
     template_name = 'perfiles_confirm_delete.html'
@@ -755,26 +808,31 @@ class PerfilesDeleteView(DeleteView):
 
 
 # Sexos
+@method_decorator(login_required_custom('Sexos', 'read'), name='dispatch')
 class SexosListView(ListView):
     model = Sexos
     template_name = 'Usuarios/sexos_list.html'
 
+@method_decorator(login_required_custom('Sexos', 'read'), name='dispatch')
 class SexosDetailView(DetailView):
     model = Sexos
     template_name = 'Usuarios/sexos_detail.html'
 
+@login_required_custom('Sexos', 'create')
 class SexosCreateView(CreateView):
     model = Sexos
     fields = '__all__'
     template_name = 'Usuarios/sexos_form.html'
     success_url = reverse_lazy('sexos_list')
 
+@login_required_custom('Sexos', 'update')
 class SexosUpdateView(UpdateView):
     model = Sexos
     fields = '__all__'
     template_name = 'Usuarios/sexos_form.html'
     success_url = reverse_lazy('sexos_list')
 
+@method_decorator(login_required_custom('Sexos', 'delete'), name='dispatch')
 class SexosDeleteView(DeleteView):
     model = Sexos
     template_name = 'Usuarios/sexos_confirm_delete.html'
@@ -782,26 +840,31 @@ class SexosDeleteView(DeleteView):
 
 
 #EstadoPedidos
+@method_decorator(login_required_custom('EstadoPedidos', 'read'), name='dispatch')
 class EstadoPedidosListView(ListView):
     model = EstadoPedidos
     template_name = 'Pedidos/estado_pedidos_list.html'
 
+@method_decorator(login_required_custom('EstadoPedidos', 'read'), name='dispatch')
 class EstadoPedidosDetailView(DetailView):
     model = EstadoPedidos
     template_name = 'estado_pedidos_detail.html'
 
+@login_required_custom('EstadoPedidos', 'create')
 class EstadoPedidosCreateView(CreateView):
     model = EstadoPedidos
     form_class = EstadoPedidosForm
     template_name = 'Pedidos/estado_pedidos_form.html'
     success_url = reverse_lazy('estado_pedidos_list')
 
+@login_required_custom('EstadoPedidos', 'update')
 class EstadoPedidosUpdateView(UpdateView):
     model = EstadoPedidos
     fields = '__all__'
     template_name = 'Pedidos/estado_pedidos_form.html'
     success_url = reverse_lazy('estado_pedidos_list')
 
+@method_decorator(login_required_custom('EstadoPedidos', 'delete'), name='dispatch')
 class EstadoPedidosDeleteView(DeleteView):
     model = EstadoPedidos
     template_name = 'Pedidos/estado_pedidos_confirm_delete.html'
@@ -809,15 +872,18 @@ class EstadoPedidosDeleteView(DeleteView):
 
 
 # Config_Contacto CRUD
+@method_decorator(login_required_custom('Config_Contactos', 'read'), name='dispatch')
 class ConfigContactoListView(ListView):
     model = Config_Contacto
     template_name = 'Contactos/config_contacto_list.html'
 
+@method_decorator(login_required_custom('Config_Contactos', 'read'), name='dispatch')
 class ConfigContactoDetailView(DetailView):
     model = Config_Contacto
     template_name = 'Contactos/config_contacto_detail.html'
 
 # Reemplaza la clase ConfigContactoCreateView por función que prellena id_regla
+@login_required_custom('Config_Contactos', 'create')
 def ConfigContactoCreateView(request):
     FormClass = modelform_factory(Config_Contacto, fields='__all__')
     if request.method == 'POST':
@@ -835,12 +901,14 @@ def ConfigContactoCreateView(request):
         form = FormClass(initial=initial)
     return render(request, 'Contactos/config_contacto_form.html', {'form': form})
 
+@login_required_custom('Config_Contactos', 'update')
 class ConfigContactoUpdateView(UpdateView):
     model = Config_Contacto
     fields = '__all__'
     template_name = 'Contactos/config_contacto_form.html'
     success_url = reverse_lazy('config_contacto_list')
 
+@method_decorator(login_required_custom('Config_Contactos', 'delete'), name='dispatch')
 class ConfigContactoDeleteView(DeleteView):
     model = Config_Contacto
     template_name = 'Contactos/config_contacto_confirm_delete.html'
@@ -848,15 +916,17 @@ class ConfigContactoDeleteView(DeleteView):
 
 
 #Consultas_Dinamicas
-
+@method_decorator(login_required_custom('Consultas', 'read'), name='dispatch')
 class ConsultasDinamicasListView(ListView):
     model = Consultas_Dinamicas
     template_name = 'ConsultasDinamicas/consultas_dinamicas_list.html'
 
+@method_decorator(login_required_custom('Consultas', 'read'), name='dispatch')
 class ConsultasDinamicasDetailView(DetailView):
     model = Consultas_Dinamicas
     template_name = 'ConsultasDinamicas/consultas_dinamicas_detail.html'
 
+@login_required_custom('Consultas', 'create')
 def ConsultasDinamicasCreateView(request):
     if request.method == 'POST':
         # form = modelform_factory(ConsultasDinamicasForm, fields='__all__')(request.POST)
@@ -882,12 +952,14 @@ def ConsultasDinamicasCreateView(request):
 #         form = ConsultasDinamicasForm(request.POST, instance=consulta)
 #     return render(request, 'ConsultasDinamicas/consultas_dinamicas_form.html', {'form': form, 'object': consulta})
 
+@method_decorator(login_required_custom('Consultas', 'update'), name='dispatch')
 class ConsultasDinamicasUpdateView(UpdateView):
     model = Consultas_Dinamicas
     form_class = ConsultasDinamicasForm
     template_name = 'ConsultasDinamicas/consultas_dinamicas_form.html'
     success_url = reverse_lazy('consultas_dinamicas_list')
 
+@method_decorator(login_required_custom('Consultas', 'delete'), name='dispatch')
 class ConsultasDinamicasDeleteView(DeleteView):
     model = Consultas_Dinamicas
     template_name = 'ConsultasDinamicas/consultas_dinamicas_confirm_delete.html'
@@ -916,6 +988,7 @@ class ConsultasDinamicasDeleteView(DeleteView):
 
 #         return resultados
 
+@login_required_custom('Consultas', 'read')
 def ejecutar_reporte(id_reporte):
     with connection.cursor() as cursor:
         cursor.execute("BEGIN")
@@ -930,7 +1003,8 @@ def ejecutar_reporte(id_reporte):
 
         cursor.execute("COMMIT")
         return resultados
-    
+
+@login_required_custom('Consultas', 'read')
 def reporte_view(request, id):
     data = ejecutar_reporte(id)
     return render(request, "ConsultasDinamicas/consultas_reporte.html", {"resultado": data})

@@ -104,7 +104,7 @@ class Modulos(models.Model):
     nombre_mod = models.CharField(unique=True, max_length=100, blank=True, null=False)
     descripcion = models.CharField(max_length=200, blank=True, null=True)
     url_mod = models.CharField(max_length=200, blank=True, null=False)
-    padre_mod = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True)
+    padre_mod = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True, db_column='padre_mod')
 
 
     class Meta:
@@ -115,7 +115,7 @@ class Modulos(models.Model):
         return self.nombre_mod or str(self.id_mod)
 
 class Perfilpermisos(models.Model):
-    id_perfil_permiso = models.IntegerField(primary_key=True)
+    pk = models.CompositePrimaryKey('perfil_id', 'mod_id')
     perfil_id = models.ForeignKey(Perfiles, models.DO_NOTHING)
     mod_id = models.ForeignKey('Modulos', models.DO_NOTHING)
 

@@ -632,14 +632,15 @@ def UsuariosDeleteView(request, pk):
     return render(request, 'Usuarios/usuarios_confirm_delete.html', {'object': usuario})
 
 #Contactos
+@method_decorator(login_required_custom('Contactos', 'read'), name='dispatch')
+class ContactosListView(ListView):
+    model = Contactos
+    template_name = 'Contactos/contactos_list.html'
 
-# class ContactosListView(ListView):
-#     model = Contactos
-#     template_name = 'Contactos/contactos_list.html'
-
-# class ContactosDetailView(DetailView):
-#     model = Contactos
-#     template_name = 'Contactos/contactos_detail.html'
+@method_decorator(login_required_custom('Contactos', 'read'), name='dispatch')
+class ContactosDetailView(DetailView):
+    model = Contactos
+    template_name = 'Contactos/contactos_detail.html'
 
 @login_required_custom('Contactos', 'create')
 def ContactosCreateView(contactos_relacionados, id_usuario):
@@ -818,14 +819,14 @@ class SexosDetailView(DetailView):
     model = Sexos
     template_name = 'Usuarios/sexos_detail.html'
 
-@login_required_custom('Sexos', 'create')
+@method_decorator(login_required_custom('Sexos', 'create'), name='dispatch')
 class SexosCreateView(CreateView):
     model = Sexos
     fields = '__all__'
     template_name = 'Usuarios/sexos_form.html'
     success_url = reverse_lazy('sexos_list')
 
-@login_required_custom('Sexos', 'update')
+@method_decorator(login_required_custom('Sexos', 'update'), name='dispatch')
 class SexosUpdateView(UpdateView):
     model = Sexos
     fields = '__all__'
@@ -850,14 +851,14 @@ class EstadoPedidosDetailView(DetailView):
     model = EstadoPedidos
     template_name = 'estado_pedidos_detail.html'
 
-@login_required_custom('EstadoPedidos', 'create')
+@method_decorator(login_required_custom('EstadoPedidos', 'create'), name='dispatch')
 class EstadoPedidosCreateView(CreateView):
     model = EstadoPedidos
     form_class = EstadoPedidosForm
     template_name = 'Pedidos/estado_pedidos_form.html'
     success_url = reverse_lazy('estado_pedidos_list')
 
-@login_required_custom('EstadoPedidos', 'update')
+@method_decorator(login_required_custom('EstadoPedidos', 'update'), name='dispatch')
 class EstadoPedidosUpdateView(UpdateView):
     model = EstadoPedidos
     fields = '__all__'
@@ -901,7 +902,7 @@ def ConfigContactoCreateView(request):
         form = FormClass(initial=initial)
     return render(request, 'Contactos/config_contacto_form.html', {'form': form})
 
-@login_required_custom('Config_Contactos', 'update')
+@method_decorator(login_required_custom('Config_Contactos', 'update'), name='dispatch')
 class ConfigContactoUpdateView(UpdateView):
     model = Config_Contacto
     fields = '__all__'

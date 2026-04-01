@@ -25,26 +25,26 @@ def login_required_custom(modulo, tipo, redirect_url='login'):
             if not getattr(request.user, 'is_authenticated', False):
                 return redirect(redirect_url)
 
-            # usuario = Usuarios.objects.filter(id_usuario=request.user.id_usuario).first()
-            # if not usuario or not usuario.usuario_id_perfil:
-            #     messages.error(request, 'No tienes perfil asignado. Contacta al administrador.')
-            #     return redirect(redirect_url)
+            usuario = Usuarios.objects.filter(id_usuario=request.user.id_usuario).first()
+            if not usuario or not usuario.usuario_id_perfil:
+                messages.error(request, 'No tienes perfil asignado. Contacta al administrador.')
+                return redirect(redirect_url)
 
-            # perfil = usuario.usuario_id_perfil
-            # modulo_obj = Modulos.objects.filter(nombre_mod__iexact=modulo).first()
-            # if not modulo_obj:
-            #     messages.error(request, f'Módulo "{modulo}" no configurado.')
-            #     return redirect(redirect_url)
+            perfil = usuario.usuario_id_perfil
+            modulo_obj = Modulos.objects.filter(nombre_mod__iexact=modulo).first()
+            if not modulo_obj:
+                messages.error(request, f'Módulo "{modulo}" no configurado.')
+                return redirect(redirect_url)
 
-            # permiso_obj = Perfilpermisos.objects.filter(perfil_id=perfil, mod_id=modulo_obj).first()
-            # if not permiso_obj:
-            #     messages.error(request, 'No tienes permiso para acceder a este módulo.')
-            #     return redirect(redirect_url)
+            permiso_obj = Perfilpermisos.objects.filter(perfil_id=perfil, mod_id=modulo_obj).first()
+            if not permiso_obj:
+                messages.error(request, 'No tienes permiso para acceder a este módulo.')
+                return redirect(redirect_url)
 
-            # permiso_value = getattr(permiso_obj, f'can_{tipo}', None)
-            # if permiso_value != 'Y':
-            #     messages.error(request, f'No tienes permiso para {tipo} en este módulo.')
-            #     return redirect(redirect_url)
+            permiso_value = getattr(permiso_obj, f'can_{tipo}', None)
+            if permiso_value != 'Y':
+                messages.error(request, f'No tienes permiso para {tipo} en este módulo.')
+                return redirect(redirect_url)
 
             return view_func(request, *args, **kwargs)
 
@@ -92,7 +92,7 @@ def login_view(request):
             # user = authenticate(request, username=usuario, password=hash_password(contraseña))  # Si usas el sistema de autenticación de Django
             # login(request, user)  # Si usas el sistema de autenticación de Django
             request.session['user_id'] = user.id_usuario
-            return redirect('pedidos_list')
+            return redirect('usuarios_list')
         except Usuarios.DoesNotExist:
             messages.error(request, 'Credenciales inválidas. Inténtalo de nuevo.')
 
@@ -642,7 +642,7 @@ class ContactosDetailView(DetailView):
     model = Contactos
     template_name = 'Contactos/contactos_detail.html'
 
-@login_required_custom('Contactos', 'create')
+# @login_required_custom('Contactos', 'create')
 def ContactosCreateView(contactos_relacionados, id_usuario):
     errors = []
     for item in contactos_relacionados:
@@ -805,6 +805,59 @@ class PerfilesDeleteView(DeleteView):
     model = Perfiles
     template_name = 'perfiles_confirm_delete.html'
     success_url = reverse_lazy('perfiles_list')
+
+
+@login_required_custom('Perfiles', 'update')
+def PerfilPermisosUpdateView(request, pk):
+    perfil = get_object_or_404(Perfiles, pk=pk)
+    modulos = Modulos.objects.all()
+
+    if request.method == 'POST':
+        # Para cada módulo, actualizar o crear el permiso
+        for modulo in modulos:
+            permiso_obj, created = Perfilpermisos.objects.get_or_create(
+                perfil_id=perfil,
+                mod_id=modulo
+            )
+            
+            for tipo in ['read', 'create', 'update', 'delete']:
+                field_name = f'perm_{modulo.nombre_mod}_{tipo}'
+                setattr(permiso_obj, f'can_{tipo}', 'Y' if request.POST.get(field_name) == 'on' else 'N')
+            
+            permiso_obj.save()
+        
+        return redirect('perfiles_list')
+
+    # Preparar datos para mostrar todos los módulos
+    permisos_asignados = {}
+    modulo_permisos = Perfilpermisos.objects.filter(perfil_id=perfil).select_related('mod_id')
+    
+    # Crear un diccionario de permisos existentes para búsqueda rápida
+    permisos_dict = {mp.mod_id.id_mod: mp for mp in modulo_permisos}
+    
+    # Para cada módulo, obtener sus permisos (o valores por defecto)
+    for modulo in modulos:
+        if modulo.id_mod in permisos_dict:
+            permiso = permisos_dict[modulo.id_mod]
+            permisos_asignados[modulo.nombre_mod] = {
+                'read': permiso.can_read == 'Y',
+                'create': permiso.can_create == 'Y',
+                'update': permiso.can_update == 'Y',
+                'delete': permiso.can_delete == 'Y',
+            }
+        else:
+            # Valores por defecto si no existe el permiso
+            permisos_asignados[modulo.nombre_mod] = {
+                'read': False,
+                'create': False,
+                'update': False,
+                'delete': False,
+            }
+
+    return render(request, 'Perfiles/perfiles_permisos.html', {
+        'perfil': perfil,
+        'permisos_asignados': permisos_asignados,
+    })
 
 
 

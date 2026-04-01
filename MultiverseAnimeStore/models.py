@@ -116,8 +116,8 @@ class Modulos(models.Model):
 
 class Perfilpermisos(models.Model):
     pk = models.CompositePrimaryKey('perfil_id', 'mod_id')
-    perfil_id = models.ForeignKey(Perfiles, models.DO_NOTHING)
-    mod_id = models.ForeignKey('Modulos', models.DO_NOTHING)
+    perfil_id = models.ForeignKey(Perfiles, models.DO_NOTHING, db_column='perfil_id')
+    mod_id = models.ForeignKey('Modulos', models.DO_NOTHING, db_column='mod_id')
 
     can_create = models.CharField(max_length=1, blank=True, null=True, default='N')
     can_read = models.CharField(max_length=1, blank=True, null=True, default='Y')

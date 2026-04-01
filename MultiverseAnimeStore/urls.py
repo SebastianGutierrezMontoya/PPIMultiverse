@@ -35,6 +35,7 @@ from .views import (
     PerfilesCreateView,
     PerfilesUpdateView,
     PerfilesDeleteView,
+    PerfilPermisosUpdateView,
     SexosListView,
     SexosDetailView,
     SexosCreateView,
@@ -114,6 +115,7 @@ urlpatterns = [
     path('perfiles/crear/', PerfilesCreateView, name='perfiles_create'),
     path('perfiles/<int:pk>/editar/', PerfilesUpdateView, name='perfiles_update'),
     path('perfiles/<int:pk>/eliminar/', PerfilesDeleteView.as_view(), name='perfiles_delete'),
+    path('perfiles_permisos/<int:pk>/editar/', PerfilPermisosUpdateView, name='perfil_permisos_update'),
 
     path('sexos/', SexosListView.as_view(), name='sexos_list'),
     path('sexos/<int:pk>/', SexosDetailView.as_view(), name='sexos_detail'),

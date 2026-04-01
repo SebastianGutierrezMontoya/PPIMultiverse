@@ -7,8 +7,9 @@
     {% for perfil in object_list %}
         <li>
             <a href="{% url 'perfiles_detail' perfil.pk %}" class="btn-link2">{{ perfil.nombre }}</a>
-            (<a href="{% url 'perfiles_update' perfil.pk %}" class="btn-link">Editar</a>,
-             <a href="#" onclick="showDeleteModal('{{ perfil.pk }}', '{{ perfil.nombre }}'); return false;" class="btn-link">Eliminar</a>)
+            <a href="{% url 'perfiles_update' perfil.pk %}" class="btn-link">Editar</a>,
+             <a href="{% url 'perfil_permisos_update' perfil.pk %}" class="btn-link">Permisos</a>,
+             <a href="#" onclick="showDeleteModal('{{ perfil.pk }}', '{{ perfil.nombre }}'); return false;" class="btn-link">Eliminar</a>
         </li>
     {% endfor %}
 </ul>

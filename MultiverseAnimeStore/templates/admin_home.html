@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+
+{% for mensaje in messages %}
+<div class="alert alert-{{ mensaje.tags }}">{{ mensaje }}</div>
+
+{% endfor %}
+
+
+{% endblock %}

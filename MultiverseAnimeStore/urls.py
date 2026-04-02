@@ -59,16 +59,17 @@ from .views import (
     ConsultasDinamicasListView,
     ConsultasDinamicasUpdateView,
     reporte_view,
-    logout_view,
-    login_view,
-    register_view
+    # logout_view,
+    # login_view,
+    # register_view,
+    admin_home,
 )
 
 urlpatterns = [
 
-    path('login/', login_view, name='login'),
-    path('logout/', logout_view, name='logout'),
-    path('register/', register_view, name='register'),
+    
+
+    path('', admin_home, name='admin_home'),
 
 
     path('categorias/', CategoriaListView.as_view(), name='categoria_list'),

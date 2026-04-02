@@ -1,0 +1,37 @@
+{% load static %}
+
+<html>
+    <head>
+        
+        <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/navbar.css' %}">
+        <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/cart-sidebar.css' %}">
+        
+
+    </head>
+    <body>
+
+        {% include 'Multiverse/navbar.html' %}
+        {% include 'Multiverse/cart-sidebar.html' %}
+
+    <main>
+
+        {% block content %}
+
+        
+
+        {% endblock %}
+
+    </main>
+
+    
+
+    </body>
+
+    <script src="{% static 'MultiverseAnimeStore/Js/cart-sidebar.js' %}"></script>
+
+
+</html>
+
+
+
+    

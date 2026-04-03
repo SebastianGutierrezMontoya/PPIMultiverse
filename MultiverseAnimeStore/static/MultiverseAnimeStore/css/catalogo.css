@@ -1,0 +1,158 @@
+/* =========================
+   VARIABLES
+========================= */
+
+.catalogo-container {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: grid;
+    gap: 2.5rem;
+    padding: 20px;
+}
+
+/* =========================
+   CARD BASE
+========================= */
+.bento-card {
+  position: relative;
+  padding: 16px;
+
+  border-radius: 28px;
+  background: var(--card-bg);
+
+  border: 1px solid var(--border-soft);
+
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+/* glow hover */
+.bento-card:hover {
+  border: 1px solid var(--border-accent);
+  box-shadow: 0 0 0 1px rgba(235, 248, 254, 0.2),
+              0 20px 60px rgba(235, 234, 234, 0.8);
+}
+
+/* =========================
+   IMAGE CONTAINER
+========================= */
+.bento-media {
+  position: relative;
+  height: 260px;
+
+  border-radius: 24px;
+  overflow: hidden;
+
+  background: var(--card-inner);
+}
+
+/* imagen */
+.bento-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+
+  transition: transform 0.4s ease;
+}
+
+/* zoom */
+.bento-card:hover img {
+  transform: scale(1.05);
+}
+
+/* =========================
+   OVERLAY
+========================= */
+.bento-overlay {
+  position: absolute;
+  inset: 0;
+
+  /* background: linear-gradient(
+    to top,
+    rgba(2,6,23,0.9) 20%,
+    rgba(2,6,23,0.3) 60%,
+    transparent
+  ); */
+
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.bento-card:hover .bento-overlay {
+  opacity: 1;
+}
+
+/* =========================
+   BUTTON (hidden -> visible)
+========================= */
+.bento-action {
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+
+  opacity: 0;
+  transform: translateY(20px);
+
+  transition: all 0.3s ease;
+}
+
+.bento-card:hover .bento-action {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* botón */
+.bento-btn {
+  width: 100%;
+  padding: 14px;
+
+  border-radius: 14px;
+
+  background: var(--color-bg);
+  color: var(--text-primary);
+
+  font-size: 11px;
+  font-weight: 800;
+
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+
+  border: none;
+  cursor: pointer;
+
+  transition: transform 0.2s ease;
+}
+
+.bento-btn:hover {
+  transform: scale(1.03);
+}
+
+/* =========================
+   FOOTER
+========================= */
+.bento-footer {
+  margin-top: 16px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.bento-title {
+  font-weight: 800;
+  font-size: 18px;
+  font-style: italic;
+  color: var(--text-secundary);
+}
+
+.bento-subtitle {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: var(--text-muted);
+}
+
+.bento-price {
+  font-weight: 900;
+  font-size: 18px;
+  color: var(--accent);
+}

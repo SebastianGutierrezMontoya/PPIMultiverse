@@ -1,19 +1,6 @@
 /* =========================
    VARIABLES (THEME)
 ========================= */
-/* :root {
-  --color-bg: #000000;
-  --color-bg-opacity: rgba(0, 0, 0, 0.8);
-  --color-border: rgba(255, 255, 255, 0.05);
-
-  --color-text: #ffffff;
-  --color-text-muted: #94a3b8;
-
-  --color-accent: #38bdf8;
-  --color-accent-bg: rgba(56, 189, 248, 0.1);
-  --color-accent-border: rgba(56, 189, 248, 0.2);
-  --color-accent-hover: rgba(56, 189, 248, 0.2);
-} */
 
 :root {
   --color-bg: #000000;
@@ -27,6 +14,28 @@
   --color-accent-bg: rgba(251, 252, 253, 0.1);
   --color-accent-border: rgba(56, 189, 248, 0.2);
   --color-accent-hover: rgba(56, 189, 248, 0.2);
+
+
+  --sidebar-bg: #0d0e0e;
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+
+  --text-primary: #ffffff;
+  --text-secundary: #e22611;
+  --text-muted: #0a0a0a;
+
+  --accent: #f37d15;
+  --accent-shadow:rgba(243, 125, 21, 0.2);
+
+
+  --card-bg: #ffffff;
+  --card-inner: #dddee1;
+
+  --border-soft: rgba(236, 230, 230, 0.05);
+  --border-accent: rgba(215, 213, 213, 0.5);
+
+
+
 }
 
 /* =========================
@@ -38,10 +47,23 @@
   box-sizing: border-box;
 }
 
+a {
+  text-decoration: none !important;
+  color: inherit;
+}
+
 body {
   font-family: system-ui, -apple-system, sans-serif;
   /* background: #020617; */
   /* color: var(--color-text); */
+}
+
+main {
+  padding-top: 72px !important; /* espacio para la navbar */
+}
+
+.hidden {
+  display: none !important;
 }
 
 /* =========================
@@ -185,4 +207,39 @@ body {
   .navbar-menu {
     display: flex;
   }
+}
+
+
+
+.search-bar {
+
+    margin-bottom: 1rem;
+    width: 100%;
+    z-index: 100;
+    /* padding: 16px 24px; */
+    background: var(--color-bg-opacity);
+    backdrop-filter: blur(12px);
+    border-bottom: 6px solid var(--color-border);
+    color: var(--color-text);
+}
+
+.search-input { 
+  padding: 10px;
+  border-radius: 10px 0px 0px 10px;
+  width: 400px;
+}
+
+.search-container {
+  align-items: center;
+  display: flex;
+  
+}
+
+.search-button {
+
+    margin: 0px;
+    padding: 10px;
+    border-radius: 0px 10px 10px 0px;
+    border: none;
+
 }

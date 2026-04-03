@@ -1,0 +1,54 @@
+{% extends "Multiverse/base.html" %}
+
+{% block content %}
+
+<!-- <p class="text-center text-2xl mt-10">Bienvenido al catalogo Multiverse Anime Store</p> -->
+<form method="get" class="search-bar">
+    <div class="form-linear search-container">
+    <label for="producto_id"></label>
+    <input type="text" name="producto_id" id="producto_id" class="search-input" value="" placeholder="Busqueda">
+    <button type="submit" class="search-button">Buscar</button>
+    </div>
+    
+</form>
+
+
+<div class ="catalogo-container">
+
+
+{% for producto in productos %}
+
+
+<div class="bento-card">
+
+  <!-- MEDIA -->
+  <div class="bento-media">
+        <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}">
+
+        <div class="bento-overlay"></div>
+
+        <div class="bento-action">
+          <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}')">
+            Agregar al Pedido
+          </button>
+        </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div class="bento-footer">
+       <div>
+         <h3 class="bento-title">{{ producto.prod_nombre }}</h3>
+         <p class="bento-subtitle">ONE PIECE</p>
+       </div>
+
+       <span class="bento-price">${{ producto.prod_precio_venta }}</span>
+    </div>
+
+</div>
+       
+{% endfor %}
+
+
+</div>
+
+{% endblock %}

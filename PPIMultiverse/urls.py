@@ -21,6 +21,7 @@ from MultiverseAnimeStore.views import (
     login_view,
     logout_view,
     register_view,
+    catalogo_view,
 )
 
 urlpatterns = [
@@ -28,6 +29,7 @@ urlpatterns = [
     path('AdminMultiverse/', include('MultiverseAnimeStore.urls')),
 
     path('', home_view, name='home'),
+    path('catalogo/', catalogo_view, name='catalogo'),
 
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),

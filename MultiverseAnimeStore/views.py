@@ -1080,3 +1080,8 @@ def reporte_view(request, id):
 
 def home_view(request):
     return render(request, 'Multiverse/home.html')
+
+
+def catalogo_view(request):
+    productos = Productos.objects.all()
+    return render(request, 'Multiverse/catalogo.html', {'productos': productos})

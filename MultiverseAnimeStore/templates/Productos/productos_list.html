@@ -20,6 +20,7 @@
     {% for producto in object_list %}
         <li>
             <a href="{% url 'productos_detail' producto.pk %}" class="btn-link2">{{ producto.prod_nombre }}</a>
+            <!-- <span class="text-muted">({{ producto.cat.cat_nombre }})</span> -->
             <a href="{% url 'productos_update' producto.pk %}" class="btn-link">Editar</a>
             <a href="#" onclick="showDeleteModal('{{ producto.pk }}', '{{ producto.prod_nombre }}'); return false;" class="btn-link">Eliminar</a>
             

@@ -5,9 +5,12 @@
 <!-- <p class="text-center text-2xl mt-10">Bienvenido al catalogo Multiverse Anime Store</p> -->
 <form method="get" class="search-bar">
     <div class="form-linear search-container">
-    <label for="producto_id"></label>
-    <input type="text" name="producto_id" id="producto_id" class="search-input" value="" placeholder="Busqueda">
+    <label for="prod_nombre"></label>
+    <input type="text" name="prod_nombre" id="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="Busqueda">
     <button type="submit" class="search-button">Buscar</button>
+    {% if prod_nombre %}
+        <a href="{% url 'catalogo' %}">Limpiar</a>
+    {% endif %}
     </div>
     
 </form>
@@ -38,7 +41,7 @@
   <div class="bento-footer">
        <div>
          <h3 class="bento-title">{{ producto.prod_nombre }}</h3>
-         <p class="bento-subtitle">ONE PIECE</p>
+         <p class="bento-subtitle">{{ producto.cat.cat_nombre }}</p>
        </div>
 
        <span class="bento-price">${{ producto.prod_precio_venta }}</span>
@@ -50,5 +53,17 @@
 
 
 </div>
+
+<div class="pagination">
+    {% if productos.has_previous %}
+        <a href="?page={{ productos.previous_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Anterior</a>
+
+    {% endif %}
+
+    <span>Página {{ productos.number }} de {{ productos.paginator.num_pages }}</span>
+
+    {% if productos.has_next %}
+        <a href="?page={{ productos.next_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Siguiente</a>
+    {% endif %}
 
 {% endblock %}

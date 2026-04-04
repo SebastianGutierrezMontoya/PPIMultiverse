@@ -90,6 +90,7 @@ urlpatterns = [
     path('pedidos/<int:pk>/editar/', PedidosUpdateView, name='pedidos_update'),
     path('pedidos/<int:pk>/eliminar/', PedidosDeleteView, name='pedidos_delete'),
 
+
     path('productos/', ProductosListView.as_view(), name='productos_list'),
     path('productos/<str:pk>/detalle/', ProductosDetailView.as_view(), name='productos_detail'),
     path('productos/crear/', ProductosCreateView, name='productos_create'),

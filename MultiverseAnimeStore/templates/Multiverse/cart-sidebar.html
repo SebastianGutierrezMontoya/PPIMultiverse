@@ -38,9 +38,50 @@
       </span>
     </div>
 
-    <button class="cart-confirm">
-      Confirmar por WhatsApp
-    </button>
+    <form method="post" action="{% url 'checkout' %}" id="checkout-form">
+      {% csrf_token %}
+
+      <div id="cart-data" style="display:none;">
+        <input type="hidden" name="cart_items_json" id="cart_items_input">
+        <input type="hidden" name="cart_quantity" id="cart_quantity_input">
+        <input type="hidden" name="cart_total" id="cart_total_input">
+        <input type="hidden" name="ped_direccion_envio" id="ped_direccion_envio_input">
+        <input type="hidden" name="ped_notas" id="ped_notas_input">
+      </div>
+
+      <button type="button" class="cart-confirm" onclick="openCheckoutModal()">
+        Confirmar por WhatsApp
+      </button>
+
+      <div id="checkout-modal" style="display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
+        <div style="background:var(--sidebar-bg); border-radius:24px; width:min(450px,95%); padding:30px; box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+            <div>
+              <h3 style="margin:0;">Confirmar pedido</h3>
+              <p style="margin:8px 0 0; color:rgba(255,255,255,0.75); font-size:0.95rem;">Ingresa los datos faltantes antes de enviar.</p>
+            </div>
+            <button type="button" onclick="closeCheckoutModal()" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer;">×</button>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <label style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem; color:rgba(255,255,255,0.9);">
+              Dirección de envío
+              <input id="checkout_address" type="text" placeholder="Ej. Calle 123, Ciudad" style="width:100%; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:#fff;" />
+            </label>
+
+            <label style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem; color:rgba(255,255,255,0.9);">
+              Notas del pedido
+              <textarea id="checkout_notes" placeholder="Ej. Entregar en horario de la tarde" rows="4" style="width:100%; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:#fff;"></textarea>
+            </label>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
+            <button type="button" onclick="closeCheckoutModal()" style="padding:14px 18px; border:none; border-radius:14px; background:rgba(255,255,255,0.08); color:#fff; cursor:pointer;">Cancelar</button>
+            <button type="button" onclick="submitCheckoutForm()" style="padding:14px 18px; border:none; border-radius:14px; background:var(--accent); color:#020617; font-weight:900; cursor:pointer;">Enviar pedido</button>
+          </div>
+        </div>
+      </div>
+    </form>
 
   </div>
 </div>

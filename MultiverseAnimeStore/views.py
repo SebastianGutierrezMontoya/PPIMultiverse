@@ -3,7 +3,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Perfilpermisos, Modulos, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
 from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm
-from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q
+from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q, Max
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
 from django.contrib import messages
@@ -12,6 +12,9 @@ from functools import wraps
 from django.forms import modelform_factory
 import psycopg2
 import json
+from datetime import date
+from decimal import Decimal
+from django.core.paginator import Paginator
 # from django.contrib.auth import authenticate, login, logout
 # from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -25,7 +28,7 @@ def Permisos_Admin(modulo, tipo, redirect_url='admin_home'):
 
 
             if not getattr(request.user, 'is_authenticated', False):
-                return redirect(redirect_url)
+                return redirect('login')
             
 
             
@@ -56,6 +59,24 @@ def Permisos_Admin(modulo, tipo, redirect_url='admin_home'):
         return wrapper
 
     return decorator
+
+
+# def Permisos_Admin(modulo, tipo, redirect_url='admin_home'):
+#     def decorator(view_func):
+#         @wraps(view_func)
+#         def wrapper(request, *args, **kwargs):
+
+
+#             if not getattr(request.user, 'is_authenticated', False):
+#                 return redirect(redirect_url)
+            
+
+
+#             return view_func(request, *args, **kwargs)
+
+#         return wrapper
+
+#     return decorator
 
 # Función para extraer mensajes de error de SQL Server
 def _extract_db_message(exc):
@@ -1082,6 +1103,91 @@ def home_view(request):
     return render(request, 'Multiverse/home.html')
 
 
+def checkout_view(request):
+    print("DEBUG: checkout_view called with method:", request.method)
+    if request.method == 'POST':
+        cart_items_json = request.POST.get('cart_items_json', '[]')
+
+        try:
+            print("DEBUG: cart_items_json received:", cart_items_json)
+            cart_items = json.loads(cart_items_json)
+        except json.JSONDecodeError:
+            print("DEBUG: Error al decodificar cart_items_json, usando lista vacía.")
+            cart_items = []
+
+        if not cart_items:
+            print("DEBUG: No hay productos en el carrito.")
+            messages.error(request, 'El carrito está vacío. No se creó ningún pedido.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        if not getattr(request.user, 'is_authenticated', False):
+            print("DEBUG: Usuario no autenticado, redirigiendo.")
+            messages.error(request, 'Debes iniciar sesión para crear el pedido.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        productos_seleccionados = []
+        total_calculado = Decimal('0.00')
+
+        for item in cart_items:
+            prod_id = item.get('id')
+            qty = int(item.get('qty') or 0)
+            if not prod_id or qty <= 0:
+                continue
+
+            producto = Productos.objects.filter(pk=prod_id).first()
+            if not producto:
+                continue
+
+            productos_seleccionados.append(f"{prod_id},{qty}")
+            precio_unitario = producto.prod_precio_venta or Decimal('0.00')
+            descuento = producto.prod_descuento or Decimal('0.00')
+            total_calculado += (precio_unitario - (precio_unitario * (descuento / Decimal('100')))) * qty
+
+        if not productos_seleccionados:
+            messages.error(request, 'No hay productos válidos en el carrito.')
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        next_ped_id = (Pedidos.objects.aggregate(max_id=Max('ped_id'))['max_id'] or 0) + 1
+
+        try:
+            with transaction.atomic():
+                pedido = Pedidos.objects.create(
+                    ped_id=next_ped_id,
+                    usu=request.user,
+                    ped_fecha_pedido=date.today(),
+                    ped_total=total_calculado,
+                    ped_direccion_envio=request.POST.get('ped_direccion_envio', ''),
+                    ped_notas=request.POST.get('ped_notas', 'Pedido creado desde carrito público')
+                )
+                print(f"DEBUG: Pedido creado con ID {pedido.ped_id} para usuario {request.user.id_usuario} con total {total_calculado}")
+                PedidosProductosCreateView(productos_seleccionados, pedido.ped_id)
+
+        except DatabaseError as e:
+            print(f"Error al crear pedido: {e}")
+            messages.error(request, _extract_db_message(e))
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        messages.success(request, f'Pedido {pedido.ped_id} creado correctamente.')
+        return redirect(request.META.get('HTTP_REFERER', '/'))
+
+    return redirect(request.META.get('HTTP_REFERER', '/'))
+
+
 def catalogo_view(request):
-    productos = Productos.objects.all()
-    return render(request, 'Multiverse/catalogo.html', {'productos': productos})
+    productos = Productos.objects.select_related('cat').all()
+    paginate_by = 40
+    prod_nombre = request.GET.get('prod_nombre', '')
+
+    if prod_nombre:
+        productos = productos.filter(
+            Q(prod_nombre__icontains=prod_nombre) | Q(prod_descripcion__icontains=prod_nombre)
+        )
+
+    paginator = Paginator(productos, paginate_by)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'Multiverse/catalogo.html', {
+        'productos': page_obj,
+        'prod_nombre': prod_nombre,
+    })

@@ -31,7 +31,7 @@
     function showDeleteModal(pk, nombre) {
         document.getElementById('deleteMessage').textContent = '¿Estás seguro de que deseas eliminar "' + nombre + '"?';
         var form = document.getElementById('deleteForm');
-        form.action = '/categorias/' + pk + '/eliminar/';
+        form.action = '/AdminMultiverse/categorias/' + pk + '/eliminar/';
         document.getElementById('deleteModal').style.display = 'block';
     }
     function hideDeleteModal() {

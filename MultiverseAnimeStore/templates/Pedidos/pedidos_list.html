@@ -17,8 +17,8 @@
     {% for pedido in object_list %}
         <li>
             <a href="{% url 'pedidos_detail' pedido.pk %}" class="btn-link2">{{ pedido.usu.nombre }} Pedido {{ pedido.ped_id }} </a>
-            (<a href="{% url 'pedidos_update' pedido.pk %}" class="btn-link">Editar</a>,
-             <a href="#" onclick="showDeleteModal('{{ pedido.pk }}', 'Pedido {{ pedido.ped_id }}'); return false;" class="btn-link">Eliminar</a>)
+            <a href="{% url 'pedidos_update' pedido.pk %}" class="btn-link">Editar</a>,
+             <a href="#" onclick="showDeleteModal('{{ pedido.pk }}', 'Pedido {{ pedido.ped_id }}'); return false;" class="btn-link" title="Usar en caso de pedidos mal realizados para que el sistema restaure el stock">Eliminar</a>
         </li>
     {% endfor %}
 </ul>
@@ -59,9 +59,9 @@
 </div>
 <script>
     function showDeleteModal(pk, nombre) {
-        document.getElementById('deleteMessage').textContent = '¿Estás seguro de que deseas eliminar "' + nombre + '"?';
+        document.getElementById('deleteMessage').textContent = '¿Estás seguro de que deseas eliminar "' + nombre + '"?  Esta acción no se puede deshacer.';
         var form = document.getElementById('deleteForm');
-        form.action = '/pedidos/' + pk + '/eliminar/';
+        form.action = '/AdminMultiverse/pedidos/' + pk + '/eliminar/';
         document.getElementById('deleteModal').style.display = 'block';
     }
     function hideDeleteModal() {

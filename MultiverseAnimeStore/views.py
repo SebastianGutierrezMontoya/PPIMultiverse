@@ -30,7 +30,6 @@ def Permisos_Admin(modulo, tipo, redirect_url='admin_home'):
             if not getattr(request.user, 'is_authenticated', False):
                 return redirect('login')
             
-
             
 
             usuario = Usuarios.objects.filter(id_usuario=request.user.id_usuario).first()
@@ -61,22 +60,23 @@ def Permisos_Admin(modulo, tipo, redirect_url='admin_home'):
     return decorator
 
 
-# def Permisos_Admin(modulo, tipo, redirect_url='admin_home'):
-#     def decorator(view_func):
-#         @wraps(view_func)
-#         def wrapper(request, *args, **kwargs):
+def Login_requerido():
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
 
 
-#             if not getattr(request.user, 'is_authenticated', False):
-#                 return redirect(redirect_url)
+
+            if not getattr(request.user, 'is_authenticated', False):
+                return redirect('login')
             
 
 
-#             return view_func(request, *args, **kwargs)
+            return view_func(request, *args, **kwargs)
 
-#         return wrapper
+        return wrapper
 
-#     return decorator
+    return decorator
 
 # Función para extraer mensajes de error de SQL Server
 def _extract_db_message(exc):
@@ -284,6 +284,18 @@ def PedidoProductoUpdateFormView(request, ped_id, prod_id):
         'objeto': objeto
     })
 
+@Permisos_Admin('Pedidos', 'delete')
+def PedidoProductoDeleteView(request, ped_id):
+    
+
+    for p in PedidosProductos.objects.filter(ped_id=ped_id):
+        producto = get_object_or_404(Productos, pk=p.prod_id)
+        producto.prod_stock = F('prod_stock') + p.pped_cantidad
+        producto.save()
+        p.delete()
+
+    return redirect('pedidos_list')
+
 #Pedidos
 
 @method_decorator(Permisos_Admin('Pedidos', 'read'), name='dispatch')
@@ -390,10 +402,11 @@ def PedidosUpdateView(request, pk):
 @Permisos_Admin('Pedidos', 'delete')
 def PedidosDeleteView(request, pk):
     pedido = get_object_or_404(Pedidos, pk=pk)
-    pedidos_productos_relacionados = PedidosProductos.objects.filter(ped=pedido)
+    # pedidos_productos_relacionados = PedidosProductos.objects.filter(ped=pedido)
     
     try:
-        pedidos_productos_relacionados.delete()
+        # pedidos_productos_relacionados.delete()
+        PedidoProductoDeleteView(request, pedido.ped_id)
         pedido.delete()
     except DatabaseError as e:
         messages.error(request, _extract_db_message(e))
@@ -1103,6 +1116,7 @@ def home_view(request):
     return render(request, 'Multiverse/home.html')
 
 
+@Login_requerido()
 def checkout_view(request):
     print("DEBUG: checkout_view called with method:", request.method)
     if request.method == 'POST':

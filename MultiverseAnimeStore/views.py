@@ -523,6 +523,21 @@ def ProductosAuditoriaView(request):
        try:
            parsed = json.loads(p.auditoria)
            p.auditoria_parsed = parsed
+
+           
+
+           producto_info = parsed.get('old') if isinstance(parsed, dict) else None
+           
+           
+        #    p.product_name = None
+           if isinstance(producto_info, dict):
+               
+               p.product_name = producto_info.get('prod_nombre') or producto_info.get('nombre')
+           elif isinstance(parsed, dict):
+               p.product_name = parsed.get('prod_nombre') or parsed.get('nombre')
+
+        #    print("DEBUG: Nombre del producto extraído:", p.product_name)
+           
            if p.au_type == 2:  # Modificación
                old = parsed.get('old', {})
                new = parsed.get('new', {})
@@ -539,6 +554,7 @@ def ProductosAuditoriaView(request):
                p.differences = []
        except json.JSONDecodeError:
            p.auditoria_parsed = None
+           p.product_name = None
            p.differences = []
 
        productos_auditoria.append(p)

@@ -18,10 +18,14 @@
                 <td>{{ producto.creation_date }}</td>
                 <td>{{ producto.au_type_text }}</td>
                 <td>
+                    {% if producto.product_name %}
+                        <div><strong>Producto:</strong> {{ producto.product_name }}</div>
+                    {% endif %}
                     {% if producto.au_type == 2 and producto.differences %}
                         <table class="table table-sm table-bordered">
                             <thead>
                                 <tr>
+                                    
                                     <th>Campo</th>
                                     <th>Valor Anterior</th>
                                     <th>Valor Nuevo</th>
@@ -30,6 +34,7 @@
                             <tbody>
                                 {% for diff in producto.differences %}
                                 <tr>
+                                    
                                     <td>{{ diff.field }}</td>
                                     <td>{{ diff.old }}</td>
                                     <td>{{ diff.new }}</td>

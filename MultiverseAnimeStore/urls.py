@@ -63,12 +63,12 @@ from .views import (
     # login_view,
     # register_view,
     admin_home,
-    admin_dashboard,
 )
 
 urlpatterns = [
 
-    path('dashboard/', admin_dashboard, name='admin_dashboard'),
+    
+
     path('', admin_home, name='admin_home'),
 
 

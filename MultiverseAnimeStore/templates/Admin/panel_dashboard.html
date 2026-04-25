@@ -4,7 +4,7 @@
 <div class="panel-content-header">
     <div>
         <h2>Dashboard</h2>
-        <p>Bienvenido, {{ user.nombre|default:user.id_usuario }}. Resumen general del sistema.</p>
+        <p>Bienvenido{% if user.is_authenticated %}, {{ user.nombre|default:user.id_usuario }}{% endif %}. Resumen general del sistema.</p>
     </div>
 </div>
 
@@ -65,19 +65,19 @@
         <tbody>
             {% for pedido in pedidos_recientes %}
             <tr>
-                <td><a href="{% url 'pedidos_detail' pedido.pk %}" style="color: #f37d15;">#{{ pedido.id_pedido }}</a></td>
-                <td>{{ pedido.id_usuario.nombre|default:pedido.id_usuario.id_usuario }}</td>
-                <td>{{ pedido.fecha_pedido|date:"d/m/Y H:i" }}</td>
-                <td style="font-weight: 600;">${{ pedido.precio_total|floatformat:2 }}</td>
+                <td><span style="color: #f37d15;">#{{ pedido.ped_id }}</span></td>
+                <td>{{ pedido.usu.nombre|default:pedido.usu.id_usuario }}</td>
+                <td>{{ pedido.ped_fecha_pedido|date:"d/m/Y" }}</td>
+                <td style="font-weight: 600;">${{ pedido.ped_total|floatformat:2 }}</td>
                 <td>
-                    {% if pedido.id_estado.est_nombre == 'Pendiente' or pedido.id_estado.est_nombre == 'pendiente' %}
-                        <span style="color: #fbbf24;">⏳ {{ pedido.id_estado.est_nombre }}</span>
-                    {% elif pedido.id_estado.est_nombre == 'Completado' or pedido.id_estado.est_nombre == 'completado' %}
-                        <span style="color: #4ade80;">✅ {{ pedido.id_estado.est_nombre }}</span>
-                    {% elif pedido.id_estado.est_nombre == 'Cancelado' or pedido.id_estado.est_nombre == 'cancelado' %}
-                        <span style="color: #f87171;">❌ {{ pedido.id_estado.est_nombre }}</span>
+                    {% if pedido.estado_texto == 'Pendiente' %}
+                        <span style="color: #fbbf24;">⏳ {{ pedido.estado_texto }}</span>
+                    {% elif pedido.estado_texto == 'Entregado' %}
+                        <span style="color: #4ade80;">✅ {{ pedido.estado_texto }}</span>
+                    {% elif pedido.estado_texto == 'Cancelado' %}
+                        <span style="color: #f87171;">❌ {{ pedido.estado_texto }}</span>
                     {% else %}
-                        <span style="color: #94a3b8;">{{ pedido.id_estado.est_nombre }}</span>
+                        <span style="color: #94a3b8;">{{ pedido.estado_texto }}</span>
                     {% endif %}
                 </td>
             </tr>

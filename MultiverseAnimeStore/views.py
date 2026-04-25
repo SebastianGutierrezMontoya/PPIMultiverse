@@ -1271,8 +1271,13 @@ def panel_dashboard(request):
     total_pedidos = Pedidos.objects.count()
     total_categorias = Categoria.objects.count()
     total_perfiles = Perfiles.objects.count()
-    pedidos_pendientes = Pedidos.objects.filter(id_estado__est_nombre__iexact='Pendiente').count()
-    pedidos_recientes = Pedidos.objects.select_related('id_usuario', 'id_estado').order_by('-fecha_pedido')[:5]
+
+    estado_map = {1: 'Pendiente', 2: 'Confirmado', 3: 'En preparacion',
+                  4: 'Enviado', 5: 'Entregado', 6: 'Cancelado'}
+    pedidos_pendientes = Pedidos.objects.filter(ped_estado=1).count()
+    pedidos_recientes = Pedidos.objects.select_related('usu').order_by('-ped_fecha_pedido')[:5]
+    for p in pedidos_recientes:
+        p.estado_texto = estado_map.get(int(p.ped_estado or 1), 'Desconocido')
 
     context = {
         'total_productos': total_productos,
@@ -1449,7 +1454,11 @@ def panel_usuarios_editar(request, pk):
 
 
 def panel_pedidos_list(request):
-    pedidos = Pedidos.objects.select_related('id_usuario', 'id_estado').all().order_by('-fecha_pedido')[:20]
+    estado_map = {1: 'Pendiente', 2: 'Confirmado', 3: 'En preparacion',
+                  4: 'Enviado', 5: 'Entregado', 6: 'Cancelado'}
+    pedidos = Pedidos.objects.select_related('usu').all().order_by('-ped_fecha_pedido')[:20]
+    for p in pedidos:
+        p.estado_texto = estado_map.get(int(p.ped_estado or 1), 'Desconocido')
     return render(request, 'Admin/panel_pedidos.html', {
         'pedidos': pedidos,
         'section': 'pedidos',

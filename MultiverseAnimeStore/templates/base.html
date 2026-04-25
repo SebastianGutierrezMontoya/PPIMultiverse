@@ -57,6 +57,24 @@
         <p>&copy; 2024 Multiverse Anime Store</p>
     </footer> -->
 </body>
+
+<script>
+// Marcar campos obligatorios con asterisco rojo (universal: funciona con cualquier estructura)
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(el) {
+        var label = document.querySelector('label[for="' + el.id + '"]');
+        if (label && !label.querySelector('.required-star')) {
+            var star = document.createElement('span');
+            star.className = 'required-star';
+            star.textContent = ' *';
+            star.style.color = '#ef4444';
+            star.style.fontWeight = '900';
+            label.appendChild(star);
+        }
+    });
+});
+</script>
+
 </html>
 
 {% if request.resolver_match.url_name == 'pedidos_create' %}

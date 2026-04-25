@@ -3,6 +3,9 @@ from .models import Usuarios
 class AnonymousUser:
     is_authenticated = False
     is_anonymous = True
+    is_active = False
+    is_staff = False
+    is_superuser = False
 
 class CustomAuthMiddleware:
     def __init__(self, get_response):
@@ -18,6 +21,9 @@ class CustomAuthMiddleware:
                 # Inyectar atributos mínimos
                 user.is_authenticated = True
                 user.is_anonymous = False
+                user.is_active = True
+                user.is_staff = True
+                user.is_superuser = True
 
                 request.user = user
 

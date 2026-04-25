@@ -18,7 +18,7 @@ class Consultas_Dinamicas(models.Model):
     cons_descripcion = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'consultas_dinamicas'
 
     def __str__(self):
@@ -30,7 +30,7 @@ class Categoria(models.Model):
     cat_descripcion = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'categoria'
         app_label = 'MultiverseAnimeStore'
 
@@ -44,7 +44,7 @@ class EstadoPedidos(models.Model):
     est_nombre = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'estadopedidos'
 
     def __str__(self):
@@ -62,7 +62,7 @@ class Pedidos(models.Model):
     ped_notas = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'pedidos'
 
     def __str__(self):
@@ -81,7 +81,7 @@ class PedidosProductos(models.Model):
     pped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='pped_estado')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'pedidos_productos'
 
 
@@ -92,7 +92,7 @@ class Perfiles(models.Model):
     descripcion = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'perfiles'
 
     def __str__(self):
@@ -108,7 +108,7 @@ class Modulos(models.Model):
 
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'modulos'
 
     def __str__(self):
@@ -125,7 +125,7 @@ class Perfilpermisos(models.Model):
     can_delete = models.CharField(max_length=1, blank=True, null=True, default='N')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'perfilpermisos'
 
 
@@ -140,7 +140,7 @@ class Productos(models.Model):
     prod_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'productos'
 
     def __str__(self):
@@ -148,13 +148,13 @@ class Productos(models.Model):
 
 
 class Productos_Auditoria(models.Model):
-    dummy_id = models.AutoField(primary_key=True),
+    dummy_id = models.AutoField(primary_key=True)
     creation_date = models.DateField(blank=True, null=True)
     au_type = models.IntegerField(blank=True, null=True)
     auditoria = models.CharField(max_length=500, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'productos_auditoria'
 
 
@@ -164,7 +164,7 @@ class Roles(models.Model):
     descripcion = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'roles'
 
     def __str__(self):
@@ -177,7 +177,7 @@ class Sexos(models.Model):
     nombre_sexo = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'sexos'
 
     def __str__(self):
@@ -196,7 +196,7 @@ class Usuarios(models.Model):
     activo = models.FloatField(max_length=1, blank=True, null=True, default=1)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'usuarios'
         # fields = ['id_usuario', 'nombre', 'primer_apellido', 'segundo_apellido', 'fecha_nacimiento',
         #            'password_hash', 'usuario_id_sexo', 'usuario_id_rol']
@@ -218,7 +218,7 @@ class Config_Contacto(models.Model):
     mensaje_error = models.CharField(max_length=200, blank=True, null=False)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'config_contacto'
 
     def __str__(self):
@@ -248,7 +248,7 @@ class Contactos(models.Model):
     id_usuario = models.ForeignKey(Usuarios, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'contactos'
 
     def __str__(self):

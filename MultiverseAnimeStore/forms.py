@@ -6,14 +6,14 @@ from django.db import connection
 
 def next_int_id(model, field_name):
     """
-    Devuelve max(TO_NUMBER(field)) + 1 usando una consulta que solo considera valores totalmente numéricos.
-    Fallback: devuelve model.objects.count() + 1 si hay cualquier problema.
+    Devuelve max(CAST(field AS INTEGER)) + 1.
+    Compatible con PostgreSQL. Fallback seguro si falla.
     """
     table = model._meta.db_table
-    # Consulta compatible con Oracle: toma solo valores que son enteros (regex) y obtiene el máximo
+    # Consulta compatible con PostgreSQL
     sql = f"""
         SELECT MAX(
-            CASE WHEN REGEXP_LIKE({field_name}, '^[0-9]+$') THEN TO_NUMBER({field_name}) ELSE NULL END
+            CASE WHEN {field_name} ~ '^[0-9]+$' THEN {field_name}::integer ELSE NULL END
         ) FROM {table}
     """
     try:

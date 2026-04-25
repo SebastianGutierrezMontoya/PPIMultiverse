@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-1!v4ux^rxx+!+$c^6fxz-d#jw4-@$i=wf!&7-3rmgy0%l%0^*y
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -103,8 +103,8 @@ WSGI_APPLICATION = 'PPIMultiverse.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
+        'NAME': 'ppimultiverse_db',
+        'USER': 'ppimultiverse',
         'PASSWORD': 'qwer1234',
         'HOST': 'localhost',
         'PORT': '5432',
@@ -142,7 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 

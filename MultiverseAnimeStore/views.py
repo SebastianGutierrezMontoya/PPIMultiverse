@@ -78,28 +78,26 @@ def Login_requerido():
 
     return decorator
 
-# Función para extraer mensajes de error de SQL Server
+# Función para extraer mensajes de error de BD (compatible PostgreSQL y otros)
 def _extract_db_message(exc):
-    """Extrae el mensaje amigable de una excepción SQL Server."""
+    """Extrae el mensaje amigable de una excepción de base de datos."""
     text = str(exc) or ''
-    # print("DEBUG: Mensaje de error completo:", text)
     
-    # Buscar patrón: [SQL Server]mensaje(código)(SQLExecDirectW)
-    m = re.search(r'\[SQL Server\](.+?)\s*\(\d+\)\s*\(SQLExecDirectW\)', text)
-    if m:
-        return m.group(1).strip()
+    # PostgreSQL: buscar después de "DETAIL:" o "HINT:" o "ERROR:"
+    for prefix in ['DETAIL:  ', 'HINT:  ', 'ERROR:  ', 'CONTEXT:  ']:
+        if prefix in text:
+            idx = text.find(prefix) + len(prefix)
+            end = text.find('\n', idx)
+            return text[idx:end].strip() if end > 0 else text[idx:].strip()
     
-    # Si no encuentra el patrón anterior, busca [SQL Server]mensaje(código)
-    m = re.search(r'\[SQL Server\](.+?)\s*\(\d+\)', text)
-    if m:
-        return m.group(1).strip()
-    
-    # Fallback: primera línea no vacía
+    # Fallback: primera línea no vacía que no parezca traceback
     for line in text.splitlines():
         line = line.strip()
-        if line and not line.startswith('['):
-            return line
+        if line and not line.startswith('[') and not line.startswith('Traceback'):
+            if len(line) > 10 and line[0].isupper():  # parece un mensaje real
+                return line
     
+    # Último recurso
     return text.strip() or 'Error de base de datos.'
 
 def admin_home(request):
@@ -148,6 +146,9 @@ def register_view(request):
 
             sexo = get_object_or_404(Sexos, pk=sexo_id)
 
+            # Asignar perfil Cliente por defecto (id_perfil=2)
+            perfil_cliente = Perfiles.objects.filter(id_perfil=2).first()
+
             Usuarios.objects.create(
                 id_usuario=usuario,
                 password_hash=hash_password(contraseña),
@@ -155,7 +156,9 @@ def register_view(request):
                 primer_apellido=primer_apellido,
                 segundo_apellido=segundo_apellido,
                 fecha_nacimiento=fecha_nacimiento,
-                usuario_id_sexo=sexo
+                usuario_id_sexo=sexo,
+                usuario_id_perfil=perfil_cliente,
+                activo=1
             )
 
             ContactosCreateView(contactos_relacionados, usuario)
@@ -255,16 +258,12 @@ def PedidosProductosCreateView(productos_seleccionados, id_pedido):
                 pped_estado=pped_estado
             )
 
-        # VALIDACIÓN FINAL DEL PEDIDO 
-        cursor = connection.cursor()
-        desactivar_trigger()
-        try:
-            cursor.execute("CALL sp_cerrar_pedido(%s)", [id_pedido])
-        except Exception as e:
-            # Esto fuerza rollback de toda la transacción
-            raise DatabaseError(e)
-        finally:
-            activar_trigger()
+        # VALIDACIÓN FINAL DEL PEDIDO (reemplazo de sp_cerrar_pedido de Oracle)
+        # Calcular total actualizado del pedido basado en productos
+        total_real = PedidosProductos.objects.filter(ped=pedido).aggregate(
+            total=Sum('pped_total')
+        )['total'] or 0
+        Pedidos.objects.filter(pk=id_pedido).update(ped_total=total_real)
         
 
 
@@ -361,17 +360,8 @@ def PedidosUpdateView(request, pk):
     pedido = get_object_or_404(Pedidos, pk=pk)
     productos_relacionados = PedidosProductos.objects.filter(ped=pedido)
 
-    Estado = None
-    
-    cursor = connection.cursor()
-    try:
-        cursor.execute("SELECT fn_estado_pedido(%s)", [pedido.ped_id])
-        resultado = cursor.fetchone()
-        Estado = resultado[0] if resultado else None
-
-    except Exception as e:
-        # Esto fuerza rollback de toda la transacción
-        raise DatabaseError(e)
+    # Obtener estado del pedido (reemplazo de fn_estado_pedido de Oracle)
+    Estado = pedido.ped_estado
         
 
 
@@ -1103,19 +1093,30 @@ class ConsultasDinamicasDeleteView(DeleteView):
 
 @Permisos_Admin('Consultas', 'read')
 def ejecutar_reporte(id_reporte):
-    with connection.cursor() as cursor:
-        cursor.execute("BEGIN")
-        cursor.execute("SELECT fn_ejecutar_reporte(%s)", [id_reporte])
-        cursor.execute('FETCH ALL FROM "<unnamed portal 1>"')
+    """
+    Ejecuta una consulta dinámica guardada en Consultas_Dinamicas.
+    Reemplazo de fn_ejecutar_reporte de Oracle.
+    """
+    try:
+        consulta = Consultas_Dinamicas.objects.get(cons_id=id_reporte)
+        sql = consulta.cons_sql
 
-        columnas = [col[0] for col in cursor.description]
-        resultados = []
+        # Validar que solo sea SELECT
+        if not sql.strip().upper().startswith('SELECT'):
+            raise Exception('Solo se permiten consultas SELECT')
 
-        for fila in cursor.fetchall():
-            resultados.append(dict(zip(columnas, fila)))
-
-        cursor.execute("COMMIT")
-        return resultados
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            columnas = [col[0] for col in cursor.description]
+            resultados = []
+            for fila in cursor.fetchall():
+                resultados.append(dict(zip(columnas, fila)))
+            return resultados
+    except Consultas_Dinamicas.DoesNotExist:
+        return []
+    except Exception as e:
+        print(f"Error ejecutando reporte {id_reporte}: {e}")
+        return []
 
 @Permisos_Admin('Consultas', 'read')
 def reporte_view(request, id):
@@ -1204,7 +1205,7 @@ def checkout_view(request):
 
 
 def catalogo_view(request):
-    productos = Productos.objects.select_related('cat').all()
+    productos = Productos.objects.select_related('cat').all().order_by('prod_id')
     paginate_by = 40
     prod_nombre = request.GET.get('prod_nombre', '')
 
@@ -1220,4 +1221,43 @@ def catalogo_view(request):
     return render(request, 'Multiverse/catalogo.html', {
         'productos': page_obj,
         'prod_nombre': prod_nombre,
+    })
+
+
+# ---------------------------------------------------------------------------
+# PERFIL DEL CLIENTE - Mis Pedidos
+# ---------------------------------------------------------------------------
+@Login_requerido()
+def mis_pedidos_view(request):
+    """Muestra los pedidos del cliente logueado."""
+    pedidos = Pedidos.objects.filter(usu=request.user).order_by('-ped_fecha_pedido')
+
+    for pedido in pedidos:
+        # Calcular el estado como texto
+        estado_map = {1: 'Pendiente', 2: 'Confirmado', 3: 'En preparación',
+                      4: 'Enviado', 5: 'Entregado', 6: 'Cancelado'}
+        pedido.estado_texto = estado_map.get(int(pedido.ped_estado or 1), 'Desconocido')
+        pedido.productos_count = PedidosProductos.objects.filter(ped=pedido).count()
+
+    return render(request, 'Multiverse/mis_pedidos.html', {
+        'pedidos': pedidos,
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def pedido_detalle_view(request, ped_id):
+    """Muestra el detalle de un pedido específico del cliente."""
+    pedido = get_object_or_404(Pedidos, pk=ped_id, usu=request.user)
+
+    estado_map = {1: 'Pendiente', 2: 'Confirmado', 3: 'En preparación',
+                  4: 'Enviado', 5: 'Entregado', 6: 'Cancelado'}
+    pedido.estado_texto = estado_map.get(int(pedido.ped_estado or 1), 'Desconocido')
+
+    productos = PedidosProductos.objects.filter(ped=pedido).select_related('prod', 'pped_estado')
+
+    return render(request, 'Multiverse/pedido_detalle.html', {
+        'pedido': pedido,
+        'productos': productos,
+        'sidebar': 0,
     })

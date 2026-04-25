@@ -243,6 +243,7 @@ class RolesForm(forms.ModelForm):
         self.fields['id_rol'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['id_rol'].initial = next_int_id(Roles, 'id_rol')
+        self.fields['nombre'].required = True
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -263,6 +264,7 @@ class PerfilesForm(forms.ModelForm):
         self.fields['id_perfil'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['id_perfil'].initial = next_int_id(Perfiles, 'id_perfil')
+        self.fields['nombre'].required = True
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -281,9 +283,25 @@ class EstadoPedidosForm(forms.ModelForm):
         # self.fields['est_id'].initial = next_int_id(EstadoPedidos, 'est_id') # cambio aca
         self.fields['est_id'].initial = next_consecutive_id(EstadoPedidos, 'est_id')
         self.fields['est_id'].widget.attrs.update({'title': 'La id del estado de Entregado debe ser la mayor de todas' })
+        self.fields['est_nombre'].required = True
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
+
+
+class SexosForm(forms.ModelForm):
+    class Meta:
+        model = Sexos
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['id_sexo'].widget.attrs['readonly'] = True
+        self.fields['nombre_sexo'].required = True
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})
 

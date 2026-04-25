@@ -132,7 +132,7 @@ class Perfilpermisos(models.Model):
 class Productos(models.Model):
     prod_id = models.CharField(primary_key=True, max_length=10)
     cat = models.ForeignKey(Categoria, models.DO_NOTHING)
-    prod_nombre = models.CharField(max_length=100, blank=True, null=True)
+    prod_nombre = models.CharField(max_length=100, blank=False, null=False, default='Sin nombre')
     prod_descripcion = models.CharField(max_length=400, blank=True, null=True)
     prod_precio_venta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     prod_stock = models.IntegerField(blank=True, null=True)

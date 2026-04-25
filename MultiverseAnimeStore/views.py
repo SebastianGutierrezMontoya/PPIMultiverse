@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Perfilpermisos, Modulos, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
-from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm
+from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm, SexosForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q, Max
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
@@ -924,14 +924,14 @@ class SexosDetailView(DetailView):
 @method_decorator(Permisos_Admin('Sexos', 'create'), name='dispatch')
 class SexosCreateView(CreateView):
     model = Sexos
-    fields = '__all__'
+    form_class = SexosForm
     template_name = 'Usuarios/sexos_form.html'
     success_url = reverse_lazy('sexos_list')
 
 @method_decorator(Permisos_Admin('Sexos', 'update'), name='dispatch')
 class SexosUpdateView(UpdateView):
     model = Sexos
-    fields = '__all__'
+    form_class = SexosForm
     template_name = 'Usuarios/sexos_form.html'
     success_url = reverse_lazy('sexos_list')
 

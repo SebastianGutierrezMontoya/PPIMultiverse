@@ -33,7 +33,9 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Solo inputs FUERA de form-floating (el CSS ya pone * en esos via ::after)
         document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(el) {
+            if (el.closest('.form-floating')) return;
             var label = document.querySelector('label[for="' + el.id + '"]');
             if (label && !label.querySelector('.required-star')) {
                 var star = document.createElement('span');

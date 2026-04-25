@@ -1,0 +1,76 @@
+{% extends "Multiverse/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/admin/admin.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="panel-wrapper">
+
+    {# ─── Sidebar ─── #}
+    <aside class="panel-sidebar">
+        <div class="panel-sidebar-header">
+            <h3>Panel de Control</h3>
+            <span>Multiverse Admin</span>
+        </div>
+
+        <div class="panel-nav-section">
+            <div class="panel-nav-section-title">Gestión</div>
+            <a href="{% url 'panel_dashboard' %}" class="panel-nav-link {% if section == 'dashboard' %}active{% endif %}">
+                <span class="nav-icon">📊</span> Dashboard
+            </a>
+            <a href="{% url 'panel_productos' %}" class="panel-nav-link {% if section == 'productos' %}active{% endif %}">
+                <span class="nav-icon">📦</span> Productos
+            </a>
+            <a href="{% url 'panel_usuarios' %}" class="panel-nav-link {% if section == 'usuarios' %}active{% endif %}">
+                <span class="nav-icon">👥</span> Usuarios
+            </a>
+            <a href="{% url 'panel_pedidos' %}" class="panel-nav-link {% if section == 'pedidos' %}active{% endif %}">
+                <span class="nav-icon">📋</span> Pedidos
+            </a>
+            <a href="{% url 'panel_categorias' %}" class="panel-nav-link {% if section == 'categorias' %}active{% endif %}">
+                <span class="nav-icon">🏷️</span> Categorías
+            </a>
+        </div>
+
+        <div class="panel-nav-section">
+            <div class="panel-nav-section-title">Configuración</div>
+            <a href="{% url 'panel_roles' %}" class="panel-nav-link {% if section == 'roles' %}active{% endif %}">
+                <span class="nav-icon">🔐</span> Roles
+            </a>
+            <a href="{% url 'panel_perfiles' %}" class="panel-nav-link {% if section == 'perfiles' %}active{% endif %}">
+                <span class="nav-icon">👤</span> Perfiles
+            </a>
+            <a href="{% url 'panel_sexos' %}" class="panel-nav-link {% if section == 'sexos' %}active{% endif %}">
+                <span class="nav-icon">⚤</span> Sexos
+            </a>
+            <a href="{% url 'panel_estados' %}" class="panel-nav-link {% if section == 'estados' %}active{% endif %}">
+                <span class="nav-icon">📌</span> Estados
+            </a>
+            <a href="{% url 'panel_consultas' %}" class="panel-nav-link {% if section == 'consultas' %}active{% endif %}">
+                <span class="nav-icon">🔍</span> Consultas
+            </a>
+        </div>
+
+        <div class="panel-nav-section" style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; margin-top: 8px;">
+            <a href="{% url 'admin_home' %}" class="panel-nav-link">
+                <span class="nav-icon">↩️</span> Admin Clásico
+            </a>
+            <a href="{% url 'catalogo' %}" class="panel-nav-link">
+                <span class="nav-icon">🛒</span> Volver a la Tienda
+            </a>
+        </div>
+    </aside>
+
+    {# ─── Content ─── #}
+    <div class="panel-content">
+        {% for mensaje in messages %}
+        <div class="panel-alert panel-alert-{{ mensaje.tags }}">{{ mensaje }}</div>
+        {% endfor %}
+
+        {% block panel_content %}{% endblock %}
+    </div>
+
+</div>
+{% endblock %}

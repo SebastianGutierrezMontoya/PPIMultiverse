@@ -1261,3 +1261,251 @@ def pedido_detalle_view(request, ped_id):
         'productos': productos,
         'sidebar': 0,
     })
+
+
+# ─── Panel de Control (visor dark, capa aparte) ───
+
+def panel_dashboard(request):
+    total_productos = Productos.objects.count()
+    total_usuarios = Usuarios.objects.count()
+    total_pedidos = Pedidos.objects.count()
+    total_categorias = Categoria.objects.count()
+    total_perfiles = Perfiles.objects.count()
+    pedidos_pendientes = Pedidos.objects.filter(id_estado__est_nombre__iexact='Pendiente').count()
+    pedidos_recientes = Pedidos.objects.select_related('id_usuario', 'id_estado').order_by('-fecha_pedido')[:5]
+
+    context = {
+        'total_productos': total_productos,
+        'total_usuarios': total_usuarios,
+        'total_pedidos': total_pedidos,
+        'total_categorias': total_categorias,
+        'total_perfiles': total_perfiles,
+        'pedidos_pendientes': pedidos_pendientes,
+        'pedidos_recientes': pedidos_recientes,
+        'section': 'dashboard',
+        'sidebar': 0,
+    }
+    return render(request, 'Admin/panel_dashboard.html', context)
+
+
+def panel_productos_list(request):
+    page = int(request.GET.get('page', 1))
+    query = request.GET.get('q', '')
+    paginate_by = 10
+
+    queryset = Productos.objects.select_related('cat').all().order_by('prod_id')
+    if query:
+        queryset = queryset.filter(prod_nombre__icontains=query)
+
+    paginator = Paginator(queryset, paginate_by)
+    productos_page = paginator.get_page(page)
+
+    return render(request, 'Admin/panel_productos.html', {
+        'productos': productos_page.object_list,
+        'page': page,
+        'total_paginas': paginator.num_pages,
+        'query': query,
+        'section': 'productos',
+        'sidebar': 0,
+    })
+
+
+def panel_productos_crear(request):
+    if request.method == 'POST':
+        form = ProductosForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Producto creado exitosamente.')
+                return redirect('panel_productos')
+    else:
+        form = ProductosForm()
+
+    return render(request, 'Admin/panel_producto_form.html', {
+        'form': form,
+        'section': 'productos',
+        'sidebar': 0,
+    })
+
+
+def panel_productos_editar(request, pk):
+    producto = get_object_or_404(Productos, pk=pk)
+    if request.method == 'POST':
+        form = ProductosForm(request.POST, request.FILES, instance=producto)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Producto actualizado exitosamente.')
+                return redirect('panel_productos')
+    else:
+        form = ProductosForm(instance=producto)
+
+    return render(request, 'Admin/panel_producto_form.html', {
+        'form': form,
+        'producto': producto,
+        'section': 'productos',
+        'sidebar': 0,
+    })
+
+
+def panel_usuarios_list(request):
+    page = int(request.GET.get('page', 1))
+    query = request.GET.get('q', '')
+    paginate_by = 10
+
+    queryset = Usuarios.objects.select_related('usuario_id_sexo', 'usuario_id_perfil').all().order_by('id_usuario')
+    if query:
+        queryset = queryset.filter(Q(nombre__icontains=query) | Q(id_usuario__icontains=query))
+
+    paginator = Paginator(queryset, paginate_by)
+    usuarios_page = paginator.get_page(page)
+
+    return render(request, 'Admin/panel_usuarios.html', {
+        'usuarios': usuarios_page.object_list,
+        'page': page,
+        'total_paginas': paginator.num_pages,
+        'query': query,
+        'section': 'usuarios',
+        'sidebar': 0,
+    })
+
+
+def panel_usuarios_crear(request):
+    Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
+
+    if request.method == 'POST':
+        form = UsuariosForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    usuario = form.save()
+                    contactos = request.POST.getlist('contactos_relacionados')
+                    if contactos:
+                        ContactosCreateView(contactos, usuario.id_usuario)
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Usuario creado exitosamente.')
+                return redirect('panel_usuarios')
+    else:
+        form = UsuariosForm()
+
+    return render(request, 'Admin/panel_usuario_form.html', {
+        'form': form,
+        'Tipo_Contacto': Tipo_Contacto,
+        'section': 'usuarios',
+        'sidebar': 0,
+    })
+
+
+def panel_usuarios_editar(request, pk):
+    usuario = get_object_or_404(Usuarios, pk=pk)
+    contactos = Contactos.objects.filter(id_usuario=usuario)
+    Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
+
+    if request.method == 'POST':
+        form = UsuariosForm(request.POST, instance=usuario)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+                    contactos_data = request.POST.getlist('contactos_relacionados_editados')
+                    contactos_actualizar = []
+                    for item in contactos_data:
+                        parts = item.split(',')
+                        if len(parts) == 3:
+                            contactos_actualizar.append({
+                                'id_contacto': parts[2],
+                                'tipo_contacto': parts[0],
+                                'dato_contacto': parts[1],
+                            })
+                    if contactos_actualizar:
+                        # Reusamos la funcion existente
+                        ContactosUpdateView(contactos_actualizar)
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Usuario actualizado exitosamente.')
+                return redirect('panel_usuarios')
+    else:
+        form = UsuariosForm(instance=usuario)
+
+    return render(request, 'Admin/panel_usuario_form.html', {
+        'form': form,
+        'usuario': usuario,
+        'contactos': contactos,
+        'Tipo_Contacto': Tipo_Contacto,
+        'section': 'usuarios',
+        'sidebar': 0,
+    })
+
+
+def panel_pedidos_list(request):
+    pedidos = Pedidos.objects.select_related('id_usuario', 'id_estado').all().order_by('-fecha_pedido')[:20]
+    return render(request, 'Admin/panel_pedidos.html', {
+        'pedidos': pedidos,
+        'section': 'pedidos',
+        'sidebar': 0,
+    })
+
+
+def panel_categorias_list(request):
+    categorias = Categoria.objects.all().order_by('cat_id')
+    return render(request, 'Admin/panel_categorias.html', {
+        'categorias': categorias,
+        'section': 'categorias',
+        'sidebar': 0,
+    })
+
+
+def panel_roles_list(request):
+    roles = Roles.objects.all().order_by('id_rol')
+    return render(request, 'Admin/panel_roles.html', {
+        'roles': roles,
+        'section': 'roles',
+        'sidebar': 0,
+    })
+
+
+def panel_perfiles_list(request):
+    perfiles = Perfiles.objects.select_related('rol_id').all().order_by('id_perfil')
+    return render(request, 'Admin/panel_perfiles.html', {
+        'perfiles': perfiles,
+        'section': 'perfiles',
+        'sidebar': 0,
+    })
+
+
+def panel_sexos_list(request):
+    sexos = Sexos.objects.all().order_by('id_sexo')
+    return render(request, 'Admin/panel_sexos.html', {
+        'sexos': sexos,
+        'section': 'sexos',
+        'sidebar': 0,
+    })
+
+
+def panel_estados_list(request):
+    estados = EstadoPedidos.objects.all().order_by('id_estado')
+    return render(request, 'Admin/panel_estados.html', {
+        'estados': estados,
+        'section': 'estados',
+        'sidebar': 0,
+    })
+
+
+def panel_consultas_list(request):
+    consultas = Consultas_Dinamicas.objects.all().order_by('id_consulta')
+    return render(request, 'Admin/panel_consultas.html', {
+        'consultas': consultas,
+        'section': 'consultas',
+        'sidebar': 0,
+    })

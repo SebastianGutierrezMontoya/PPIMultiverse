@@ -1,0 +1,27 @@
+{% extends "Admin/panel_base.html" %}
+{% block panel_content %}
+<div class="panel-content-header">
+    <div><h2>Pedidos</h2><p>Últimos 20 pedidos registrados.</p></div>
+    <div class="panel-actions">
+        <a href="{% url 'admin_home' %}" class="panel-btn panel-btn-secondary">↩️ Admin Clásico</a>
+    </div>
+</div>
+{% if pedidos %}
+<div class="panel-table-wrapper">
+    <table class="panel-table">
+        <thead><tr><th>ID</th><th>Usuario</th><th>Fecha</th><th>Total</th><th>Estado</th></tr></thead>
+        <tbody>
+            {% for p in pedidos %}
+            <tr>
+                <td style="color:#f37d15;">#{{ p.id_pedido }}</td>
+                <td>{{ p.id_usuario.nombre|default:p.id_usuario.id_usuario }}</td>
+                <td>{{ p.fecha_pedido|date:"d/m/Y H:i" }}</td>
+                <td style="font-weight:600;">${{ p.precio_total|floatformat:2 }}</td>
+                <td><span style="color:#94a3b8;">{{ p.id_estado.est_nombre }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}<div class="panel-alert panel-alert-info">No hay pedidos.</div>{% endif %}
+{% endblock %}

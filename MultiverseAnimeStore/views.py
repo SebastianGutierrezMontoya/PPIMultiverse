@@ -101,7 +101,28 @@ def _extract_db_message(exc):
     return text.strip() or 'Error de base de datos.'
 
 def admin_home(request):
-    return render(request, 'admin_home.html')
+    return redirect('admin_dashboard')
+
+def admin_dashboard(request):
+    total_productos = Productos.objects.count()
+    total_usuarios = Usuarios.objects.count()
+    total_pedidos = Pedidos.objects.count()
+    total_categorias = Categoria.objects.count()
+    total_perfiles = Perfiles.objects.count()
+    pedidos_pendientes = Pedidos.objects.filter(id_estado__est_nombre__iexact='Pendiente').count()
+    pedidos_recientes = Pedidos.objects.select_related('id_usuario', 'id_estado').order_by('-fecha_pedido')[:5]
+
+    context = {
+        'total_productos': total_productos,
+        'total_usuarios': total_usuarios,
+        'total_pedidos': total_pedidos,
+        'total_categorias': total_categorias,
+        'total_perfiles': total_perfiles,
+        'pedidos_pendientes': pedidos_pendientes,
+        'pedidos_recientes': pedidos_recientes,
+        'section': 'dashboard',
+    }
+    return render(request, 'Admin/dashboard.html', context)
 
 
 # contraseña hashing 
@@ -451,7 +472,7 @@ def ProductosCreateView(request):
                 return redirect('productos_list')
     else:
         form = ProductosForm()
-    return render(request, 'Productos/productos_form.html', {'form': form})
+    return render(request, 'Admin/producto_form.html', {'form': form, 'section': 'productos'})
 
 @Permisos_Admin('Productos', 'update')
 def ProductosUpdateView(request, pk):
@@ -468,7 +489,7 @@ def ProductosUpdateView(request, pk):
                 return redirect('productos_list')
     else:
         form = ProductosForm(instance=producto)
-    return render(request, 'Productos/productos_form.html', {'form': form, 'object': producto})
+    return render(request, 'Admin/producto_form.html', {'form': form, 'object': producto, 'section': 'productos'})
 
 @method_decorator(Permisos_Admin('Productos', 'delete'), name='dispatch')
 class ProductosDeleteView(DeleteView):
@@ -657,11 +678,12 @@ def UsuariosUpdateView(request, pk):
 
     Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
     
-    return render(request, 'Usuarios/usuarios_form.html', {
+    return render(request, 'Admin/usuario_form.html', {
         'form': form,
         'object': usuario,
         'contactos_relacionados': contactos_relacionados,
         'Tipo_Contacto': Tipo_Contacto,
+        'section': 'usuarios',
     })
 
 @Permisos_Admin('Usuarios', 'delete')

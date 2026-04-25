@@ -22,7 +22,9 @@ from MultiverseAnimeStore.views import (
     logout_view,
     register_view,
     catalogo_view,
-    checkout_view
+    checkout_view,
+    mis_pedidos_view,
+    pedido_detalle_view,
 )
 
 urlpatterns = [
@@ -37,4 +39,7 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('register/', register_view, name='register'),
+
+    path('mis-pedidos/', mis_pedidos_view, name='mis_pedidos'),
+    path('mis-pedidos/<int:ped_id>/', pedido_detalle_view, name='pedido_detalle'),
 ]

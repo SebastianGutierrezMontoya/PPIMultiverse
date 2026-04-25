@@ -15,7 +15,7 @@
     <div class="navbar-menu">
       <a class="navbar-link" href="{% url 'home' %}">Inicio</a>
       <a class="navbar-link" href="{% url 'catalogo' %}">Catálogo</a>
-      <a class="navbar-link">Mis Pedidos</a>
+      <a class="navbar-link" href="{% url 'mis_pedidos' %}">Mis Pedidos</a>
       <a class="navbar-link navbar-link-muted" href="{% url 'admin_home' %}">Gestión</a>
     </div>
 
@@ -23,6 +23,13 @@
       <button class="navbar-cart" onclick="toggleCart()">
         <i class="fas fa-shopping-cart"></i>
       </button>
+
+      {% if user.is_authenticated %}
+        <span style="color: #94a3b8; font-size: 13px; margin-right: 8px;">{{ user.nombre|default:user.id_usuario }}</span>
+        <a class="navbar-link navbar-link-muted" href="{% url 'logout' %}" style="font-size: 13px;">Salir</a>
+      {% else %}
+        <a class="navbar-link" href="{% url 'login' %}" style="font-size: 13px;">Ingresar</a>
+      {% endif %}
     </div>
 
   </div>

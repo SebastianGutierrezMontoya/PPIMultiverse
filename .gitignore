@@ -36,3 +36,8 @@ create_*.py
 convert_*.py
 simple_*.sh
 start_*.sh
+
+# Project
+venv/
+*.pyc
+__pycache__/

@@ -112,16 +112,20 @@ def hash_password(password):
 
 # Login
 def login_view(request):
+    # Si ya está autenticado, redirigir al catálogo (no mostrar login)
+    if request.user.is_authenticated:
+        return redirect('catalogo')
+
     if request.method == 'POST':
         usuario = request.POST.get('usuario')
         contraseña = request.POST.get('contraseña')
 
         try:
             user = Usuarios.objects.get(id_usuario=usuario, password_hash=hash_password(contraseña))
-            # user = authenticate(request, username=usuario, password=hash_password(contraseña))  # Si usas el sistema de autenticación de Django
-            # login(request, user)  # Si usas el sistema de autenticación de Django
             request.session['user_id'] = user.id_usuario
-            return redirect('admin_home')
+            # Los administradores van al panel; los clientes al catálogo
+            destino = request.POST.get('next', 'catalogo')
+            return redirect(destino)
         except Usuarios.DoesNotExist:
             messages.error(request, 'Credenciales inválidas. Inténtalo de nuevo.')
 

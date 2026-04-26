@@ -2,17 +2,23 @@
 {% block content %}
 
 <div class="form-container">
-    <h2 class="form-header">Iniciar Sesión</h2>
+    <div style="text-align:center; margin-bottom:24px;">
+        <i class="fas fa-meteor" style="font-size:48px; color:var(--accent); margin-bottom:8px;"></i>
+        <h2 class="form-header" style="margin:0;">Bienvenido de vuelta</h2>
+        <p style="color:#94a3b8; font-size:14px; margin-top:4px;">Ingresa para continuar</p>
+    </div>
+
     <form method="post">
         {% csrf_token %}
         
-        {% if form.errors %}
-        <div class="error-container">
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <div class="error-item">{{ error }}</div>
-                {% endfor %}
+        {% if messages %}
+        <div style="margin-bottom:16px;">
+            {% for message in messages %}
+                <div style="padding:10px 14px; border-radius:10px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#ef4444; font-size:13px;">
+                    {{ message }}
+                </div>
             {% endfor %}
+        </div>
         {% endif %}
 
         <div class="form-floating">
@@ -20,17 +26,20 @@
           <label for="id_id_usuario">Nombre de Usuario</label>
         </div>
 
-
         <div class="form-floating">
           <input type="password" name="contraseña" maxlength="255" class="form-control" placeholder=" " id="id_password_hash">
           <label for="id_password_hash">Contraseña</label>
         </div>
         
-
-        <button type="submit" class="btn btn-primary">Entrar</button>
+        <button type="submit" class="btn btn-primary" style="width:100%; padding:12px; margin-top:8px;">Entrar</button>
     </form>
 
-
+    <div style="text-align:center; margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06);">
+        <p style="color:#94a3b8; font-size:13px; margin:0;">
+            ¿No tienes cuenta?
+            <a href="{% url 'register' %}" style="color:var(--accent); text-decoration:none; font-weight:600;">Regístrate aquí</a>
+        </p>
+    </div>
 </div>
 
 {% endblock %}

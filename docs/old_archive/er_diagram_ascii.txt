@@ -1,0 +1,109 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    PPIMULTIVERSE - MODELO ENTIDAD-RELACIÓN                    ║
+║                          Multiverse Anime Store                               ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                           SISTEMA CORE (BLUE)                                │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────────────┐      1:N      ┌─────────────────┐      N:1             │
+│  │    USUARIOS     │◄──────────────┤     PEDIDOS     │◄─────────────────┐   │
+│  │ • id_usuario(PK)│               │ • ped_id(PK)    │                  │   │
+│  │ • nombre        │               │ • usu_id(FK)    │                  │   │
+│  │ • password_hash │               │ • ped_total     │                  │   │
+│  │ • id_sexo(FK)   │               │ • ped_estado(FK)│                  │   │
+│  │ • id_perfil(FK) │               └─────────────────┘                  │   │
+│  └────────┬────────┘                            │                       │   │
+│           │1:N                                  │N:1                    │   │
+│           │                                     │                       │   │
+│  ┌────────▼────────┐                 ┌──────────▼──────────┐            │   │
+│  │     SEXOS       │                 │ PEDIDOS_PRODUCTOS   │            │   │
+│  │ • id_sexo(PK)   │                 │ • ped_id(PK/FK)     │            │   │
+│  │ • nombre_sexo   │                 │ • prod_id(PK/FK)    │            │   │
+│  └─────────────────┘                 │ • pped_cantidad     │            │   │
+│                                       │ • pped_total        │            │   │
+│  ┌─────────────────┐                 └──────────┬──────────┘            │   │
+│  │    PERFILES     │                            │N:1                    │   │
+│  │ • id_perfil(PK) │                            │                       │   │
+│  │ • nombre        │                 ┌──────────▼──────────┐            │   │
+│  │ • rol_id(FK)    │                 │     PRODUCTOS       │            │   │
+│  └─────────────────┘                 │ • prod_id(PK)       │            │   │
+│                                       │ • prod_nombre       │            │   │
+│                                       │ • prod_precio_venta │            │   │
+│                                       │ • prod_stock        │            │   │
+│                                       │ • cat_id(FK)        │            │   │
+│                                       └──────────┬──────────┘            │   │
+│                                                  │N:1                    │   │
+│                                       ┌──────────▼──────────┐            │   │
+│                                       │     CATEGORIA       │            │   │
+│                                       │ • cat_id(PK)        │            │   │
+│                                       │ • cat_nombre        │            │   │
+│                                       └─────────────────────┘            │   │
+│                                                                          │   │
+│  ┌─────────────────┐                                                     │   │
+│  │ ESTADOPEDIDOS   │                                                     │   │
+│  │ • est_id(PK)    │◄────────────────────────────────────────────────────┘   │
+│  │ • est_nombre    │                                                         │
+│  └─────────────────┘                                                         │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────┐
+│                        SISTEMAS AVANZADOS (YELLOW)                           │
+├──────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌──────────────────────────┐    ┌──────────────────────────┐               │
+│  │  CONSULTAS_DINAMICAS     │    │   PRODUCTOS_AUDITORIA    │               │
+│  │ • cons_id(PK)            │    │ • creation_date          │               │
+│  │ • cons_nombre            │    │ • au_type                │               │
+│  │ • cons_sql               │    │ • auditoria (JSON)       │               │
+│  │ • cons_descripcion       │    │                          │               │
+│  └──────────────────────────┘    └──────────────────────────┘               │
+│                                                                              │
+│  ┌──────────────────────────┐    ┌──────────────────────────┐               │
+│  │       CONTACTOS          │    │    CONFIG_CONTACTO       │               │
+│  │ • id_contacto(PK)        │    │ • id_regla(PK)           │               │
+│  │ • id_usuario(FK)         │    │ • nombre_contacto        │               │
+│  │ • tipo_contacto(FK)      │    │ • regex_val              │               │
+│  │ • dato_contacto          │    │ • min/max_length         │               │
+│  └──────────┬───────────────┘    │ • mensaje_error          │               │
+│             │N:1                  └──────────┬───────────────┘               │
+│  ┌──────────▼───────────────┐                │1:N                            │
+│  │       MODULOS            │                │                               │
+│  │ • id_mod(PK)             │    ┌───────────▼──────────────┐               │
+│  │ • nombre_mod             │    │     PERFILPERMISOS       │               │
+│  │ • url_mod                │    │ • perfil_id(PK/FK)       │               │
+│  │ • descripcion            │    │ • mod_id(PK/FK)          │               │
+│  └──────────┬───────────────┘    │ • can_create             │               │
+│             │1:N                  │ • can_read               │               │
+│  ┌──────────▼───────────────┐    │ • can_update             │               │
+│  │         ROLES            │    │ • can_delete             │               │
+│  │ • id_rol(PK)             │    └──────────────────────────┘               │
+│  │ • nombre                 │                                                │
+│  │ • descripcion            │                                                │
+│  └──────────────────────────┘                                                │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                          RESUMEN DE TABLAS                                   ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ Tablas Core: 8          │ Tablas Config: 5      │ Tablas Avanzadas: 6       ║
+║ • usuarios              │ • sexos               │ • consultas_dinamicas     ║
+║ • productos             │ • perfiles            │ • productos_auditoria     ║
+║ • pedidos               │ • categoria           │ • contactos               ║
+║ • pedidos_productos     │ • estadopedidos       │ • config_contacto         ║
+║                         │ • roles               │ • modulos                 ║
+║                         │                       │ • perfilpermisos          ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                          CARACTERÍSTICAS TÉCNICAS                            ║
+╠══════════════════════════════════════════════════════════════════════════════╣
+║ • Total tablas: 19                                                           ║
+║ • Relaciones: 12 FK + 1 PK compuesta                                         ║
+║ • Tipos: VARCHAR, INTEGER, NUMERIC, DATE, TIMESTAMP, TEXT, JSON              ║
+║ • Sistema: PostgreSQL 16 + PL/pgSQL + Triggers                               ║
+║ • Auditoría: Automática vía triggers (JSON logging)                          ║
+║ • Reportes: Consultas dinámicas configurables                                ║
+║ • Permisos: CRUD granular por módulo                                         ║
+╚══════════════════════════════════════════════════════════════════════════════╝

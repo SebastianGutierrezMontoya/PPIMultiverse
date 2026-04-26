@@ -18,7 +18,9 @@
       {% if user.is_authenticated %}
       <a class="navbar-link" href="{% url 'mis_pedidos' %}">Mis Pedidos</a>
       {% endif %}
+      {% if user.is_authenticated and user.usuario_id_perfil_id == 1 %}
       <a class="navbar-link navbar-link-muted" href="{% url 'panel_dashboard' %}">Gestión</a>
+      {% endif %}
     </div>
 
     <div class="navbar-actions">

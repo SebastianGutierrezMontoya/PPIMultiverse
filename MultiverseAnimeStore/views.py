@@ -1199,7 +1199,9 @@ def checkout_view(request):
             )
 
             # Guardar teléfono en la tabla Contactos
+            next_contacto_id = get_next_id_model_name(Contactos, 'id_contacto')
             Contactos.objects.create(
+                id_contacto=next_contacto_id,
                 dato_contacto=telefono_invitado,
                 id_usuario=usuario,
                 # tipo_contacto se deja null (es nullable en la BD)

@@ -41,17 +41,12 @@ def next_consecutive_id(model, field):
 
 #funcion para tener el siguiente valor de id de un capo de texto con formato "TEXTO-123"
 def get_next_id(value):
-
-    parts = value.split('-')
-    print(value)
-    if parts:
-        last_part = parts[-1]
-        try:
-            num = int(last_part)
-            return num + 1
-        except ValueError:
-            return None
-    return None
+    # Busca el ultimo numero al final del string (ej: 'USR-15' -> 15, 'admin' -> 1)
+    import re
+    match = re.search(r'(\d+)$', value)
+    if match:
+        return int(match.group(1)) + 1
+    return 1
 
 
 def get_next_id_model_name(model, field_name):

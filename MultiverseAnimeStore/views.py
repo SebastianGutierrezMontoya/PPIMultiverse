@@ -1325,7 +1325,12 @@ def pedido_detalle_view(request, ped_id):
 
 # ─── Panel de Control (visor dark, capa aparte) ───
 
+@Login_requerido()
 def panel_dashboard(request):
+    # Solo administradores (perfil_id=1) pueden ver el panel
+    if not getattr(request.user, 'usuario_id_perfil_id', None) == 1:
+        messages.error(request, 'No tienes permiso para acceder al panel de gestión.')
+        return redirect('home')
     total_productos = Productos.objects.count()
     total_usuarios = Usuarios.objects.count()
     total_pedidos = Pedidos.objects.count()
@@ -1353,7 +1358,11 @@ def panel_dashboard(request):
     return render(request, 'Admin/panel_dashboard.html', context)
 
 
+@Login_requerido()
 def panel_productos_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     page = int(request.GET.get('page', 1))
     query = request.GET.get('q', '')
     paginate_by = 10
@@ -1375,7 +1384,11 @@ def panel_productos_list(request):
     })
 
 
+@Login_requerido()
 def panel_productos_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     if request.method == 'POST':
         form = ProductosForm(request.POST, request.FILES)
         if form.is_valid():
@@ -1397,7 +1410,11 @@ def panel_productos_crear(request):
     })
 
 
+@Login_requerido()
 def panel_productos_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     producto = get_object_or_404(Productos, pk=pk)
     if request.method == 'POST':
         form = ProductosForm(request.POST, request.FILES, instance=producto)
@@ -1421,7 +1438,11 @@ def panel_productos_editar(request, pk):
     })
 
 
+@Login_requerido()
 def panel_usuarios_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     page = int(request.GET.get('page', 1))
     query = request.GET.get('q', '')
     paginate_by = 10
@@ -1443,7 +1464,11 @@ def panel_usuarios_list(request):
     })
 
 
+@Login_requerido()
 def panel_usuarios_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
 
     if request.method == 'POST':
@@ -1471,7 +1496,11 @@ def panel_usuarios_crear(request):
     })
 
 
+@Login_requerido()
 def panel_usuarios_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     usuario = get_object_or_404(Usuarios, pk=pk)
     contactos = Contactos.objects.filter(id_usuario=usuario)
     Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
@@ -1513,7 +1542,11 @@ def panel_usuarios_editar(request, pk):
     })
 
 
+@Login_requerido()
 def panel_pedidos_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     estado_map = {1: 'Pendiente', 2: 'Confirmado', 3: 'En preparacion',
                   4: 'Enviado', 5: 'Entregado', 6: 'Cancelado'}
     pedidos = Pedidos.objects.select_related('usu').all().order_by('-ped_fecha_pedido')[:20]
@@ -1526,7 +1559,11 @@ def panel_pedidos_list(request):
     })
 
 
+@Login_requerido()
 def panel_categorias_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     categorias = Categoria.objects.all().order_by('cat_id')
     return render(request, 'Admin/panel_categorias.html', {
         'categorias': categorias,
@@ -1535,7 +1572,11 @@ def panel_categorias_list(request):
     })
 
 
+@Login_requerido()
 def panel_roles_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     roles = Roles.objects.all().order_by('id_rol')
     return render(request, 'Admin/panel_roles.html', {
         'roles': roles,
@@ -1544,7 +1585,11 @@ def panel_roles_list(request):
     })
 
 
+@Login_requerido()
 def panel_perfiles_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     perfiles = Perfiles.objects.select_related('rol_id').all().order_by('id_perfil')
     return render(request, 'Admin/panel_perfiles.html', {
         'perfiles': perfiles,
@@ -1553,7 +1598,11 @@ def panel_perfiles_list(request):
     })
 
 
+@Login_requerido()
 def panel_sexos_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     sexos = Sexos.objects.all().order_by('id_sexo')
     return render(request, 'Admin/panel_sexos.html', {
         'sexos': sexos,
@@ -1562,7 +1611,11 @@ def panel_sexos_list(request):
     })
 
 
+@Login_requerido()
 def panel_estados_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     estados = EstadoPedidos.objects.all().order_by('id_estado')
     return render(request, 'Admin/panel_estados.html', {
         'estados': estados,
@@ -1571,7 +1624,11 @@ def panel_estados_list(request):
     })
 
 
+@Login_requerido()
 def panel_consultas_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
     consultas = Consultas_Dinamicas.objects.all().order_by('id_consulta')
     return render(request, 'Admin/panel_consultas.html', {
         'consultas': consultas,

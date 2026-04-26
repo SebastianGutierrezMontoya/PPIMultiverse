@@ -1261,9 +1261,9 @@ def checkout_view(request):
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
         messages.success(request, f'✅ Pedido #{pedido.ped_id} creado correctamente. Te contactaremos pronto.')
-        return redirect(request.META.get('HTTP_REFERER', '/'))
+        return redirect('catalogo')
 
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+    return redirect('catalogo')
 
 
 def catalogo_view(request):

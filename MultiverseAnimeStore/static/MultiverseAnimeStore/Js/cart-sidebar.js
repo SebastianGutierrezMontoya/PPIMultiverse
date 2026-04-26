@@ -172,8 +172,12 @@ function closeCheckoutModal() {
 function submitCheckoutForm() {
   const addressInput = document.getElementById('checkout_address');
   const notesInput = document.getElementById('checkout_notes');
+  const nameInput = document.getElementById('checkout_name');
+  const phoneInput = document.getElementById('checkout_phone');
   const addressHidden = document.getElementById('ped_direccion_envio_input');
   const notesHidden = document.getElementById('ped_notas_input');
+  const nameHidden = document.getElementById('nombre_invitado_input');
+  const phoneHidden = document.getElementById('telefono_invitado_input');
   const form = document.getElementById('checkout-form');
 
   if (!addressInput || !notesInput || !addressHidden || !notesHidden || !form) {
@@ -182,6 +186,12 @@ function submitCheckoutForm() {
 
   addressHidden.value = addressInput.value.trim();
   notesHidden.value = notesInput.value.trim();
+  if (nameHidden && nameInput) {
+    nameHidden.value = nameInput.value.trim();
+  }
+  if (phoneHidden && phoneInput) {
+    phoneHidden.value = phoneInput.value.trim();
+  }
   form.submit();
   clearCartCache();
 }
@@ -189,6 +199,15 @@ function submitCheckoutForm() {
 function initCart() {
   cart = loadCartFromCache();
   renderCart();
+  // Si el usuario ya inició sesión, ocultar campos de invitado
+  var nameGroup = document.getElementById('checkout-name-group');
+  var phoneGroup = document.getElementById('checkout-phone-group');
+  if (nameGroup && window.isAuthenticated) {
+    nameGroup.style.display = 'none';
+  }
+  if (phoneGroup && window.isAuthenticated) {
+    phoneGroup.style.display = 'none';
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initCart);

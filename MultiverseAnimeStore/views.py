@@ -12,6 +12,7 @@ from functools import wraps
 from django.forms import modelform_factory
 import psycopg2
 import json
+import secrets
 from datetime import date
 from decimal import Decimal
 from django.core.paginator import Paginator
@@ -1151,10 +1152,68 @@ def checkout_view(request):
             messages.error(request, 'El carrito está vacío. No se creó ningún pedido.')
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        if not getattr(request.user, 'is_authenticated', False):
-            print("DEBUG: Usuario no autenticado, redirigiendo.")
-            messages.error(request, 'Debes iniciar sesión para crear el pedido.')
-            return redirect(request.META.get('HTTP_REFERER', '/'))
+        # ── DETERMINAR USUARIO ──────────────────────────────────────
+        # Si está autenticado, usamos su usuario.
+        # Si NO está autenticado (invitado), creamos un usuario temporal
+        # para cumplir con la FK de Pedidos, sin tocar el esquema de la BD.
+        # ─────────────────────────────────────────────────────────────
+        if request.user.is_authenticated:
+            usuario = request.user
+        else:
+            nombre_invitado = request.POST.get('nombre_invitado', '').strip()
+            telefono_invitado = request.POST.get('telefono_invitado', '').strip()
+            direccion_envio = request.POST.get('ped_direccion_envio', '').strip()
+
+            # Validar datos mínimos del invitado
+            if not nombre_invitado or not telefono_invitado:
+                messages.error(request, 'Debes ingresar tu nombre y teléfono para continuar.')
+                return redirect(request.META.get('HTTP_REFERER', '/'))
+
+            # Generar ID único para el usuario temporal
+            from .forms import get_next_id_model_name
+            next_id_num = get_next_id_model_name(Usuarios, 'id_usuario')
+            new_id = f"USR-{next_id_num}"
+
+            # Contraseña aleatoria — este usuario nunca va a iniciar sesión
+            random_pass = secrets.token_hex(16)
+            hashed = hash_password(random_pass)
+
+            # Crear usuario temporal con activo=0 (no puede loguearse)
+            sexo_default = Sexos.objects.get(pk=3)  # "Otro"
+            perfil_cliente = Perfiles.objects.get(pk=2)  # "Cliente"
+
+            # Separar nombre completo en nombre y primer_apellido
+            partes_nombre = nombre_invitado.split(maxsplit=1)
+            nombre = partes_nombre[0] if partes_nombre else nombre_invitado
+            primer_apellido = partes_nombre[1] if len(partes_nombre) > 1 else "Invitado"
+
+            usuario = Usuarios.objects.create(
+                id_usuario=new_id,
+                nombre=nombre,
+                primer_apellido=primer_apellido,
+                password_hash=hashed,
+                activo=0,  # No puede iniciar sesión
+                usuario_id_sexo=sexo_default,
+                usuario_id_perfil=perfil_cliente,
+            )
+
+            # Guardar teléfono en la tabla Contactos
+            Contactos.objects.create(
+                dato_contacto=telefono_invitado,
+                id_usuario=usuario,
+                # tipo_contacto se deja null (es nullable en la BD)
+            )
+
+            # Marcar ped_notas para identificar pedidos de invitados
+            notas_pedido = request.POST.get('ped_notas', '').strip()
+            if notas_pedido:
+                notas_pedido = f"[INVITADO - {telefono_invitado}] {notas_pedido}"
+            else:
+                notas_pedido = f"[INVITADO - {telefono_invitado}]"
+            request.POST = request.POST.copy()  # mutable copy
+            request.POST['ped_notas'] = notas_pedido
+
+        # ── FIN: usuario definido ─────────────────────────────────────
 
         productos_seleccionados = []
         total_calculado = Decimal('0.00')
@@ -1184,13 +1243,13 @@ def checkout_view(request):
             with transaction.atomic():
                 pedido = Pedidos.objects.create(
                     ped_id=next_ped_id,
-                    usu=request.user,
+                    usu=usuario,
                     ped_fecha_pedido=date.today(),
                     ped_total=total_calculado,
                     ped_direccion_envio=request.POST.get('ped_direccion_envio', ''),
-                    ped_notas=request.POST.get('ped_notas', 'Pedido creado desde carrito público')
+                    ped_notas=request.POST.get('ped_notas', 'Pedido creado desde carrito público'),
                 )
-                print(f"DEBUG: Pedido creado con ID {pedido.ped_id} para usuario {request.user.id_usuario} con total {total_calculado}")
+                print(f"DEBUG: Pedido creado con ID {pedido.ped_id} para usuario {usuario.id_usuario} con total {total_calculado}")
                 PedidosProductosCreateView(productos_seleccionados, pedido.ped_id)
 
         except DatabaseError as e:
@@ -1198,7 +1257,7 @@ def checkout_view(request):
             messages.error(request, _extract_db_message(e))
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        messages.success(request, f'Pedido {pedido.ped_id} creado correctamente.')
+        messages.success(request, f'✅ Pedido #{pedido.ped_id} creado correctamente. Te contactaremos pronto.')
         return redirect(request.META.get('HTTP_REFERER', '/'))
 
     return redirect(request.META.get('HTTP_REFERER', '/'))

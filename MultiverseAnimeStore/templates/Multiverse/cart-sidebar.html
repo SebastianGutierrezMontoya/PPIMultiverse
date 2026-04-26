@@ -47,6 +47,8 @@
         <input type="hidden" name="cart_total" id="cart_total_input">
         <input type="hidden" name="ped_direccion_envio" id="ped_direccion_envio_input">
         <input type="hidden" name="ped_notas" id="ped_notas_input">
+        <input type="hidden" name="nombre_invitado" id="nombre_invitado_input">
+        <input type="hidden" name="telefono_invitado" id="telefono_invitado_input">
       </div>
 
       <button type="button" class="cart-confirm" onclick="openCheckoutModal()">
@@ -64,6 +66,16 @@
           </div>
 
           <div style="display:flex; flex-direction:column; gap:16px;">
+            <label id="checkout-name-group" style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem; color:rgba(255,255,255,0.9);">
+              Nombre completo
+              <input id="checkout_name" type="text" placeholder="Ej. Juan Pérez" style="width:100%; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:#fff;" />
+            </label>
+
+            <label id="checkout-phone-group" style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem; color:rgba(255,255,255,0.9);">
+              Teléfono de contacto
+              <input id="checkout_phone" type="tel" placeholder="Ej. 3001234567" style="width:100%; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:#fff;" />
+            </label>
+
             <label style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem; color:rgba(255,255,255,0.9);">
               Dirección de envío
               <input id="checkout_address" type="text" placeholder="Ej. Calle 123, Ciudad" style="width:100%; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:#fff;" />

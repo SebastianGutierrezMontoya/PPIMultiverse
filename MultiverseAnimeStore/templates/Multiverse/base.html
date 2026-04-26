@@ -29,6 +29,9 @@
 
     </body>
 
+    <script>
+        window.isAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
+    </script>
     <script src="{% static 'MultiverseAnimeStore/Js/cart-sidebar.js' %}"></script>
 
     <script>

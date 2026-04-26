@@ -62,6 +62,8 @@
 // Marcar campos obligatorios con asterisco rojo (universal: funciona con cualquier estructura)
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(el) {
+        // Saltar inputs dentro de form-floating: el CSS ya pone el * via ::after
+        if (el.closest('.form-floating')) return;
         var label = document.querySelector('label[for="' + el.id + '"]');
         if (label && !label.querySelector('.required-star')) {
             var star = document.createElement('span');

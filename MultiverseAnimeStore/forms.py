@@ -80,12 +80,14 @@ class PedidosForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['usu'].queryset = Usuarios.objects.all()
         self.fields['usu'].label_from_instance = lambda obj: f"{obj.nombre} {obj.primer_apellido}"
+        self.fields['usu'].required = True
         self.fields['ped_id'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['ped_id'].initial = next_int_id(Pedidos, 'ped_id')
         self.fields['ped_total'].widget.attrs['readonly'] = True
         self.fields['ped_total'].initial = 0.00
         self.fields['ped_direccion_envio'].widget.attrs.update({'placeholder': 'Ingrese la dirección de envío'})
+        self.fields['ped_direccion_envio'].required = True
         self.fields['ped_notas'].widget.attrs.update({'placeholder': 'Ingrese notas adicionales (opcional)'})
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
@@ -94,10 +96,6 @@ class PedidosForm(forms.ModelForm):
         self.fields['ped_total'].widget.attrs.update({'class': 'form-control', 'step': '0.01'})
         self.fields['ped_fecha_pedido'].initial = Date.today()
         self.fields['ped_notas'].required = False
-
-        
-        # self.fields['ped_estado'].initial = 1
-        # self.fields['ped_notas'].widget.attrs.update({'class': 'form-control', 'rows': 4})
 
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})
@@ -184,6 +182,14 @@ class UsuariosForm(forms.ModelForm):
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['id_usuario'].initial = "USR-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
         self.fields['activo'].widget.attrs.update({'min': 0, 'max': 1, 'step': '1'})
+        # Forzar required en campos obligatorios del usuario
+        self.fields['nombre'].required = True
+        self.fields['primer_apellido'].required = True
+        self.fields['password_hash'].required = True
+        self.fields['usuario_id_sexo'].required = True
+        self.fields['usuario_id_perfil'].required = True
+        self.fields['segundo_apellido'].required = False
+        self.fields['fecha_nacimiento'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['fecha_nacimiento'].widget.attrs.update({'class': 'form-control datepicker'})
@@ -204,6 +210,8 @@ class CategoriaForm(forms.ModelForm):
         self.fields['cat_id'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id (cat_id es char; la función maneja solo valores numéricos)...
         self.fields['cat_id'].initial = "CAT-" + str(get_next_id_model_name(Categoria, 'cat_id'))
+        self.fields['cat_nombre'].required = True
+        self.fields['cat_descripcion'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -220,17 +228,35 @@ class ProductosForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['cat'].queryset = Categoria.objects.all()
         self.fields['cat'].label_from_instance = lambda obj: obj.cat_nombre
+        self.fields['cat'].required = True
         self.fields['prod_id'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
         "usr-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
 
         self.fields['prod_id'].initial = "PROD-" + str(get_next_id_model_name(Productos, 'prod_id'))
+        # Forzar required en campos que deben tener valor
+        self.fields['prod_nombre'].required = True
+        self.fields['prod_precio_venta'].required = False
+        self.fields['prod_stock'].required = False
+        self.fields['prod_descripcion'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['prod_precio_venta'].widget.attrs.update({'step': '0.01'})
 
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})
+
+    def clean_prod_precio_venta(self):
+        valor = self.cleaned_data.get('prod_precio_venta')
+        if valor is None or valor == '':
+            return 0.00
+        return valor
+
+    def clean_prod_stock(self):
+        valor = self.cleaned_data.get('prod_stock')
+        if valor is None or valor == '':
+            return 0
+        return valor
 
 
 class RolesForm(forms.ModelForm):

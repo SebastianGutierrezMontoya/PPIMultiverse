@@ -177,11 +177,9 @@ def register_view(request):
 
 # logout
 def logout_view(request):
-    # Aquí podrías limpiar la sesión o cualquier dato relacionado con el usuario
-    # logout(request)  # Si estás usando el sistema de autenticación de Django
     request.session.flush()
-    messages.info(request, 'Has cerrado sesión exitosamente.')
-    return redirect('login')
+    messages.success(request, 'Has cerrado sesión. ¡Vuelve pronto!')
+    return redirect('home')
 
 #Categorias
 
@@ -1138,7 +1136,6 @@ def home_view(request):
     return render(request, 'Multiverse/home.html')
 
 
-@Login_requerido()
 def checkout_view(request):
     print("DEBUG: checkout_view called with method:", request.method)
     if request.method == 'POST':

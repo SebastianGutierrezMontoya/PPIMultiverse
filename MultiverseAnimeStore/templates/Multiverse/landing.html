@@ -1,243 +1,368 @@
 {% extends "Multiverse/base.html" %}
 {% load static %}
 
-{% block title %}Inicio - Multiverse Anime Store{% endblock %}
+{% block title %}Multiverse Anime Store | Tu Portal al Mundo Otaku{% endblock %}
 
 {% block extra_head %}
 <style>
 /* =========================
-   LANDING — Variables locales
-   Hereda :root de navbar.css
+   LANDING — REDESIGN
+   Hereda variables de navbar.css
 ========================= */
 
-/* ─── HERO ─── */
+body {
+    background-color: #fcfcfc;
+}
+
+/* ─── HERO SECTION ─── */
 .landing-hero {
   background: var(--color-bg);
   color: var(--color-text);
-  padding: 100px 0 80px;
+  padding: 120px 0 100px;
   text-align: center;
   position: relative;
   overflow: hidden;
+  border-bottom: 1px solid var(--color-border);
 }
+
+/* Efectos de fondo Hero */
 .landing-hero::before {
   content: '';
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse at 30% 50%, rgba(243,125,21,0.10) 0%, transparent 60%),
-    radial-gradient(ellipse at 70% 50%, rgba(243,125,21,0.06) 0%, transparent 60%);
-  pointer-events: none;
+  top: -50%;
+  left: -10%;
+  width: 120%;
+  height: 200%;
+  background: radial-gradient(circle at center, rgba(243, 125, 21, 0.08) 0%, transparent 70%);
+  z-index: 0;
 }
-.landing-hero > * { position: relative; z-index: 1; }
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+}
 
 .landing-hero h1 {
-  font-size: 3rem;
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: -1px;
-  margin-bottom: 0.75rem;
+  letter-spacing: -2px;
+  line-height: 0.95;
+  margin-bottom: 20px;
+  font-style: italic;
 }
+
+.landing-hero h1 span {
+  color: var(--color-accent);
+  display: block;
+}
+
 .landing-hero p {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   color: var(--color-text-muted);
-  margin-bottom: 2rem;
-  max-width: 500px;
+  margin-bottom: 40px;
+  max-width: 600px;
   margin-left: auto;
   margin-right: auto;
 }
-.landing-hero .btn {
-  padding: 14px 48px;
-  border-radius: 14px;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  transition: transform 0.2s ease;
-}
-.landing-hero .btn:hover { transform: scale(1.03); }
 
-/* ─── HERO CARDS ─── */
-.landing-hero-cards {
-  margin-top: -48px;
-  position: relative;
-  z-index: 2;
-}
-.hero-card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-soft);
-  border-radius: 20px;
-  padding: 24px 16px;
-  text-align: center;
-  display: block;
-  text-decoration: none;
-  color: #111;
-  height: 100%;
-  transition: all 0.3s ease;
-}
-.hero-card:hover {
-  border-color: var(--border-accent);
-  box-shadow: 0 0 0 1px rgba(243,125,21,0.15),
-              0 20px 60px rgba(0,0,0,0.06);
-  transform: translateY(-4px);
-  color: #111;
-}
-.hero-card-icon { font-size: 2.4rem; margin-bottom: 8px; }
-.hero-card h5 { font-weight: 800; font-size: 16px; margin-bottom: 4px; }
-.hero-card small { color: #94a3b8; }
-
-/* ─── TÍTULOS DE SECCIÓN ─── */
-.landing-section-title {
-  font-weight: 900;
-  font-size: 1.5rem;
-  text-transform: uppercase;
-  letter-spacing: -0.5px;
-  margin-bottom: 1.5rem;
-  color: #111;
-}
-
-/* ─── CATEGORY GRID ─── */
-.category-card {
-  background: #f8f9fa;
-  border: 2px solid transparent;
-  border-radius: 16px;
-  padding: 22px 12px;
-  text-align: center;
-  display: block;
-  text-decoration: none;
-  color: #333;
-  transition: all 0.25s ease;
-}
-.category-card:hover {
-  border-color: var(--accent);
-  background: var(--card-bg);
-  transform: scale(1.04);
-  color: #333;
-}
-.category-card .icon { font-size: 2.2rem; margin-bottom: 6px; }
-.category-card h6 { font-weight: 800; font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
-.category-card small { color: #94a3b8; font-size: 11px; }
-
-/* ─── PRODUCT CARDS (mismo estilo que catalogo/bento) ─── */
-.lp-product-card {
-  border-radius: 24px;
-  background: var(--card-bg);
-  border: 1px solid var(--border-soft);
-  overflow: hidden;
-  transition: all 0.3s ease;
-  height: 100%;
-}
-.lp-product-card:hover {
-  border-color: var(--border-accent);
-  box-shadow: 0 0 0 1px rgba(235,248,254,0.2),
-              0 20px 60px rgba(0,0,0,0.06);
-}
-.lp-product-card .media {
-  height: 220px;
-  background: var(--card-inner);
-  display: flex;
+.hero-cta {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  overflow: hidden;
+  gap: 12px;
+  padding: 18px 40px;
+  background: var(--color-accent);
+  color: #000;
+  border-radius: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 12px;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  text-decoration: none;
 }
-.lp-product-card .media img {
-  width: 100%;
+
+.hero-cta:hover {
+  transform: scale(1.05) translateY(-5px);
+  box-shadow: 0 15px 30px rgba(243, 125, 21, 0.3);
+  color: #000;
+}
+
+/* ─── HERO CARDS (TOP 4) ─── */
+.hero-cards-wrapper {
+  margin-top: -60px;
+  position: relative;
+  z-index: 10;
+}
+
+.hero-bento-item {
+  background: var(--card-bg);
+  border: 1px solid var(--border-soft);
+  border-radius: 28px;
+  padding: 30px 20px;
+  text-align: center;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: all 0.4s ease;
+  display: block;
+  text-decoration: none;
 }
-.lp-product-card:hover .media img { transform: scale(1.05); }
-.lp-product-card .media .placeholder {
-  color: #aaa;
-  font-size: 13px;
-  font-weight: 600;
+
+.hero-bento-item:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+  transform: translateY(-10px);
+}
+
+.hero-bento-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.hero-bento-item:hover .hero-bento-icon {
+  transform: scale(1.2) rotate(5deg);
+}
+
+.hero-bento-item h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: #111;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.hero-bento-item span {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
-.lp-product-card .body {
+
+/* ─── CATEGORY GRID (ALL) ─── */
+.section-label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.3em;
+  color: var(--color-accent);
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-style: italic;
+  margin-bottom: 40px;
+  color: #000;
+}
+
+.cat-minimal-card {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+.cat-minimal-card:hover {
+  background: var(--color-bg);
+  border-color: var(--color-bg);
+}
+
+.cat-minimal-card .cat-icon { font-size: 1.5rem; }
+
+.cat-minimal-card .cat-info h4 {
+  font-size: 13px;
+  font-weight: 800;
+  margin: 0;
+  color: #111;
+  text-transform: uppercase;
+  transition: color 0.3s ease;
+}
+
+.cat-minimal-card .cat-info span {
+  font-size: 10px;
+  color: #94a3b8;
+}
+
+.cat-minimal-card:hover .cat-info h4 { color: #fff; }
+.cat-minimal-card:hover .cat-info span { color: var(--color-text-muted); }
+
+/* ─── NEW RELEASES (BENTO STYLE FROM CATALOGUE) ─── */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 30px;
+}
+
+/* Re-implementando bento-card para asegurar consistencia */
+.lp-bento-card {
+  background: var(--card-bg);
+  border-radius: 28px;
+  border: 1px solid var(--border-soft);
   padding: 16px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  display: block;
+}
+
+.lp-bento-card:hover {
+  border-color: var(--border-accent);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+}
+
+.lp-bento-media {
+  height: 280px;
+  border-radius: 24px;
+  background: var(--card-inner);
+  overflow: hidden;
+  position: relative;
+}
+
+.lp-bento-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.lp-bento-card:hover .lp-bento-media img {
+  transform: scale(1.08);
+}
+
+.lp-bento-footer {
+  margin-top: 15px;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
 }
-.lp-product-card .body .name {
+
+.lp-bento-title {
   font-weight: 800;
-  font-size: 15px;
-  color: var(--text-secundary);
+  font-size: 18px;
   font-style: italic;
-  margin-bottom: 4px;
-}
-.lp-product-card .body .price {
-  font-weight: 900;
-  font-size: 17px;
-  color: var(--accent);
-  white-space: nowrap;
+  color: var(--text-secundary);
+  margin-bottom: 2px;
 }
 
-/* ─── SOCIAL ─── */
-.landing-social {
-  background: #f8f9fa;
-  border-radius: 24px;
-  padding: 48px 24px;
-  text-align: center;
-  border: 1px solid #e9ecef;
-}
-.landing-social h3 {
-  font-weight: 900;
-  font-size: 1.3rem;
+.lp-bento-cat {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: -0.3px;
-  margin-bottom: 0.4rem;
 }
-.landing-social p { color: #94a3b8; font-size: 14px; max-width: 360px; margin: 0 auto 1.5rem; }
-.social-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 54px;
-  height: 54px;
-  border-radius: 50%;
-  font-size: 1.4rem;
+
+.lp-bento-price {
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--accent);
+}
+
+/* ─── SOCIAL SECTION ─── */
+.social-bento {
+  background: var(--color-bg);
+  border-radius: 40px;
+  padding: 80px 40px;
+  text-align: center;
   color: #fff;
-  margin: 0 6px;
-  transition: transform 0.25s ease;
-  text-decoration: none;
+  position: relative;
+  overflow: hidden;
 }
-.social-icon:hover { transform: scale(1.15); }
-.social-icon.instagram { background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); }
-.social-icon.facebook  { background: #1877f2; }
-.social-icon.whatsapp  { background: #25d366; }
+
+.social-bento::after {
+  content: 'STAY CONNECTED';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12vw;
+  font-weight: 900;
+  opacity: 0.03;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 1;
+}
+
+.social-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 30px;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  transition: all 0.3s ease;
+}
+
+.social-pill:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-5px);
+  color: var(--color-accent);
+}
+
+@media (max-width: 768px) {
+  .landing-hero { padding: 80px 0 60px; }
+  .section-title { font-size: 1.8rem; }
+  .bento-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
+  .lp-bento-media { height: 200px; }
+  .lp-bento-title { font-size: 14px; }
+  .lp-bento-price { font-size: 16px; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- ══════════════════════════════════════ -->
-<!-- HERO -->
-<!-- ══════════════════════════════════════ -->
-<div class="landing-hero">
-  <h1>Bienvenido a<br>Multiverse Anime Store</h1>
-  <p>Tu tienda de confianza para figuras, mangas y accesorios anime en Bello</p>
-  <a href="{% url 'catalogo' %}" class="btn btn-dark" style="background:var(--accent);border:none;color:#020617;">
-    🛒 Ver Catálogo
-  </a>
-</div>
+<!-- ═══ HERO ═══ -->
+<section class="landing-hero">
+  <div class="container hero-content">
+    <span class="section-label">Bienvenidos a la Experiencia</span>
+    <h1>Multiverse <span>Anime Store</span></h1>
+    <p>La tienda definitiva para los verdaderos coleccionistas. Encuentra las mejores piezas importadas y nacionales en un solo lugar.</p>
+    <a href="{% url 'catalogo' %}" class="hero-cta">
+      🚀 Explorar Catálogo
+    </a>
+  </div>
+</section>
 
-<!-- ══════════════════════════════════════ -->
-<!-- HERO CARDS — Top categorías -->
-<!-- ══════════════════════════════════════ -->
+<!-- ═══ TOP CATEGORIES (HERO CARDS) ═══ -->
 {% if hero_categories %}
-<div class="container landing-hero-cards">
-  <div class="row g-3">
+<div class="container hero-cards-wrapper">
+  <div class="row g-4">
     {% for cat in hero_categories %}
     <div class="col-6 col-md-3">
-      <a href="{% url 'catalogo' %}?cat={{ cat.cat_id }}" class="hero-card">
-        <div class="hero-card-icon">
+      <a href="{% url 'catalogo' %}?cat={{ cat.cat_id }}" class="hero-bento-item">
+        <span class="hero-bento-icon">
           {% with n=cat.cat_nombre|lower %}
             {% if 'figura' in n %}🗿{% elif 'manga' in n %}📚{% elif 'accesorio' in n %}🎒{% elif 'ropa' in n or 'camiseta' in n %}👕{% elif 'carta' in n or 'tcg' in n %}🃏{% elif 'peluche' in n %}🧸{% elif 'poster' in n or 'lámina' in n %}🖼️{% else %}📦{% endif %}
           {% endwith %}
-        </div>
-        <h5>{{ cat.cat_nombre }}</h5>
-        <small>{{ cat.productos_count }} producto{{ cat.productos_count|pluralize:'s' }}</small>
+        </span>
+        <h3>{{ cat.cat_nombre }}</h3>
+        <span>{{ cat.productos_count }} Artículos</span>
       </a>
     </div>
     {% endfor %}
@@ -245,76 +370,88 @@
 </div>
 {% endif %}
 
-<!-- ══════════════════════════════════════ -->
-<!-- TODAS LAS CATEGORÍAS -->
-<!-- ══════════════════════════════════════ -->
+<!-- ═══ ALL CATEGORIES ═══ -->
 {% if categorias %}
-<div class="container mt-5 pt-4">
-  <h2 class="landing-section-title">Categorías</h2>
+<section class="container mt-5 pt-5">
+  <div class="text-center mb-5">
+    <span class="section-label">Navega por el Multiverso</span>
+    <h2 class="section-title">Categorías Populares</h2>
+  </div>
   <div class="row g-3">
     {% for cat in categorias %}
-    <div class="col-4 col-md-2">
-      <a href="{% url 'catalogo' %}?cat={{ cat.cat_id }}" class="category-card">
-        <div class="icon">
+    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+      <a href="{% url 'catalogo' %}?cat={{ cat.cat_id }}" class="cat-minimal-card">
+        <span class="cat-icon">
           {% with n=cat.cat_nombre|lower %}
             {% if 'figura' in n %}🗿{% elif 'manga' in n %}📚{% elif 'accesorio' in n %}🎒{% elif 'ropa' in n or 'camiseta' in n %}👕{% elif 'carta' in n or 'tcg' in n %}🃏{% elif 'peluche' in n %}🧸{% elif 'poster' in n or 'lámina' in n %}🖼️{% else %}📦{% endif %}
           {% endwith %}
+        </span>
+        <div class="cat-info">
+          <h4>{{ cat.cat_nombre }}</h4>
+          <span>{{ cat.productos_count }} prod.</span>
         </div>
-        <h6>{{ cat.cat_nombre }}</h6>
-        <small>{{ cat.productos_count }} prod.</small>
       </a>
     </div>
     {% endfor %}
   </div>
-</div>
+</section>
 {% endif %}
 
-<!-- ══════════════════════════════════════ -->
-<!-- NUEVOS LANZAMIENTOS -->
-<!-- ══════════════════════════════════════ -->
+<!-- ═══ NEW RELEASES ═══ -->
 {% if ultimos_productos %}
-<div class="container mt-5">
-  <h2 class="landing-section-title">🆕 Nuevos Lanzamientos</h2>
-  <div class="row g-4">
-    {% for prod in ultimos_productos %}
-    <div class="col-6 col-md-4 col-lg-3">
-      <div class="lp-product-card">
-        <div class="media">
-          {% if prod.prod_imagen_url %}
-            <img src="{{ prod.prod_imagen_url }}" alt="{{ prod.prod_nombre }}">
-          {% else %}
-            <span class="placeholder">Sin imagen</span>
-          {% endif %}
-        </div>
-        <div class="body">
-          <div>
-            <div class="name">{{ prod.prod_nombre }}</div>
-            <div style="font-size:10px;letter-spacing:0.15em;color:#94a3b8;text-transform:uppercase;">
-              {{ prod.cat.cat_nombre|default:'' }}
-            </div>
-          </div>
-          <div class="price">${{ prod.prod_precio_venta|floatformat:0 }}</div>
-        </div>
-      </div>
+<section class="container mt-5 pt-5 mb-5">
+  <div class="d-flex justify-content-between align-items-end mb-4">
+    <div>
+      <span class="section-label">Lo más nuevo</span>
+      <h2 class="section-title mb-0">Nuevos Lanzamientos</h2>
     </div>
+    <a href="{% url 'catalogo' %}" class="btn btn-link text-dark fw-bold text-decoration-none" style="font-size:11px; letter-spacing:0.1em; text-transform:uppercase;">
+      Ver todo →
+    </a>
+  </div>
+  
+  <div class="bento-grid">
+    {% for prod in ultimos_productos %}
+    <a href="{% url 'catalogo' %}" class="lp-bento-card">
+      <div class="lp-bento-media">
+        {% if prod.prod_imagen_url %}
+          <img src="{{ prod.prod_imagen_url }}" alt="{{ prod.prod_nombre }}" loading="lazy">
+        {% else %}
+          <div class="d-flex align-items-center justify-content-center h-100 text-muted">Sin imagen</div>
+        {% endif %}
+      </div>
+      <div class="lp-bento-footer">
+        <div>
+          <div class="lp-bento-title">{{ prod.prod_nombre }}</div>
+          <div class="lp-bento-cat">{{ prod.cat.cat_nombre|default:"Multiverse" }}</div>
+        </div>
+        <div class="lp-bento-price">${{ prod.prod_precio_venta|floatformat:0 }}</div>
+      </div>
+    </a>
     {% endfor %}
   </div>
-</div>
+</section>
 {% endif %}
 
-<!-- ══════════════════════════════════════ -->
-<!-- REDES SOCIALES -->
-<!-- ══════════════════════════════════════ -->
-<div class="container mt-5 mb-5">
-  <div class="landing-social">
-    <h3>📱 Síguenos</h3>
-    <p>Entérate de nuevos productos, promociones y eventos</p>
-    <div>
-      <a href="https://instagram.com/multiverseanimestore/" target="_blank" rel="noopener" class="social-icon instagram" title="Instagram">📷</a>
-      <a href="https://www.facebook.com/profile.php?id=100070582506827" target="_blank" rel="noopener" class="social-icon facebook" title="Facebook">👍</a>
-      <a href="https://wa.me/573000000000?text=Hola%2C%20quiero%20informaci%C3%B3n%20sobre%20un%20producto" target="_blank" rel="noopener" class="social-icon whatsapp" title="WhatsApp">💬</a>
+<!-- ═══ SOCIAL BENTO ═══ -->
+<section class="container mb-5">
+  <div class="social-bento">
+    <span class="section-label" style="color:rgba(255,255,255,0.5)">Nuestra Comunidad</span>
+    <h2 class="section-title text-white mb-4">Únete al Multiverso</h2>
+    <p class="mb-5" style="color:rgba(255,255,255,0.6); max-width:500px; margin: 0 auto;">Síguenos en nuestras redes sociales para estar al tanto de preventas, eventos y nuevos ingresos.</p>
+    
+    <div class="social-links">
+      <a href="https://instagram.com/multiverseanimestore/" target="_blank" class="social-pill">
+        <span>📸</span> Instagram
+      </a>
+      <a href="https://facebook.com/profile.php?id=100070582506827" target="_blank" class="social-pill">
+        <span>👍</span> Facebook
+      </a>
+      <a href="https://wa.me/573000000000" target="_blank" class="social-pill">
+        <span>💬</span> WhatsApp
+      </a>
     </div>
   </div>
-</div>
+</section>
 
 {% endblock %}

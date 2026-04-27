@@ -3,6 +3,11 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/catalogo.css' %}">
+<style>
+    /* Correcciones rápidas para asegurar legibilidad */
+    .search-input { color: #000 !important; }
+    .bento-price { font-family: 'Inter', sans-serif; }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -10,10 +15,9 @@
 <!-- SEARCH WRAPPER -->
 <div class="search-wrapper">
     <form method="get" class="search-box">
-        <!-- SVG Lupa Lucide Style -->
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         
-        <input type="text" name="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="¿Qué estás buscando hoy?">
+        <input type="text" name="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="Buscar en el Multiverso...">
         
         <button type="submit" class="search-button">Buscar</button>
         
@@ -27,12 +31,12 @@
 <div class="catalogo-container">
     {% for producto in productos %}
     <div class="bento-card">
-        <!-- MEDIA -->
         <div class="bento-media">
             {% if producto.prod_imagen_url %}
                 <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
             {% else %}
-                <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">Sin imagen</div>
+                <!-- IMAGEN POR DEFECTO OFICIAL -->
+                <img src="{% static 'imagen defecto 1.png' %}" alt="Multiverse Anime Store" style="object-fit: contain; padding: 20px; background: #fff;">
             {% endif %}
             
             <div class="bento-overlay"></div>
@@ -44,7 +48,6 @@
             </div>
         </div>
 
-        <!-- FOOTER -->
         <div class="bento-footer">
             <div>
                 <h3 class="bento-title">{{ producto.prod_nombre }}</h3>
@@ -54,9 +57,9 @@
         </div>
     </div>
     {% empty %}
-    <div class="col-12 text-center py-5">
-        <h3 class="text-muted">No encontramos productos que coincidan con tu búsqueda.</h3>
-        <a href="{% url 'catalogo' %}" class="btn btn-dark mt-3">Ver todo el catálogo</a>
+    <div style="grid-column: 1 / -1; text-align: center; padding: 100px 0;">
+        <h3 style="color: #94a3b8; font-weight: 800; text-transform: uppercase;">No hay resultados</h3>
+        <a href="{% url 'catalogo' %}" style="color: var(--accent); font-weight: 700; text-decoration: none;">MOSTRAR TODO EL CATÁLOGO ➔</a>
     </div>
     {% endfor %}
 </div>
@@ -67,7 +70,7 @@
         <a href="?page={{ productos.previous_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Anterior</a>
     {% endif %}
 
-    <span>Página {{ productos.number }} de {{ productos.paginator.num_pages }}</span>
+    <span>{{ productos.number }} / {{ productos.paginator.num_pages }}</span>
 
     {% if productos.has_next %}
         <a href="?page={{ productos.next_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Siguiente</a>

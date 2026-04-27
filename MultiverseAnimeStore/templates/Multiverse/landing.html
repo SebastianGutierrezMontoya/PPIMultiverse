@@ -29,11 +29,18 @@ body {
 /* --- HERO: Compact & Clean --- */
 .hero-official {
     position: relative;
-    height: 40vh; /* Más pequeño, tipo banner promocional */
-    min-height: 300px;
+    height: auto;
+    aspect-ratio: 16 / 6; /* Mantiene la proporción original del banner sin estirarlo */
     background: url('{% static "baner tienda.png" %}') no-repeat center center;
-    background-size: cover;
+    background-size: contain; /* Asegura que se vea completa la imagen */
+    background-color: #000; /* Fondo negro por si la imagen es más pequeña */
     border-bottom: 4px solid var(--accent-color);
+}
+
+@media (max-width: 768px) {
+    .hero-official {
+        aspect-ratio: 16 / 9; /* Ajuste para móviles */
+    }
 }
 
 /* --- CATEGORIES: SVG Lucide Style --- */

@@ -1,6 +1,13 @@
 /* =========================
-   VARIABLES
+   VARIABLES & GLOBALES
 ========================= */
+:root {
+  --accent: #f37d15;
+  --dark: #000;
+  --gray-light: #f8f9fa;
+  --border-soft: rgba(0,0,0,0.08);
+  --radius-bento: 28px;
+}
 
 .catalogo-container {
     grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -9,70 +16,123 @@
     padding: 20px;
 }
 
+@media (max-width: 1200px) { .catalogo-container { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 992px) { .catalogo-container { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 576px) { .catalogo-container { grid-template-columns: 1fr; } }
+
 /* =========================
-   CARD BASE
+   SEARCH BAR PREMIUM
+========================= */
+.search-wrapper {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--border-soft);
+    border-radius: 50px;
+    padding: 8px 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+    transition: all 0.3s ease;
+}
+
+.search-box:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 15px 35px rgba(243, 125, 21, 0.1);
+}
+
+.search-box svg {
+    width: 20px;
+    height: 20px;
+    margin-left: 15px;
+    stroke: #94a3b8;
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: 500;
+    outline: none;
+    background: transparent;
+}
+
+.search-button {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 30px;
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.search-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(243, 125, 21, 0.3);
+}
+
+.clear-search {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    text-decoration: none;
+    margin-left: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* =========================
+   BENTO CARDS (CONSISTENCY)
 ========================= */
 .bento-card {
   position: relative;
   padding: 16px;
-
-  border-radius: 28px;
-  background: var(--card-bg);
-
+  border-radius: var(--radius-bento);
+  background: #ffffff;
   border: 1px solid var(--border-soft);
-
   transition: all 0.3s ease;
-  cursor: pointer;
+  height: 100%;
 }
 
-/* glow hover */
 .bento-card:hover {
-  border: 1px solid var(--border-accent);
-  box-shadow: 0 0 0 1px rgba(235, 248, 254, 0.2),
-              0 20px 60px rgba(235, 234, 234, 0.8);
+  border-color: rgba(0,0,0,0.15);
+  transform: translateY(-5px);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.06);
 }
 
-/* =========================
-   IMAGE CONTAINER
-========================= */
 .bento-media {
   position: relative;
   height: 260px;
-
   border-radius: 24px;
   overflow: hidden;
-
-  background: var(--card-inner);
+  background: #f1f1f1;
 }
 
-/* imagen */
 .bento-media img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-
-  transition: transform 0.4s ease;
+  transition: transform 0.5s ease;
 }
 
-/* zoom */
 .bento-card:hover img {
-  transform: scale(1.05);
+  transform: scale(1.08);
 }
 
-/* =========================
-   OVERLAY
-========================= */
 .bento-overlay {
   position: absolute;
   inset: 0;
-
-  /* background: linear-gradient(
-    to top,
-    rgba(2,6,23,0.9) 20%,
-    rgba(2,6,23,0.3) 60%,
-    transparent
-  ); */
-
+  background: rgba(0,0,0,0.05);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -81,18 +141,13 @@
   opacity: 1;
 }
 
-/* =========================
-   BUTTON (hidden -> visible)
-========================= */
 .bento-action {
   position: absolute;
   left: 20px;
   right: 20px;
   bottom: 20px;
-
   opacity: 0;
-  transform: translateY(20px);
-
+  transform: translateY(10px);
   transition: all 0.3s ease;
 }
 
@@ -101,38 +156,22 @@
   transform: translateY(0);
 }
 
-/* botón */
 .bento-btn {
   width: 100%;
   padding: 14px;
-
-  border-radius: 14px;
-
-  background: var(--color-bg);
-  color: var(--text-primary);
-
+  border-radius: 12px;
+  background: var(--dark);
+  color: #fff;
   font-size: 11px;
   font-weight: 800;
-
   text-transform: uppercase;
   letter-spacing: 0.2em;
-
   border: none;
   cursor: pointer;
-
-  transition: transform 0.2s ease;
 }
 
-.bento-btn:hover {
-  transform: scale(1.03);
-}
-
-/* =========================
-   FOOTER
-========================= */
 .bento-footer {
   margin-top: 16px;
-
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
@@ -140,19 +179,51 @@
 
 .bento-title {
   font-weight: 800;
-  font-size: 18px;
+  font-size: 1.1rem;
   font-style: italic;
-  color: var(--text-secundary);
+  color: #111;
+  margin: 0;
 }
 
 .bento-subtitle {
-  font-size: 11px;
-  letter-spacing: 0.2em;
-  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin: 2px 0 0;
 }
 
 .bento-price {
   font-weight: 900;
-  font-size: 18px;
+  font-size: 1.2rem;
   color: var(--accent);
+}
+
+/* =========================
+   PAGINATION
+========================= */
+.pagination {
+    margin: 50px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+.pagination a {
+    color: var(--dark);
+    text-decoration: none;
+    padding: 10px 20px;
+    border: 1px solid var(--border-soft);
+    border-radius: 12px;
+    transition: all 0.3s;
+}
+
+.pagination a:hover {
+    background: var(--accent);
+    border-color: var(--accent);
 }

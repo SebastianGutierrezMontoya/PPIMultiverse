@@ -26,20 +26,20 @@ body {
     font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* --- HERO: Compact & Clean --- */
+/* --- HERO: Compact & Premium --- */
 .hero-official {
     position: relative;
-    height: auto;
-    aspect-ratio: 16 / 6; /* Mantiene la proporción original del banner sin estirarlo */
-    background: url('{% static "baner tienda.png" %}') no-repeat center center;
-    background-size: contain; /* Asegura que se vea completa la imagen */
-    background-color: #000; /* Fondo negro por si la imagen es más pequeña */
-    border-bottom: 4px solid var(--accent-color);
+    height: 380px; /* Altura equilibrada */
+    background: linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.1)), 
+                url('{% static "baner tienda.png" %}') no-repeat center center;
+    background-size: cover; /* Volvemos a cover pero con altura controlada */
+    border-bottom: 5px solid var(--accent-color);
+    box-shadow: inset 0 -20px 40px rgba(0,0,0,0.1);
 }
 
 @media (max-width: 768px) {
     .hero-official {
-        aspect-ratio: 16 / 9; /* Ajuste para móviles */
+        height: 220px;
     }
 }
 

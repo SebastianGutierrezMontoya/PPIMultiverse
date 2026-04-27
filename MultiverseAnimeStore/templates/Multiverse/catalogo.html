@@ -1,63 +1,70 @@
 {% extends "Multiverse/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/catalogo.css' %}">
+{% endblock %}
 
 {% block content %}
 
-<!-- <p class="text-center text-2xl mt-10">Bienvenido al catalogo Multiverse Anime Store</p> -->
-<form method="get" class="search-bar">
-    <div class="form-linear search-container">
-    <label for="prod_nombre"></label>
-    <input type="text" name="prod_nombre" id="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="Busqueda">
-    <button type="submit" class="search-button">Buscar</button>
-    {% if prod_nombre %}
-        <a href="{% url 'catalogo' %}">Limpiar</a>
-    {% endif %}
-    </div>
-    
-</form>
+<!-- SEARCH WRAPPER -->
+<div class="search-wrapper">
+    <form method="get" class="search-box">
+        <!-- SVG Lupa Lucide Style -->
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        
+        <input type="text" name="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="¿Qué estás buscando hoy?">
+        
+        <button type="submit" class="search-button">Buscar</button>
+        
+        {% if prod_nombre %}
+            <a href="{% url 'catalogo' %}" class="clear-search">Limpiar</a>
+        {% endif %}
+    </form>
+</div>
 
-
-<div class ="catalogo-container">
-
-
-{% for producto in productos %}
-
-
-<div class="bento-card">
-
-  <!-- MEDIA -->
-  <div class="bento-media">
-        <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}">
-
-        <div class="bento-overlay"></div>
-
-        <div class="bento-action">
-          <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}')">
-            Agregar al Pedido
-          </button>
+<!-- CATALOG GRID -->
+<div class="catalogo-container">
+    {% for producto in productos %}
+    <div class="bento-card">
+        <!-- MEDIA -->
+        <div class="bento-media">
+            {% if producto.prod_imagen_url %}
+                <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
+            {% else %}
+                <div class="d-flex align-items-center justify-content-center h-100 bg-light text-muted">Sin imagen</div>
+            {% endif %}
+            
+            <div class="bento-overlay"></div>
+            
+            <div class="bento-action">
+                <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}')">
+                    Agregar al Pedido
+                </button>
+            </div>
         </div>
-  </div>
 
-  <!-- FOOTER -->
-  <div class="bento-footer">
-       <div>
-         <h3 class="bento-title">{{ producto.prod_nombre }}</h3>
-         <p class="bento-subtitle">{{ producto.cat.cat_nombre }}</p>
-       </div>
-
-       <span class="bento-price">${{ producto.prod_precio_venta }}</span>
+        <!-- FOOTER -->
+        <div class="bento-footer">
+            <div>
+                <h3 class="bento-title">{{ producto.prod_nombre }}</h3>
+                <p class="bento-subtitle">{{ producto.cat.cat_nombre }}</p>
+            </div>
+            <span class="bento-price">${{ producto.prod_precio_venta|floatformat:0 }}</span>
+        </div>
     </div>
-
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <h3 class="text-muted">No encontramos productos que coincidan con tu búsqueda.</h3>
+        <a href="{% url 'catalogo' %}" class="btn btn-dark mt-3">Ver todo el catálogo</a>
+    </div>
+    {% endfor %}
 </div>
-       
-{% endfor %}
 
-
-</div>
-
+<!-- PAGINATION -->
 <div class="pagination">
     {% if productos.has_previous %}
         <a href="?page={{ productos.previous_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Anterior</a>
-
     {% endif %}
 
     <span>Página {{ productos.number }} de {{ productos.paginator.num_pages }}</span>
@@ -65,5 +72,6 @@
     {% if productos.has_next %}
         <a href="?page={{ productos.next_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Siguiente</a>
     {% endif %}
+</div>
 
 {% endblock %}

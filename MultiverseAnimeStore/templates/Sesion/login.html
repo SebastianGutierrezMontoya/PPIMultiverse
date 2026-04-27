@@ -3,165 +3,91 @@
 
 {% block extra_head %}
 <style>
-    body {
+    /* Estilo oscuro solo para esta página */
+    #login-page-body {
         background-color: #0b0b0b;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
-    .login-wrapper {
-        flex: 1;
+        min-height: calc(100vh - 72px); /* Descontando la navbar */
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 40px 20px;
     }
     .login-card {
         background: #111;
-        width: 100%;
-        max-width: 400px;
-        padding: 40px;
-        border-radius: 24px;
         border: 1px solid rgba(255,255,255,0.05);
-        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
-    }
-    .login-header {
-        text-align: center;
-        margin-bottom: 32px;
+        border-radius: 28px;
+        padding: 40px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.3);
     }
     .login-logo {
-        width: 60px;
-        height: 60px;
-        background: var(--accent);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin: 0 auto 16px;
-        box-shadow: 0 0 20px rgba(243, 125, 21, 0.3);
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 20px;
+        background: transparent !important;
     }
-    .login-header h2 {
-        color: #fff;
+    .login-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .login-title {
+        text-align: center;
         font-weight: 900;
         font-style: italic;
         text-transform: uppercase;
-        letter-spacing: -0.5px;
-        margin: 0;
-    }
-    .login-header p {
-        color: #94a3b8;
-        font-size: 14px;
-        margin-top: 8px;
-    }
-    .form-group {
-        margin-bottom: 20px;
-    }
-    .form-group label {
-        display: block;
-        color: #94a3b8;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-        margin-bottom: 8px;
-        letter-spacing: 0.05em;
+        color: #fff;
+        margin-bottom: 30px;
     }
     .form-input {
         width: 100%;
+        padding: 14px 20px;
         background: rgba(255,255,255,0.03);
         border: 1px solid rgba(255,255,255,0.1);
-        padding: 12px 16px;
-        border-radius: 12px;
+        border-radius: 14px;
         color: #fff;
-        font-size: 15px;
+        margin-bottom: 20px;
         outline: none;
-        transition: all 0.3s;
     }
-    .form-input:focus {
-        border-color: var(--accent);
-        background: rgba(255,255,255,0.05);
-        box-shadow: 0 0 0 4px rgba(243, 125, 21, 0.1);
-    }
-    .login-btn {
+    .form-input:focus { border-color: var(--accent); }
+    .btn-login {
         width: 100%;
-        background: var(--accent);
+        background: #f37d15;
         color: #fff;
         border: none;
-        padding: 14px;
-        border-radius: 12px;
+        padding: 16px;
+        border-radius: 14px;
         font-weight: 800;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
         cursor: pointer;
         transition: all 0.3s;
-        margin-top: 10px;
     }
-    .login-btn:hover {
-        background: #e22611;
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(226, 38, 17, 0.2);
-    }
-    .login-footer {
-        text-align: center;
-        margin-top: 32px;
-        padding-top: 24px;
-        border-top: 1px solid rgba(255,255,255,0.05);
-    }
-    .login-footer p {
-        color: #64748b;
-        font-size: 14px;
-        margin: 0;
-    }
-    .login-footer a {
-        color: var(--accent);
-        text-decoration: none;
-        font-weight: 700;
+    .btn-login:hover {
+        background: #000;
+        color: #f37d15;
+        box-shadow: 0 0 15px rgba(243, 125, 21, 0.2);
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="login-wrapper">
+<div id="login-page-body">
     <div class="login-card">
-        <div class="login-header">
-            <div class="login-logo" style="background: transparent; box-shadow: none;">
-                <img src="{% static 'ICONO TIENDA.png' %}" alt="Logo" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
-            <h2>Bienvenido</h2>
-            <p>Accede al Multiverso</p>
+        <div class="login-logo">
+            <img src="{% static 'ICONO TIENDA.png' %}" alt="Logo">
         </div>
-
+        <h2 class="login-title">Acceso Multiverso</h2>
+        
         <form method="post">
             {% csrf_token %}
-            
-            {% if messages %}
-            <div style="margin-bottom:20px;">
-                {% for message in messages %}
-                    <div style="padding:12px; border-radius:12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#ef4444; font-size:13px; text-align:center;">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-            {% endif %}
-
-            <div class="form-group">
-                <label for="id_id_usuario">Usuario</label>
-                <input type="text" name="usuario" class="form-input" placeholder="Tu usuario" required id="id_id_usuario">
-            </div>
-
-            <div class="form-group">
-                <label for="id_password_hash">Contraseña</label>
-                <input type="password" name="contraseña" class="form-input" placeholder="••••••••" required id="id_password_hash">
-            </div>
-            
-            <button type="submit" class="login-btn">Entrar al Portal</button>
+            <input type="text" name="usuario" class="form-input" placeholder="Usuario" required>
+            <input type="password" name="contraseña" class="form-input" placeholder="Contraseña" required>
+            <button type="submit" class="btn-login">Entrar</button>
         </form>
-
-        <div class="login-footer">
-            <p>
-                ¿Nuevo coleccionista?
-                <a href="{% url 'register' %}">Crea tu cuenta</a>
-            </p>
-        </div>
+        
+        <p style="text-align:center; margin-top:20px; font-size:13px; color:#94a3b8;">
+            ¿No tienes cuenta? <a href="{% url 'register' %}" style="color:#f37d15; text-decoration:none; font-weight:700;">Regístrate</a>
+        </p>
     </div>
 </div>
 {% endblock %}

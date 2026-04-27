@@ -1133,7 +1133,26 @@ def reporte_view(request, id):
 
 
 def home_view(request):
-    return render(request, 'Multiverse/home.html')
+    """Landing page: hero, categorías destacadas, últimos productos, redes sociales."""
+    categorias = Categoria.objects.all()
+
+    # Contar productos por categoría (para mostrar el badge)
+    from django.db.models import Count
+    categorias_conteo = Categoria.objects.annotate(
+        productos_count=Count('productos')
+    )
+
+    # Top 4 categorías para hero cards (las que más productos tienen)
+    hero_categories = categorias_conteo.order_by('-productos_count')[:4]
+
+    # Últimos 8 productos agregados
+    ultimos_productos = Productos.objects.select_related('cat').order_by('-prod_id')[:8]
+
+    return render(request, 'Multiverse/landing.html', {
+        'categorias': categorias_conteo,
+        'hero_categories': hero_categories,
+        'ultimos_productos': ultimos_productos,
+    })
 
 
 def checkout_view(request):
@@ -1267,22 +1286,34 @@ def checkout_view(request):
 
 
 def catalogo_view(request):
+    """Catálogo público con búsqueda por texto y filtro por categoría."""
     productos = Productos.objects.select_related('cat').all().order_by('prod_id')
     paginate_by = 40
     prod_nombre = request.GET.get('prod_nombre', '')
+    cat_id = request.GET.get('cat', '')
 
+    # ── Búsqueda por texto ──
     if prod_nombre:
         productos = productos.filter(
             Q(prod_nombre__icontains=prod_nombre) | Q(prod_descripcion__icontains=prod_nombre)
         )
 
+    # ── Filtro por categoría ──
+    if cat_id:
+        productos = productos.filter(cat_id=cat_id)
+
     paginator = Paginator(productos, paginate_by)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Listado de categorías para mostrar como filtros en el catálogo
+    categorias = Categoria.objects.all()
+
     return render(request, 'Multiverse/catalogo.html', {
         'productos': page_obj,
         'prod_nombre': prod_nombre,
+        'cat_id': cat_id,
+        'categorias': categorias,
     })
 
 

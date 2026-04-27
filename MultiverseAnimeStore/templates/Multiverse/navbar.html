@@ -23,6 +23,19 @@
       {% endif %}
     </div>
 
+    <!-- ─── BARRA DE BÚSQUEDA ─── -->
+    <form class="navbar-search" method="GET" action="{% url 'catalogo' %}">
+      <input
+        type="text"
+        name="prod_nombre"
+        class="navbar-search-input"
+        placeholder="Buscar productos..."
+        value=""
+        aria-label="Buscar productos"
+      />
+      <button type="submit" class="navbar-search-btn" aria-label="Buscar">🔍</button>
+    </form>
+
     <div class="navbar-actions">
       <button class="navbar-cart" onclick="toggleCart()">
         <i class="fas fa-shopping-cart"></i>

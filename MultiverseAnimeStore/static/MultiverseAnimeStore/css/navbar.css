@@ -111,7 +111,7 @@ main {
   align-items: center;
   justify-content: center;
   border-radius: 50%; /* Asegura que sea un círculo */
-  background: url('/static/ICONO TIENDA.png') no-repeat center center;
+  background: url('/static/icono_tienda.png') no-repeat center center;
   background-size: contain;
   border: none; /* Quitamos bordes previos si los hay */
 }

@@ -117,7 +117,7 @@
                         {% if producto.prod_imagen_url %}
                             <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
                         {% else %}
-                            <img src="{% static 'imagen defecto 1.png' %}" alt="Multiverse" style="padding: 20px;">
+                            <img src="{% static 'imagen_defecto.png' %}" alt="Multiverse" style="padding: 20px;">
                         {% endif %}
                         <div class="bento-action">
                             <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}')">

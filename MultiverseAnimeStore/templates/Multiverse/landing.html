@@ -30,7 +30,7 @@ body {
     position: relative;
     height: auto;
     aspect-ratio: 16 / 4; /* Mucho más bajo y compacto */
-    background: url('{% static "baner tienda 2.png" %}') no-repeat center center;
+    background: url('{% static "banner2.png" %}') no-repeat center center;
     background-size: cover;
     border-bottom: 5px solid var(--accent-color);
 }
@@ -193,7 +193,7 @@ body {
                 {% if producto.prod_imagen_url %}
                     <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
                 {% else %}
-                    <img src="{% static 'imagen defecto 1.png' %}" alt="Multiverse" style="object-fit: contain; padding: 20px; background: #fff;">
+                    <img src="{% static 'imagen_defecto.png' %}" alt="Multiverse" style="object-fit: contain; padding: 20px; background: #fff;">
                 {% endif %}
                 <div class="bento-overlay"></div>
                 <div class="bento-action">

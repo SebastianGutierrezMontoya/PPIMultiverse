@@ -1,45 +1,167 @@
-{% extends "base.html" %}
+{% extends "Multiverse/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    body {
+        background-color: #0b0b0b;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    .login-wrapper {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    .login-card {
+        background: #111;
+        width: 100%;
+        max-width: 400px;
+        padding: 40px;
+        border-radius: 24px;
+        border: 1px solid rgba(255,255,255,0.05);
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+    }
+    .login-header {
+        text-align: center;
+        margin-bottom: 32px;
+    }
+    .login-logo {
+        width: 60px;
+        height: 60px;
+        background: var(--accent);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        box-shadow: 0 0 20px rgba(243, 125, 21, 0.3);
+    }
+    .login-header h2 {
+        color: #fff;
+        font-weight: 900;
+        font-style: italic;
+        text-transform: uppercase;
+        letter-spacing: -0.5px;
+        margin: 0;
+    }
+    .login-header p {
+        color: #94a3b8;
+        font-size: 14px;
+        margin-top: 8px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        letter-spacing: 0.05em;
+    }
+    .form-input {
+        width: 100%;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.1);
+        padding: 12px 16px;
+        border-radius: 12px;
+        color: #fff;
+        font-size: 15px;
+        outline: none;
+        transition: all 0.3s;
+    }
+    .form-input:focus {
+        border-color: var(--accent);
+        background: rgba(255,255,255,0.05);
+        box-shadow: 0 0 0 4px rgba(243, 125, 21, 0.1);
+    }
+    .login-btn {
+        width: 100%;
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+    }
+    .login-btn:hover {
+        background: #e22611;
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(226, 38, 17, 0.2);
+    }
+    .login-footer {
+        text-align: center;
+        margin-top: 32px;
+        padding-top: 24px;
+        border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .login-footer p {
+        color: #64748b;
+        font-size: 14px;
+        margin: 0;
+    }
+    .login-footer a {
+        color: var(--accent);
+        text-decoration: none;
+        font-weight: 700;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
-<div class="form-container">
-    <div style="text-align:center; margin-bottom:24px;">
-        <i class="fas fa-meteor" style="font-size:48px; color:var(--accent); margin-bottom:8px;"></i>
-        <h2 class="form-header" style="margin:0; font-style:italic;">Multiverse Login</h2>
-        <p style="color:#94a3b8; font-size:14px; margin-top:4px;">Accede a tu cuenta</p>
-    </div>
-
-    <form method="post">
-        {% csrf_token %}
-        
-        {% if messages %}
-        <div style="margin-bottom:16px;">
-            {% for message in messages %}
-                <div style="padding:10px 14px; border-radius:10px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#ef4444; font-size:13px;">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <div class="form-floating">
-          <input type="text" name="usuario" value="" maxlength="50" class="form-control" placeholder=" " required="" id="id_id_usuario">
-          <label for="id_id_usuario">Nombre de Usuario</label>
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <h2>Bienvenido</h2>
+            <p>Accede al Multiverso</p>
         </div>
 
-        <div class="form-floating">
-          <input type="password" name="contraseña" maxlength="255" class="form-control" placeholder=" " id="id_password_hash">
-          <label for="id_password_hash">Contraseña</label>
-        </div>
-        
-        <button type="submit" class="btn btn-primary" style="width:100%; padding:12px; margin-top:8px;">Entrar</button>
-    </form>
+        <form method="post">
+            {% csrf_token %}
+            
+            {% if messages %}
+            <div style="margin-bottom:20px;">
+                {% for message in messages %}
+                    <div style="padding:12px; border-radius:12px; background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.2); color:#ef4444; font-size:13px; text-align:center;">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
-    <div style="text-align:center; margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.06);">
-        <p style="color:#94a3b8; font-size:13px; margin:0;">
-            ¿No tienes cuenta?
-            <a href="{% url 'register' %}" style="color:var(--accent); text-decoration:none; font-weight:600;">Regístrate aquí</a>
-        </p>
+            <div class="form-group">
+                <label for="id_id_usuario">Usuario</label>
+                <input type="text" name="usuario" class="form-input" placeholder="Tu usuario" required id="id_id_usuario">
+            </div>
+
+            <div class="form-group">
+                <label for="id_password_hash">Contraseña</label>
+                <input type="password" name="contraseña" class="form-input" placeholder="••••••••" required id="id_password_hash">
+            </div>
+            
+            <button type="submit" class="login-btn">Entrar al Portal</button>
+        </form>
+
+        <div class="login-footer">
+            <p>
+                ¿Nuevo coleccionista?
+                <a href="{% url 'register' %}">Crea tu cuenta</a>
+            </p>
+        </div>
     </div>
 </div>
-
 {% endblock %}

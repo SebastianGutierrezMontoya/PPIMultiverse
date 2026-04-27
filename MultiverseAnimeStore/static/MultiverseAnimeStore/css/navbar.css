@@ -293,7 +293,7 @@ main {
   border: 1px solid var(--color-accent);
   border-radius: 0 12px 12px 0;
   background: var(--color-accent);
-  color: #000;
+  color: #ffffff; /* Texto Blanco */
   cursor: pointer;
   transition: all 0.3s ease;
   line-height: 1;
@@ -303,9 +303,28 @@ main {
 }
 
 .navbar-search-btn:hover {
-  background: #ff8c21;
-  box-shadow: 0 0 15px rgba(243, 125, 21, 0.3);
+  background: #e22611; /* Rojo Multiverse */
+  border-color: #e22611;
+  box-shadow: 0 0 15px rgba(226, 38, 17, 0.4);
   transform: scale(1.02);
+}
+
+.user-icon-orange {
+  color: var(--color-accent) !important;
+}
+
+.navbar-cart {
+  padding: 10px;
+  border-radius: 999px;
+  background: rgba(243, 125, 21, 0.1);
+  border: 1px solid rgba(243, 125, 21, 0.2);
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.navbar-cart:hover {
+  background: rgba(243, 125, 21, 0.2);
 }
 
 @media (max-width: 991px) {

@@ -25,11 +25,11 @@ body {
     color: #000000;
 }
 
-/* --- HERO: BANNER 2 (PROPORTIONAL) --- */
+/* --- HERO: BANNER 2 (COMPACT) --- */
 .hero-official {
     position: relative;
     height: auto;
-    aspect-ratio: 16 / 5; /* Ajuste para el nuevo banner */
+    aspect-ratio: 16 / 4; /* Mucho más bajo y compacto */
     background: url('{% static "baner tienda 2.png" %}') no-repeat center center;
     background-size: cover;
     border-bottom: 5px solid var(--accent-color);
@@ -37,7 +37,7 @@ body {
 
 @media (max-width: 768px) {
     .hero-official {
-        aspect-ratio: 16 / 8;
+        aspect-ratio: 16 / 6;
     }
 }
 

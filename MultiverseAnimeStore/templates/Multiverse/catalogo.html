@@ -3,26 +3,22 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/catalogo.css' %}">
-<style>
-    /* Correcciones rápidas para asegurar legibilidad */
-    .search-input { color: #000 !important; }
-    .bento-price { font-family: 'Inter', sans-serif; }
-</style>
 {% endblock %}
 
 {% block content %}
 
-<!-- SEARCH WRAPPER -->
+<!-- SEARCH WRAPPER REFINED -->
 <div class="search-wrapper">
     <form method="get" class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <!-- SVG Lupa compacta -->
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         
-        <input type="text" name="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="Buscar en el Multiverso...">
+        <input type="text" name="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="Buscar por nombre...">
         
         <button type="submit" class="search-button">Buscar</button>
         
         {% if prod_nombre %}
-            <a href="{% url 'catalogo' %}" class="clear-search">Limpiar</a>
+            <a href="{% url 'catalogo' %}" style="margin: 0 10px; font-size: 11px; font-weight: 800; color: #94a3b8; text-decoration: none;">×</a>
         {% endif %}
     </form>
 </div>
@@ -35,15 +31,12 @@
             {% if producto.prod_imagen_url %}
                 <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
             {% else %}
-                <!-- IMAGEN POR DEFECTO OFICIAL -->
-                <img src="{% static 'imagen defecto 1.png' %}" alt="Multiverse Anime Store" style="object-fit: contain; padding: 20px; background: #fff;">
+                <img src="{% static 'imagen defecto 1.png' %}" alt="Multiverse" style="padding: 10px;">
             {% endif %}
-            
-            <div class="bento-overlay"></div>
             
             <div class="bento-action">
                 <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}')">
-                    Agregar al Pedido
+                    + Agregar
                 </button>
             </div>
         </div>
@@ -57,9 +50,9 @@
         </div>
     </div>
     {% empty %}
-    <div style="grid-column: 1 / -1; text-align: center; padding: 100px 0;">
-        <h3 style="color: #94a3b8; font-weight: 800; text-transform: uppercase;">No hay resultados</h3>
-        <a href="{% url 'catalogo' %}" style="color: var(--accent); font-weight: 700; text-decoration: none;">MOSTRAR TODO EL CATÁLOGO ➔</a>
+    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 0;">
+        <h4 style="color: #94a3b8; font-weight: 800; text-transform: uppercase;">No hay resultados</h4>
+        <a href="{% url 'catalogo' %}" style="color: var(--accent); font-weight: 700; text-decoration: none; font-size: 13px;">VER TODO EL CATÁLOGO ➔</a>
     </div>
     {% endfor %}
 </div>
@@ -67,13 +60,13 @@
 <!-- PAGINATION -->
 <div class="pagination">
     {% if productos.has_previous %}
-        <a href="?page={{ productos.previous_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Anterior</a>
+        <a href="?page={{ productos.previous_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">«</a>
     {% endif %}
 
-    <span>{{ productos.number }} / {{ productos.paginator.num_pages }}</span>
+    <span style="font-size: 12px; font-weight: 800; color: #94a3b8;">{{ productos.number }} / {{ productos.paginator.num_pages }}</span>
 
     {% if productos.has_next %}
-        <a href="?page={{ productos.next_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Siguiente</a>
+        <a href="?page={{ productos.next_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">»</a>
     {% endif %}
 </div>
 

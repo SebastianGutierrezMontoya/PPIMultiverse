@@ -19,12 +19,12 @@
 
     
         <div class="form-floating">
-          <input type="text" name="usuario" value="" maxlength="50" class="form-control" placeholder=" " required="" id="id_id_usuario">
+          <input type="text" name="usuario" value="" maxlength="50" class="form-control" placeholder=" " required="" id="id_id_usuario" required>
           <label for="id_id_usuario">* Nombre de Usuario</label>
         </div>
     
         <div class="form-floating">
-          <input type="text" name="nombre" maxlength="300" class="form-control" placeholder=" " id="id_nombre">
+          <input type="text" name="nombre" maxlength="300" class="form-control" placeholder=" " id="id_nombre" required>
           <label for="id_nombre">* Nombre</label>
         </div>
     
@@ -39,17 +39,17 @@
         </div>
     
         <div class="form-floating">
-          <input type="date" name="fecha_nacimiento" class="form-control datepicker" placeholder=" " id="id_fecha_nacimiento">
+          <input type="date" name="fecha_nacimiento" class="form-control datepicker" placeholder=" " id="id_fecha_nacimiento" required>
           <label for="id_fecha_nacimiento">* Fecha nacimiento</label>
         </div>
     
         <div class="form-floating">
-          <input type="password" name="contraseña" maxlength="255" class="form-control" placeholder=" " id="id_password_hash">
+          <input type="password" name="contraseña" maxlength="255" class="form-control" placeholder=" " id="id_password_hash" required>
           <label for="id_password_hash">* Contraseña</label>
         </div>
     
         <div class="form-floating">
-          <select name="sexo" class="form-control" placeholder=" " required="" id="id_usuario_id_sexo">
+          <select name="sexo" class="form-control" placeholder=" " required="" id="id_usuario_id_sexo" required>
                 <option value="" selected="">---------</option>
                 {% for sexo in Sexos %}
                     <option value="{{ sexo.id_sexo }}">{{ sexo.nombre_sexo }}</option>

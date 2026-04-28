@@ -1066,7 +1066,11 @@ def ConsultasDinamicasCreateView(request):
     if request.method == 'POST':
         # form = modelform_factory(ConsultasDinamicasForm, fields='__all__')(request.POST)
         form = ConsultasDinamicasForm(request.POST)
-        if form.is_valid():
+        blocked_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'ALTER', 'TRUNCATE', 'EXECUTE', 'GRANT', 'REVOKE']
+        query = request.POST.get('cons_sql', '').upper()
+        if any(keyword in query for keyword in blocked_keywords):
+            form.add_error('cons_sql', 'La consulta contiene palabras clave bloqueadas.')
+        elif form.is_valid():
             form.save()
             return redirect('consultas_dinamicas_list')
     else:
@@ -1093,6 +1097,14 @@ class ConsultasDinamicasUpdateView(UpdateView):
     form_class = ConsultasDinamicasForm
     template_name = 'ConsultasDinamicas/consultas_dinamicas_form.html'
     success_url = reverse_lazy('consultas_dinamicas_list')
+
+    def form_valid(self, form):
+        blocked_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'ALTER', 'TRUNCATE', 'EXECUTE', 'GRANT', 'REVOKE']
+        query = form.cleaned_data.get('cons_sql', '').upper()
+        if any(keyword in query for keyword in blocked_keywords):
+            form.add_error('cons_sql', 'La consulta contiene palabras clave bloqueadas.')
+            return self.form_invalid(form)
+        return super().form_valid(form)
 
 @method_decorator(Permisos_Admin('Consultas', 'delete'), name='dispatch')
 class ConsultasDinamicasDeleteView(DeleteView):
@@ -1123,7 +1135,7 @@ class ConsultasDinamicasDeleteView(DeleteView):
 
 #         return resultados
 
-@Permisos_Admin('Consultas', 'read')
+# @Permisos_Admin('Consultas', 'read')
 def ejecutar_reporte(id_reporte):
     with connection.cursor() as cursor:
         cursor.execute("BEGIN")

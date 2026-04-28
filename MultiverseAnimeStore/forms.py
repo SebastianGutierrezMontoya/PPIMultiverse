@@ -102,6 +102,12 @@ class PedidosForm(forms.ModelForm):
         self.fields['ped_direccion_envio'].label = "* Dirección de Envío"
         self.fields['ped_notas'].label = "Notas Adicionales"
 
+        self.fields['ped_id'].widget.attrs['required'] = True
+        self.fields['usu'].widget.attrs['required'] = True
+        self.fields['ped_fecha_pedido'].widget.attrs['required'] = True
+        self.fields['ped_total'].widget.attrs['required'] = True
+        self.fields['ped_direccion_envio'].widget.attrs['required'] = True
+
 
         
         # self.fields['ped_estado'].initial = 1
@@ -141,6 +147,13 @@ class PedidosProductosForm(forms.ModelForm):
         self.fields['pped_total'].label = "* Total"
         self.fields['pped_fecha_entrega'].label = "Fecha de Entrega"
         self.fields['pped_estado'].label = "* Estado"
+
+        self.fields['ped'].widget.attrs['required'] = True
+        self.fields['prod'].widget.attrs['required'] = True
+        self.fields['pped_cantidad'].widget.attrs['required'] = True
+        self.fields['pped_precio_unitario'].widget.attrs['required'] = True
+        self.fields['pped_total'].widget.attrs['required'] = True
+        self.fields['pped_estado'].widget.attrs['required'] = True
 
 class PedidoProductoUpdateForm(forms.ModelForm):
     class Meta:
@@ -186,6 +199,13 @@ class PedidoProductoUpdateForm(forms.ModelForm):
         self.fields['pped_fecha_entrega'].label = "Fecha de Entrega"
         self.fields['pped_estado'].label = "* Estado"
 
+        self.fields['ped'].widget.attrs['required'] = True
+        self.fields['prod'].widget.attrs['required'] = True
+        self.fields['pped_cantidad'].widget.attrs['required'] = True
+        self.fields['pped_precio_unitario'].widget.attrs['required'] = True
+        self.fields['pped_total'].widget.attrs['required'] = True
+        self.fields['pped_estado'].widget.attrs['required'] = True
+
 
 class UsuariosForm(forms.ModelForm):
     class Meta:
@@ -228,6 +248,13 @@ class UsuariosForm(forms.ModelForm):
         self.fields['usuario_id_perfil'].label = "Perfil"
         self.fields['activo'].label = "* Activo (1 para sí, 0 para no)"
 
+        self.fields['id_usuario'].widget.attrs['required'] = True
+        self.fields['nombre'].widget.attrs['required'] = True
+        self.fields['fecha_nacimiento'].widget.attrs['required'] = True
+        self.fields['password_hash'].widget.attrs['required'] = True
+        self.fields['usuario_id_sexo'].widget.attrs['required'] = True
+        self.fields['activo'].widget.attrs['required'] = True
+
 
 
 class CategoriaForm(forms.ModelForm):
@@ -249,6 +276,9 @@ class CategoriaForm(forms.ModelForm):
         self.fields['cat_id'].label = "* ID de Categoría"
         self.fields['cat_nombre'].label = "* Nombre de Categoría"
         self.fields['cat_descripcion'].label = "Descripción de Categoría"
+
+        self.fields['cat_id'].widget.attrs['required'] = True
+        self.fields['cat_nombre'].widget.attrs['required'] = True
 
 
 class ProductosForm(forms.ModelForm):
@@ -281,6 +311,13 @@ class ProductosForm(forms.ModelForm):
         self.fields['prod_descuento'].label = "* Descuento"
         self.fields['cat'].label = "Categoría"
 
+        self.fields['prod_id'].widget.attrs['required'] = True
+        self.fields['prod_nombre'].widget.attrs['required'] = True
+        self.fields['prod_descripcion'].widget.attrs['required'] = True
+        self.fields['prod_precio_venta'].widget.attrs['required'] = True
+        self.fields['prod_stock'].widget.attrs['required'] = True
+        self.fields['prod_descuento'].widget.attrs['required'] = True
+
 
 class RolesForm(forms.ModelForm):
     class Meta:
@@ -301,6 +338,9 @@ class RolesForm(forms.ModelForm):
         self.fields['id_rol'].label = "* ID de Rol"
         self.fields['nombre'].label = "* Nombre de Rol"
         self.fields['descripcion'].label = "Descripción de Rol"
+
+        self.fields['id_rol'].widget.attrs['required'] = True
+        self.fields['nombre'].widget.attrs['required'] = True
 
 class PerfilesForm(forms.ModelForm):
     class Meta:
@@ -326,6 +366,10 @@ class PerfilesForm(forms.ModelForm):
         self.fields['rol_id'].label = "* Rol"
         self.fields['descripcion'].label = "Descripción de Perfil"
 
+        self.fields['id_perfil'].widget.attrs['required'] = True
+        self.fields['nombre'].widget.attrs['required'] = True
+        self.fields['rol_id'].widget.attrs['required'] = True
+
 
 class EstadoPedidosForm(forms.ModelForm):
     class Meta:
@@ -349,6 +393,9 @@ class EstadoPedidosForm(forms.ModelForm):
         self.fields['est_id'].label = "* ID de Estado de Pedido"
         self.fields['est_nombre'].label = "* Nombre de Estado de Pedido"
 
+        self.fields['est_id'].widget.attrs['required'] = True
+        self.fields['est_nombre'].widget.attrs['required'] = True
+
 class ConsultasDinamicasForm(forms.ModelForm):
     class Meta:
         model = Consultas_Dinamicas
@@ -359,7 +406,8 @@ class ConsultasDinamicasForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['cons_id'].widget.attrs['readonly'] = True
+        # self.fields['cons_id'].widget.attrs['readonly'] = True
+        
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['cons_id'].initial = next_int_id(Consultas_Dinamicas, 'cons_id')
         for field in self.fields.values():
@@ -374,6 +422,10 @@ class ConsultasDinamicasForm(forms.ModelForm):
         self.fields['cons_nombre'].label = "* Nombre de Consulta Dinámica"
         self.fields['cons_descripcion'].label = "Descripción de Consulta Dinámica"
         self.fields['cons_sql'].label = "* Consulta SQL"
+
+        self.fields['cons_id'].widget.attrs['required'] = True
+        self.fields['cons_nombre'].widget.attrs['required'] = True
+        self.fields['cons_sql'].widget.attrs['required'] = True
 
     def clean_sql_consulta(self):
         sql = self.cleaned_data['cons_sql']

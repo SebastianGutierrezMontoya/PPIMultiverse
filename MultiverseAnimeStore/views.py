@@ -1176,56 +1176,77 @@ def checkout_view(request):
             telefono_invitado = request.POST.get('telefono_invitado', '').strip()
             direccion_envio = request.POST.get('ped_direccion_envio', '').strip()
 
-            # Validar datos mínimos del invitado
             if not nombre_invitado or not telefono_invitado:
                 messages.error(request, 'Debes ingresar tu nombre y teléfono para continuar.')
                 return redirect(request.META.get('HTTP_REFERER', '/'))
 
-            # Generar ID único para el usuario temporal
             from .forms import get_next_id_model_name
-            next_id_num = get_next_id_model_name(Usuarios, 'id_usuario')
-            new_id = f"USR-{next_id_num}"
 
-            # Contraseña aleatoria — este usuario nunca va a iniciar sesión
-            random_pass = secrets.token_hex(16)
-            hashed = hash_password(random_pass)
-
-            # Crear usuario temporal con activo=0 (no puede loguearse)
-            sexo_default = Sexos.objects.get(pk=3)  # "Otro"
-            perfil_cliente = Perfiles.objects.get(pk=2)  # "Cliente"
-
-            # Separar nombre completo en nombre y primer_apellido
-            partes_nombre = nombre_invitado.split(maxsplit=1)
-            nombre = partes_nombre[0] if partes_nombre else nombre_invitado
-            primer_apellido = partes_nombre[1] if len(partes_nombre) > 1 else "Invitado"
-
-            usuario = Usuarios.objects.create(
-                id_usuario=new_id,
-                nombre=nombre,
-                primer_apellido=primer_apellido,
-                password_hash=hashed,
-                activo=0,  # No puede iniciar sesión
-                usuario_id_sexo=sexo_default,
-                usuario_id_perfil=perfil_cliente,
-            )
-
-            # Guardar teléfono en la tabla Contactos
-            next_contacto_id = get_next_id_model_name(Contactos, 'id_contacto')
-            Contactos.objects.create(
-                id_contacto=next_contacto_id,
+            # ── Fase 2: Deduplicación por teléfono ──
+            # Si este teléfono ya pertenece a un invitado (activo=0), reusamos ese usuario
+            contacto_existente = Contactos.objects.filter(
                 dato_contacto=telefono_invitado,
-                id_usuario=usuario,
-                # tipo_contacto se deja null (es nullable en la BD)
-            )
+                id_usuario__activo=0
+            ).select_related('id_usuario').first()
 
-            # Marcar ped_notas para identificar pedidos de invitados
-            notas_pedido = request.POST.get('ped_notas', '').strip()
-            if notas_pedido:
-                notas_pedido = f"[INVITADO - {telefono_invitado}] {notas_pedido}"
+            if contacto_existente:
+                usuario = contacto_existente.id_usuario
+                if direccion_envio:
+                    tiene_direccion = Contactos.objects.filter(
+                        id_usuario=usuario, tipo_contacto_id=3
+                    ).exists()
+                    if not tiene_direccion:
+                        Contactos.objects.create(
+                            id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                            dato_contacto=direccion_envio,
+                            tipo_contacto_id=3,
+                            id_usuario=usuario,
+                        )
             else:
-                notas_pedido = f"[INVITADO - {telefono_invitado}]"
-            request.POST = request.POST.copy()  # mutable copy
-            request.POST['ped_notas'] = notas_pedido
+                # ── Crear nuevo usuario invitado ──
+                next_id_num = get_next_id_model_name(Usuarios, 'id_usuario')
+                new_id = f"USR-{next_id_num}"
+
+                random_pass = secrets.token_hex(16)
+                hashed = hash_password(random_pass)
+
+                sexo_default = Sexos.objects.get(pk=3)
+                perfil_cliente = Perfiles.objects.get(pk=2)
+
+                partes_nombre = nombre_invitado.split(maxsplit=1)
+                nombre = partes_nombre[0] if partes_nombre else nombre_invitado
+                primer_apellido = partes_nombre[1] if len(partes_nombre) > 1 else "Invitado"
+
+                usuario = Usuarios.objects.create(
+                    id_usuario=new_id,
+                    nombre=nombre,
+                    primer_apellido=primer_apellido,
+                    password_hash=hashed,
+                    activo=0,
+                    usuario_id_sexo=sexo_default,
+                    usuario_id_perfil=perfil_cliente,
+                )
+
+                # ── Fase 1: 2 contactos (teléfono + dirección) ──
+                Contactos.objects.create(
+                    id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                    dato_contacto=telefono_invitado,
+                    tipo_contacto_id=1,
+                    id_usuario=usuario,
+                )
+
+                if direccion_envio:
+                    Contactos.objects.create(
+                        id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                        dato_contacto=direccion_envio,
+                        tipo_contacto_id=3,
+                        id_usuario=usuario,
+                    )
+
+            # NOTAS: ya no se marca [INVITADO - telefono] — los contactos son trazables
+            notas_pedido = request.POST.get('ped_notas', '').strip()
+            request.POST = request.POST.copy()
+            request.POST['ped_notas'] = notas_pedido or 'Pedido creado desde carrito público'
 
         # ── FIN: usuario definido ─────────────────────────────────────
 

@@ -157,16 +157,18 @@ function removeFromCart(index) {
 
 function openCheckoutModal() {
   const modal = document.getElementById('checkout-modal');
-  if (modal) {
-    modal.style.display = 'flex';
-  }
+  const overlay = document.getElementById('checkout-overlay');
+  const error = document.getElementById('checkout-error');
+  if (modal) modal.style.display = 'flex';
+  if (overlay) overlay.style.display = 'block';
+  if (error) error.classList.add('hidden');
 }
 
 function closeCheckoutModal() {
   const modal = document.getElementById('checkout-modal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
+  const overlay = document.getElementById('checkout-overlay');
+  if (modal) modal.style.display = 'none';
+  if (overlay) overlay.style.display = 'none';
 }
 
 function submitCheckoutForm() {
@@ -179,34 +181,55 @@ function submitCheckoutForm() {
   const nameHidden = document.getElementById('nombre_invitado_input');
   const phoneHidden = document.getElementById('telefono_invitado_input');
   const form = document.getElementById('checkout-form');
+  const error = document.getElementById('checkout-error');
+  const isAuthenticated = window.isAuthenticated;
 
   if (!addressInput || !notesInput || !addressHidden || !notesHidden || !form) {
     return;
   }
 
+  if (!isAuthenticated) {
+    const nameVal = nameInput ? nameInput.value.trim() : '';
+    const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+    if (!nameVal || !phoneVal) {
+      if (error) {
+        error.textContent = 'Debes ingresar tu nombre y teléfono para continuar.';
+        error.classList.remove('hidden');
+      }
+      if (nameInput && !nameVal) nameInput.classList.add('error');
+      if (phoneInput && !phoneVal) phoneInput.classList.add('error');
+      return;
+    }
+    if (nameHidden) nameHidden.value = nameVal;
+    if (phoneHidden) phoneHidden.value = phoneVal;
+  }
+
   addressHidden.value = addressInput.value.trim();
   notesHidden.value = notesInput.value.trim();
-  if (nameHidden && nameInput) {
-    nameHidden.value = nameInput.value.trim();
-  }
-  if (phoneHidden && phoneInput) {
-    phoneHidden.value = phoneInput.value.trim();
-  }
+
   form.submit();
   clearCartCache();
+}
+
+function clearInputError(input) {
+  if (input) input.classList.remove('error');
 }
 
 function initCart() {
   cart = loadCartFromCache();
   renderCart();
-  // Si el usuario ya inició sesión, ocultar campos de invitado
+
   var nameGroup = document.getElementById('checkout-name-group');
   var phoneGroup = document.getElementById('checkout-phone-group');
-  if (nameGroup && window.isAuthenticated) {
-    nameGroup.style.display = 'none';
-  }
-  if (phoneGroup && window.isAuthenticated) {
-    phoneGroup.style.display = 'none';
+  var nameInput = document.getElementById('checkout_name');
+  var phoneInput = document.getElementById('checkout_phone');
+
+  if (window.isAuthenticated) {
+    if (nameGroup) nameGroup.style.display = 'none';
+    if (phoneGroup) phoneGroup.style.display = 'none';
+  } else {
+    if (nameInput) nameInput.addEventListener('input', function() { clearInputError(this); });
+    if (phoneInput) phoneInput.addEventListener('input', function() { clearInputError(this); });
   }
 }
 

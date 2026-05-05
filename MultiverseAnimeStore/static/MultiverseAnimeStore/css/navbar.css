@@ -345,6 +345,18 @@ main {
 }
 
 /* =========================
+   LOGO LINK
+========================= */
+.navbar-logo {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+/* =========================
    HAMBURGER BUTTON
 ========================= */
 .navbar-hamburger {
@@ -377,6 +389,10 @@ main {
 }
 
 @media (max-width: 767px) {
+  .navbar {
+    padding: 12px 16px;
+  }
+
   .navbar-hamburger {
     display: flex;
   }
@@ -389,6 +405,29 @@ main {
   .navbar-logout,
   .navbar-login-link {
     display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 10px 12px;
+  }
+
+  .navbar-title {
+    font-size: 15px;
+  }
+
+  .navbar-subtitle {
+    font-size: 7px;
+  }
+
+  .navbar-logo-icon {
+    width: 35px;
+    height: 35px;
+  }
+
+  .navbar-cart {
+    padding: 8px;
   }
 }
 

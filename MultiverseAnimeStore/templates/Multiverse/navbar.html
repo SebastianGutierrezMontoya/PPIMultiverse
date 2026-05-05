@@ -1,13 +1,13 @@
 <nav class="navbar">
   <div class="navbar-container">
 
-    <div class="navbar-logo">
+    <a href="{% url 'home' %}" class="navbar-logo">
       <div class="navbar-logo-icon"></div>
       <div class="navbar-logo-text">
         <h1 class="navbar-title">Multiverse</h1>
         <span class="navbar-subtitle">Anime Store</span>
       </div>
-    </div>
+    </a>
 
     <div class="navbar-menu" id="navbarMenu">
       <a class="navbar-link" href="{% url 'home' %}">Inicio</a>
@@ -71,24 +71,24 @@
     </form>
   </div>
   <div class="mobile-drawer-links">
-    <a class="mobile-link" href="{% url 'home' %}">Inicio</a>
-    <a class="mobile-link" href="{% url 'catalogo' %}">Catálogo</a>
+    <a class="mobile-link" href="{% url 'home' %}" onclick="closeMobileMenu()">Inicio</a>
+    <a class="mobile-link" href="{% url 'catalogo' %}" onclick="closeMobileMenu()">Catálogo</a>
     {% if user.is_authenticated %}
-    <a class="mobile-link" href="{% url 'mis_pedidos' %}">Mis Pedidos</a>
+    <a class="mobile-link" href="{% url 'mis_pedidos' %}" onclick="closeMobileMenu()">Mis Pedidos</a>
     <div class="mobile-divider"></div>
     <div class="mobile-user-info">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
       <span>{{ user.nombre|default:user.id_usuario }}</span>
     </div>
-    <a class="mobile-link mobile-link-logout" href="{% url 'logout' %}">Cerrar Sesión</a>
+    <a class="mobile-link mobile-link-logout" href="{% url 'logout' %}" onclick="closeMobileMenu()">Cerrar Sesión</a>
     {% else %}
     <div class="mobile-divider"></div>
-    <a class="mobile-link mobile-link-login" href="{% url 'login' %}">Iniciar Sesión</a>
-    <a class="mobile-link mobile-link-register" href="{% url 'register' %}">Crear Cuenta</a>
+    <a class="mobile-link mobile-link-login" href="{% url 'login' %}" onclick="closeMobileMenu()">Iniciar Sesión</a>
+    <a class="mobile-link mobile-link-register" href="{% url 'register' %}" onclick="closeMobileMenu()">Crear Cuenta</a>
     {% endif %}
     {% if user.is_authenticated and user.usuario_id_perfil_id == 1 %}
     <div class="mobile-divider"></div>
-    <a class="mobile-link" href="{% url 'panel_dashboard' %}">Gestión</a>
+    <a class="mobile-link" href="{% url 'panel_dashboard' %}" onclick="closeMobileMenu()">Gestión</a>
     {% endif %}
   </div>
 </div>
@@ -99,5 +99,11 @@ function toggleMobileMenu() {
   document.getElementById('mobileDrawer').classList.toggle('open');
   document.getElementById('mobileOverlay').classList.toggle('open');
   document.body.classList.toggle('no-scroll');
+}
+
+function closeMobileMenu() {
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('mobileOverlay').classList.remove('open');
+  document.body.classList.remove('no-scroll');
 }
 </script>

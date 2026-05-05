@@ -1271,8 +1271,9 @@ def checkout_view(request):
             messages.error(request, _extract_db_message(e))
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
+        redirect_dest = 'mis_pedidos' if request.user.is_authenticated else 'home'
         messages.success(request, f'✅ Pedido #{pedido.ped_id} creado correctamente. Te contactaremos pronto.')
-        return redirect('catalogo')
+        return redirect(redirect_dest)
 
     return redirect('catalogo')
 

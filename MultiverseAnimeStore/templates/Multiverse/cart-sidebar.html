@@ -73,8 +73,24 @@
       </div>
 
       <div class="checkout-field">
-        <label for="checkout_address">Dirección de envío</label>
-        <input id="checkout_address" type="text" placeholder="Ej. Calle 123, Ciudad" class="checkout-input" />
+        <label for="checkout_calle">Dirección — Calle</label>
+        <input id="checkout_calle" type="text" placeholder="Ej. Calle 123 #45-67" class="checkout-input" />
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <div class="checkout-field" style="flex:1;">
+          <label for="checkout_ciudad">Ciudad</label>
+          <input id="checkout_ciudad" type="text" placeholder="Ej. Bogotá" class="checkout-input" />
+        </div>
+        <div class="checkout-field" style="flex:1;">
+          <label for="checkout_pais">País</label>
+          <input id="checkout_pais" type="text" placeholder="Ej. Colombia" class="checkout-input" />
+        </div>
+      </div>
+
+      <div class="checkout-field">
+        <label for="checkout_barrio">Barrio <span style="color:#94a3b8;font-weight:400;font-size:0.8em;">(opcional)</span></label>
+        <input id="checkout_barrio" type="text" placeholder="Ej. Chapinero" class="checkout-input" />
       </div>
 
       <div class="checkout-field">

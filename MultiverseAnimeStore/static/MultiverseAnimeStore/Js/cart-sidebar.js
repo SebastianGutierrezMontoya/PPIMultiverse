@@ -172,10 +172,13 @@ function closeCheckoutModal() {
 }
 
 function submitCheckoutForm() {
-  const addressInput = document.getElementById('checkout_address');
   const notesInput = document.getElementById('checkout_notes');
   const nameInput = document.getElementById('checkout_name');
   const phoneInput = document.getElementById('checkout_phone');
+  const calleInput = document.getElementById('checkout_calle');
+  const ciudadInput = document.getElementById('checkout_ciudad');
+  const paisInput = document.getElementById('checkout_pais');
+  const barrioInput = document.getElementById('checkout_barrio');
   const addressHidden = document.getElementById('ped_direccion_envio_input');
   const notesHidden = document.getElementById('ped_notas_input');
   const nameHidden = document.getElementById('nombre_invitado_input');
@@ -184,9 +187,29 @@ function submitCheckoutForm() {
   const error = document.getElementById('checkout-error');
   const isAuthenticated = window.isAuthenticated;
 
-  if (!addressInput || !notesInput || !addressHidden || !notesHidden || !form) {
+  if (!notesInput || !addressHidden || !notesHidden || !form) {
     return;
   }
+
+  const calleVal = calleInput ? calleInput.value.trim() : '';
+  const ciudadVal = ciudadInput ? ciudadInput.value.trim() : '';
+  const paisVal = paisInput ? paisInput.value.trim() : '';
+  const barrioVal = barrioInput ? barrioInput.value.trim() : '';
+
+  if (!calleVal || !ciudadVal || !paisVal) {
+    if (error) {
+      error.textContent = 'Completa la dirección: calle, ciudad y país son obligatorios.';
+      error.classList.remove('hidden');
+    }
+    if (calleInput && !calleVal) calleInput.classList.add('error');
+    if (ciudadInput && !ciudadVal) ciudadInput.classList.add('error');
+    if (paisInput && !paisVal) paisInput.classList.add('error');
+    return;
+  }
+
+  const parts = [calleVal, ciudadVal, paisVal];
+  if (barrioVal) parts.push(barrioVal);
+  addressHidden.value = parts.join(' | ');
 
   if (!isAuthenticated) {
     const nameVal = nameInput ? nameInput.value.trim() : '';
@@ -204,7 +227,6 @@ function submitCheckoutForm() {
     if (phoneHidden) phoneHidden.value = phoneVal;
   }
 
-  addressHidden.value = addressInput.value.trim();
   notesHidden.value = notesInput.value.trim();
 
   form.submit();

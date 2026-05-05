@@ -213,6 +213,37 @@
                 </div>
 
                 <div class="form-group full-width">
+                    <label for="id_telefono">Teléfono</label>
+                    <input type="tel" name="telefono" id="id_telefono" class="form-input" placeholder="Ej. 3001234567" required maxlength="20">
+                    <div class="error-msg" id="err-telefono">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="id_direccion_calle">Dirección — Calle</label>
+                    <input type="text" name="direccion_calle" id="id_direccion_calle" class="form-input" placeholder="Ej. Calle 123 #45-67" required maxlength="100">
+                    <div class="error-msg" id="err-direccion_calle">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_direccion_ciudad">Ciudad</label>
+                    <input type="text" name="direccion_ciudad" id="id_direccion_ciudad" class="form-input" placeholder="Ej. Bogotá" required maxlength="50">
+                    <div class="error-msg" id="err-direccion_ciudad">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_direccion_pais">País</label>
+                    <input type="text" name="direccion_pais" id="id_direccion_pais" class="form-input" placeholder="Ej. Colombia" required maxlength="50">
+                    <div class="error-msg" id="err-direccion_pais">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="id_direccion_barrio">Barrio <span style="font-weight:400;text-transform:none;color:#9ca3af;">(opcional)</span></label>
+                    <input type="text" name="direccion_barrio" id="id_direccion_barrio" class="form-input" placeholder="Ej. Chapinero" maxlength="50">
+                </div>
+
+                <input type="hidden" name="direccion" id="id_direccion" value="">
+
+                <div class="form-group full-width">
                     <label for="id_password_hash">Contraseña</label>
                     <input type="password" name="contraseña" id="id_password_hash" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
                     <div class="error-msg" id="err-password">Mínimo 6 caracteres</div>

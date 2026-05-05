@@ -141,6 +141,12 @@ def register_view(request):
         segundo_apellido = request.POST.get('segundo_apellido')
         fecha_nacimiento = request.POST.get('fecha_nacimiento')
         sexo_id = request.POST.get('sexo')
+        telefono = request.POST.get('telefono', '').strip()
+        direccion = request.POST.get('direccion', '').strip()
+
+        if not telefono:
+            messages.error(request, 'El teléfono es obligatorio.')
+            return render(request, 'Sesion/register.html', {'Sexos': Sexos.objects.values('id_sexo', 'nombre_sexo')})
 
         if Usuarios.objects.filter(id_usuario=usuario).exists():
             messages.error(request, 'El nombre de usuario ya existe. Elige otro.')
@@ -148,7 +154,7 @@ def register_view(request):
             sexo = get_object_or_404(Sexos, pk=sexo_id)
             perfil_cliente = Perfiles.objects.filter(id_perfil=2).first()
 
-            Usuarios.objects.create(
+            user = Usuarios.objects.create(
                 id_usuario=usuario,
                 password_hash=hash_password(contraseña),
                 nombre=nombre,
@@ -159,6 +165,22 @@ def register_view(request):
                 usuario_id_perfil=perfil_cliente,
                 activo=1
             )
+
+            from .forms import get_next_id_model_name
+            Contactos.objects.create(
+                id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                dato_contacto=telefono,
+                tipo_contacto_id=1,
+                id_usuario=user,
+            )
+
+            if direccion:
+                Contactos.objects.create(
+                    id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                    dato_contacto=direccion,
+                    tipo_contacto_id=3,
+                    id_usuario=user,
+                )
 
             messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
             return redirect('login')
@@ -320,6 +342,11 @@ class PedidosListView(ListView):
 class PedidosDetailView(DetailView):
     model = Pedidos
     template_name = 'Pedidos/pedidos_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contactos'] = Contactos.objects.filter(id_usuario=self.object.usu)
+        return context
 
 @Permisos_Admin('Pedidos', 'create')
 def PedidosCreateView(request):
@@ -582,6 +609,11 @@ class UsuariosListView(ListView):
 class UsuariosDetailView(DetailView):
     model = Usuarios
     template_name = 'Usuarios/usuarios_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contactos'] = Contactos.objects.filter(id_usuario=self.object)
+        return context
 
 @Permisos_Admin('Usuarios', 'create')
 def UsuariosCreateView(request):

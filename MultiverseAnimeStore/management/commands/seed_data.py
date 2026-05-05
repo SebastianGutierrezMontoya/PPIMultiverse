@@ -1,9 +1,10 @@
 from django.core.management.base import BaseCommand
 from MultiverseAnimeStore.models import (
     Sexos, Roles, Perfiles, Modulos, Perfilpermisos,
-    EstadoPedidos, Usuarios, Config_Contacto
+    EstadoPedidos, Usuarios, Config_Contacto, Categoria, Productos
 )
 import hashlib
+from decimal import Decimal
 
 
 def hash_password(password):
@@ -11,7 +12,7 @@ def hash_password(password):
 
 
 class Command(BaseCommand):
-    help = 'Seed initial data: sexos, roles, perfiles, modulos, permisos, estado_pedidos, usuario admin'
+    help = 'Seed initial data: sexos, roles, perfiles, modulos, permisos, estado_pedidos, usuario admin, categorías, productos de prueba'
 
     def handle(self, *args, **kwargs):
         self.seed_sexos()
@@ -22,6 +23,8 @@ class Command(BaseCommand):
         self.seed_perfilpermisos()
         self.seed_admin_user()
         self.seed_config_contacto()
+        self.seed_categorias()
+        self.seed_productos()
         self.stdout.write(self.style.SUCCESS('Seed completado exitosamente.'))
 
     def seed_sexos(self):
@@ -141,3 +144,71 @@ class Command(BaseCommand):
             )
             created += c
         self.stdout.write(f'Config_Contacto: {created} registros creados.')
+
+    def seed_categorias(self):
+        categorias = [
+            ('CAT-1', 'Figuras de Acción', 'Figuras coleccionables de personajes anime'),
+            ('CAT-2', 'Manga', 'Manga y novelas ligeras'),
+            ('CAT-3', 'Accesorios', 'Llaveros, pulseras y accesorios anime'),
+            ('CAT-4', 'Ropa', 'Camisetas, hoodies y más'),
+            ('CAT-5', 'Tarjetas TCG', 'Cartas coleccionables y juegos de cartas'),
+            ('CAT-6', 'Peluches', 'Peluches suaves de tus personajes favoritos'),
+            ('CAT-7', 'Pósters', 'Pósters y láminas decorativas'),
+        ]
+        created = 0
+        for pk, nombre, desc in categorias:
+            _, c = Categoria.objects.get_or_create(
+                cat_id=pk,
+                defaults={'cat_nombre': nombre, 'cat_descripcion': desc}
+            )
+            created += c
+        self.stdout.write(f'Categorías: {created} creadas.')
+
+    def seed_productos(self):
+        productos = [
+            # Figuras de Acción
+            ('PROD-1', 'Goku Ultra Instinct', 'Figura de acción Goku Ultra Instinct 30cm', 'CAT-1', 85000, 20, 10),
+            ('PROD-2', 'Naruto Modo Sabio', 'Figura Naruto Modo Sabio 25cm', 'CAT-1', 72000, 15, 5),
+            ('PROD-3', 'Zoro Roronoa', 'Figura Zoro Roronoa 3 espadas 28cm', 'CAT-1', 95000, 12, 0),
+            ('PROD-4', 'Luffy Gear 5', 'Figura Monkey D. Luffy Gear 5 30cm', 'CAT-1', 89900, 18, 8),
+            # Manga
+            ('PROD-5', 'One Piece Vol. 1', 'One Piece volumen 1 - Romance Dawn', 'CAT-2', 25000, 50, 0),
+            ('PROD-6', 'Jujutsu Kaisen Vol. 1', 'Jujutsu Kaisen volumen 1', 'CAT-2', 22000, 45, 10),
+            ('PROD-7', 'Attack on Titan Vol. 1', 'Ataque a los Titanes volumen 1', 'CAT-2', 23000, 30, 0),
+            ('PROD-8', 'Demon Slayer Vol. 1', 'Kimetsu no Yaiba volumen 1', 'CAT-2', 22000, 35, 5),
+            # Accesorios
+            ('PROD-9', 'Llavero Sharingan', 'Llavero ojo Sharingan de acero', 'CAT-3', 12000, 100, 0),
+            ('PROD-10', 'Pulsera Akatsuki', 'Pulsera de cuero con dije Akatsuki', 'CAT-3', 18000, 80, 0),
+            ('PROD-11', 'Anillo Esfera del Dragón', 'Anillo con esfera del dragón 4 estrellas', 'CAT-3', 25000, 40, 15),
+            # Ropa
+            ('PROD-12', 'Camiseta Multiverse', 'Camiseta algodón diseño exclusivo Multiverse', 'CAT-4', 45000, 30, 0),
+            ('PROD-13', 'Hoodie Akatsuki', 'Hoodie negro nubes rojas Akatsuki', 'CAT-4', 95000, 20, 10),
+            ('PROD-14', 'Gorra Bola de Dragón', 'Gorra con bordado esfera del dragón', 'CAT-4', 32000, 25, 0),
+            # Tarjetas TCG
+            ('PROD-15', 'Booster One Piece TCG', 'Sobre de 12 cartas One Piece TCG', 'CAT-5', 18000, 60, 0),
+            ('PROD-16', 'Deck Dragon Ball Z', 'Mazo básico Dragon Ball Z TCG', 'CAT-5', 35000, 25, 5),
+            # Peluches
+            ('PROD-17', 'Peluche Pikachu', 'Peluche Pikachu 25cm', 'CAT-6', 42000, 15, 0),
+            ('PROD-18', 'Peluche Totoro', 'Peluche Totoro gigante 40cm', 'CAT-6', 65000, 10, 0),
+            ('PROD-19', 'Peluche Eevee', 'Peluche Eevee 20cm', 'CAT-6', 38000, 20, 15),
+            # Pósters
+            ('PROD-20', 'Póster Sword Art Online', 'Lámina A2 Sword Art Online', 'CAT-7', 15000, 40, 0),
+            ('PROD-21', 'Póster My Hero Academia', 'Lámina A2 My Hero Academia', 'CAT-7', 15000, 35, 0),
+            ('PROD-22', 'Combo 3 Pósters Anime', 'Set 3 láminas A2: Demon Slayer + One Piece + Jujutsu', 'CAT-7', 35000, 20, 20),
+        ]
+        created = 0
+        for pk, nombre, desc, cat_id, precio, stock, descuento in productos:
+            cat = Categoria.objects.get(cat_id=cat_id)
+            _, c = Productos.objects.get_or_create(
+                prod_id=pk,
+                defaults={
+                    'prod_nombre': nombre,
+                    'prod_descripcion': desc,
+                    'cat': cat,
+                    'prod_precio_venta': Decimal(str(precio)),
+                    'prod_stock': stock,
+                    'prod_descuento': Decimal(str(descuento)),
+                }
+            )
+            created += c
+        self.stdout.write(f'Productos: {created} creados.')

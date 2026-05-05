@@ -56,13 +56,10 @@
         <hr>
         <p>&copy; 2024 Multiverse Anime Store</p>
     </footer> -->
-</body>
 
 <script>
-// Marcar campos obligatorios con asterisco rojo (universal: funciona con cualquier estructura)
 document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(el) {
-        // Saltar inputs dentro de form-floating: el CSS ya pone el * via ::after
         if (el.closest('.form-floating')) return;
         var label = document.querySelector('label[for="' + el.id + '"]');
         if (label && !label.querySelector('.required-star')) {
@@ -77,8 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-</html>
-
 {% if request.resolver_match.url_name == 'pedidos_create' %}
     <script src="{% static 'MultiverseAnimeStore/Js/pedidos_form.js' %}"></script>
 {% endif %}
@@ -91,8 +86,10 @@ document.addEventListener('DOMContentLoaded', function() {
     <script src="{% static 'MultiverseAnimeStore/Js/usuarios_form.js' %}"></script>
 {% endif %}
 
-
 {% if request.resolver_match.url_name == 'register' %}
     <script src="{% static 'MultiverseAnimeStore/Js/usuarios_form.js' %}"></script>
 {% endif %}
+</body>
+
+</html>
 

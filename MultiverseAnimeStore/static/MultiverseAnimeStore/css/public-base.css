@@ -1,0 +1,35 @@
+:root {
+  --accent: #f37d15;
+  --accent-soft: rgba(243, 125, 21, 0.1);
+  --accent-hover: rgba(243, 125, 21, 0.2);
+  --accent-shadow: rgba(243, 125, 21, 0.25);
+  --dark: #000;
+  --dark-bg: #000000;
+  --red-mv: #e22611;
+  --gray-bg: #fcfcfc;
+  --border-soft: rgba(0,0,0,0.06);
+  --border-soft-white: rgba(255,255,255,0.05);
+  --card-radius: 28px;
+  --radius-bento: 24px;
+  --radius-pill: 14px;
+  --color-text: #ffffff;
+  --color-text-muted: #94a3b8;
+  --sidebar-bg: #0d0e0e;
+  --overlay-bg: rgba(0, 0, 0, 0.5);
+}
+
+body {
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+}

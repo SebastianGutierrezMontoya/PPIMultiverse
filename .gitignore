@@ -41,3 +41,9 @@ start_*.sh
 venv/
 *.pyc
 __pycache__/
+
+# Agent instructions (local only, not for remote)
+AGENTS.md
+
+# Local settings (override para SQLite dev)
+PPIMultiverse/settings_dev.py

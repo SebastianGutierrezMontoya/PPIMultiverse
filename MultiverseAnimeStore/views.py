@@ -10,7 +10,7 @@ from django.contrib import messages
 import re
 from functools import wraps
 from django.forms import modelform_factory
-import psycopg2
+# import psycopg2
 import json
 import secrets
 from datetime import date
@@ -142,16 +142,10 @@ def register_view(request):
         fecha_nacimiento = request.POST.get('fecha_nacimiento')
         sexo_id = request.POST.get('sexo')
 
-        contactos_relacionados = request.POST.getlist('contactos_relacionados')
-
-
         if Usuarios.objects.filter(id_usuario=usuario).exists():
             messages.error(request, 'El nombre de usuario ya existe. Elige otro.')
         else:
-
             sexo = get_object_or_404(Sexos, pk=sexo_id)
-
-            # Asignar perfil Cliente por defecto (id_perfil=2)
             perfil_cliente = Perfiles.objects.filter(id_perfil=2).first()
 
             Usuarios.objects.create(
@@ -166,14 +160,12 @@ def register_view(request):
                 activo=1
             )
 
-            ContactosCreateView(contactos_relacionados, usuario)
             messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
             return redirect('login')
-        
-    Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
+
     Sexo = Sexos.objects.values('id_sexo', 'nombre_sexo')
 
-    return render(request, 'Sesion/register.html', {'sidebar': 0, 'Tipo_Contacto': Tipo_Contacto, 'Sexos': Sexo})
+    return render(request, 'Sesion/register.html', {'Sexos': Sexo})
 
 # logout
 def logout_view(request):

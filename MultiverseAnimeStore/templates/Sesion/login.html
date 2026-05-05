@@ -68,6 +68,10 @@
         background: #e06d10;
         box-shadow: 0 0 15px rgba(243, 125, 21, 0.2);
     }
+    @media (max-width: 480px) {
+        .login-card { padding: 28px 20px; }
+        #login-page-body { padding: 20px; }
+    }
 </style>
 {% endblock %}
 
@@ -78,6 +82,14 @@
             <img src="{% static 'icono_tienda.png' %}" alt="Logo">
         </div>
         <h2 class="login-title">Acceso Multiverso</h2>
+
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div style="color:#ef4444; font-size:13px; font-weight:600; text-align:center; padding:10px; background:rgba(239,68,68,0.08); border-radius:12px;">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
         
         <form method="post">
             {% csrf_token %}

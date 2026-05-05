@@ -343,3 +343,256 @@ main {
     display: none;
   }
 }
+
+/* =========================
+   HAMBURGER BUTTON
+========================= */
+.navbar-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.navbar-hamburger span {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: var(--color-text);
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.navbar-hamburger:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+@media (max-width: 767px) {
+  .navbar-hamburger {
+    display: flex;
+  }
+
+  .navbar-menu {
+    display: none;
+  }
+
+  .navbar-user-badge,
+  .navbar-logout,
+  .navbar-login-link {
+    display: none;
+  }
+}
+
+/* =========================
+   USER BADGE REFINEMENT
+========================= */
+.navbar-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 12px;
+}
+
+.navbar-user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.navbar-logout {
+  font-size: 12px;
+}
+
+.navbar-login-link {
+  font-size: 12px;
+}
+
+/* =========================
+   MOBILE DRAWER (slide-in)
+========================= */
+.mobile-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 85%;
+  max-width: 340px;
+  height: 100%;
+  z-index: 300;
+  background: #0d0e0e;
+  border-left: 1px solid rgba(255,255,255,0.05);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.6);
+}
+
+.mobile-drawer.open {
+  transform: translateX(0);
+}
+
+.mobile-drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.mobile-drawer-title {
+  font-size: 18px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.5px;
+  color: var(--color-text);
+}
+
+.mobile-drawer-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.05);
+  border: none;
+  color: var(--color-text);
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.mobile-drawer-close:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.mobile-drawer-search {
+  margin-bottom: 24px;
+}
+
+.mobile-drawer-search form {
+  display: flex;
+  gap: 0;
+}
+
+.mobile-search-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 14px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-right: none;
+  border-radius: 12px 0 0 12px;
+  background: rgba(255,255,255,0.03);
+  color: var(--color-text);
+  outline: none;
+}
+
+.mobile-search-input::placeholder {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.mobile-search-btn {
+  padding: 12px 18px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 0 12px 12px 0;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  text-transform: uppercase;
+}
+
+.mobile-drawer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.mobile-link {
+  display: block;
+  padding: 16px 12px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.mobile-link:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--accent);
+}
+
+.mobile-link-login {
+  background: var(--accent);
+  color: #fff;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.mobile-link-login:hover {
+  background: #e06d10;
+  color: #fff;
+}
+
+.mobile-link-register {
+  border: 1px solid rgba(255,255,255,0.15);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.mobile-link-logout {
+  color: #f87171;
+}
+
+.mobile-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 12px 0;
+}
+
+.mobile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* overlay */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-overlay.open {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.no-scroll {
+  overflow: hidden;
+}

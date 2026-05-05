@@ -177,23 +177,23 @@ def logout_view(request):
 
 #Categorias
 
-@method_decorator(Permisos_Admin('Categoria', 'read'), name='dispatch')
+@method_decorator(Permisos_Admin('Categorias', 'read'), name='dispatch')
 class CategoriaListView(ListView):
     model = Categoria
     template_name = 'Categoria/categoria_list.html'
 
-@method_decorator(Permisos_Admin('Categoria', 'read'), name='dispatch')
+@method_decorator(Permisos_Admin('Categorias', 'read'), name='dispatch')
 class CategoriaDetailView(DetailView):
     model = Categoria
     template_name = 'Categoria/categoria_detail.html'
 
-@method_decorator(Permisos_Admin('Categoria', 'delete'), name='dispatch')
+@method_decorator(Permisos_Admin('Categorias', 'delete'), name='dispatch')
 class CategoriaDeleteView(DeleteView):
     model = Categoria
     template_name = 'Categoria/categoria_confirm_delete.html'
     success_url = reverse_lazy('categoria_list')
 
-@Permisos_Admin('Categoria', 'create')
+@Permisos_Admin('Categorias', 'create')
 def CategoriaCreateView(request):
     if request.method == 'POST':
         form = CategoriaForm(request.POST)
@@ -204,7 +204,7 @@ def CategoriaCreateView(request):
         form = CategoriaForm()
     return render(request, 'Categoria/categoria_form.html', {'form': form})
 
-@Permisos_Admin('Categoria', 'update')
+@Permisos_Admin('Categorias', 'update')
 def CategoriaUpdateView(request, pk):
     categoria = get_object_or_404(Categoria, pk=pk)
     if request.method == 'POST':
@@ -953,31 +953,31 @@ class SexosDeleteView(DeleteView):
 
 
 #EstadoPedidos
-@method_decorator(Permisos_Admin('EstadoPedidos', 'read'), name='dispatch')
+@method_decorator(Permisos_Admin('Estados', 'read'), name='dispatch')
 class EstadoPedidosListView(ListView):
     model = EstadoPedidos
     template_name = 'Pedidos/estado_pedidos_list.html'
 
-@method_decorator(Permisos_Admin('EstadoPedidos', 'read'), name='dispatch')
+@method_decorator(Permisos_Admin('Estados', 'read'), name='dispatch')
 class EstadoPedidosDetailView(DetailView):
     model = EstadoPedidos
     template_name = 'estado_pedidos_detail.html'
 
-@method_decorator(Permisos_Admin('EstadoPedidos', 'create'), name='dispatch')
+@method_decorator(Permisos_Admin('Estados', 'create'), name='dispatch')
 class EstadoPedidosCreateView(CreateView):
     model = EstadoPedidos
     form_class = EstadoPedidosForm
     template_name = 'Pedidos/estado_pedidos_form.html'
     success_url = reverse_lazy('estado_pedidos_list')
 
-@method_decorator(Permisos_Admin('EstadoPedidos', 'update'), name='dispatch')
+@method_decorator(Permisos_Admin('Estados', 'update'), name='dispatch')
 class EstadoPedidosUpdateView(UpdateView):
     model = EstadoPedidos
     fields = '__all__'
     template_name = 'Pedidos/estado_pedidos_form.html'
     success_url = reverse_lazy('estado_pedidos_list')
 
-@method_decorator(Permisos_Admin('EstadoPedidos', 'delete'), name='dispatch')
+@method_decorator(Permisos_Admin('Estados', 'delete'), name='dispatch')
 class EstadoPedidosDeleteView(DeleteView):
     model = EstadoPedidos
     template_name = 'Pedidos/estado_pedidos_confirm_delete.html'
@@ -1012,6 +1012,17 @@ def ConfigContactoCreateView(request):
     else:
         initial = {'id_regla': Config_Contacto.next_id()}
         form = FormClass(initial=initial)
+
+
+    form.fields['id_regla'].label = "* ID Regla"
+    form.fields['nombre_contacto'].label = "* Nombre del Contacto"
+    form.fields['descripcion'].label = "Descripción"
+    form.fields['regex_val'].label = "Expresión Regular"
+    form.fields['min_length'].label = "Longitud Mínima"
+    form.fields['max_length'].label = "Longitud Máxima"
+    form.fields['mensaje_error'].label = "*Mensaje de Error"
+
+
     return render(request, 'Contactos/config_contacto_form.html', {'form': form})
 
 @method_decorator(Permisos_Admin('Config_Contactos', 'update'), name='dispatch')
@@ -1020,6 +1031,17 @@ class ConfigContactoUpdateView(UpdateView):
     fields = '__all__'
     template_name = 'Contactos/config_contacto_form.html'
     success_url = reverse_lazy('config_contacto_list')
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        form.fields['id_regla'].label = "* ID Regla"
+        form.fields['nombre_contacto'].label = "* Nombre del Contacto"
+        form.fields['descripcion'].label = "Descripción"
+        form.fields['regex_val'].label = "Expresión Regular"
+        form.fields['min_length'].label = "Longitud Mínima"
+        form.fields['max_length'].label = "Longitud Máxima"
+        form.fields['mensaje_error'].label = "*Mensaje de Error"
+        return form
 
 @method_decorator(Permisos_Admin('Config_Contactos', 'delete'), name='dispatch')
 class ConfigContactoDeleteView(DeleteView):
@@ -1044,7 +1066,11 @@ def ConsultasDinamicasCreateView(request):
     if request.method == 'POST':
         # form = modelform_factory(ConsultasDinamicasForm, fields='__all__')(request.POST)
         form = ConsultasDinamicasForm(request.POST)
-        if form.is_valid():
+        blocked_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'ALTER', 'TRUNCATE', 'EXECUTE', 'GRANT', 'REVOKE']
+        query = request.POST.get('cons_sql', '').upper()
+        if any(keyword in query for keyword in blocked_keywords):
+            form.add_error('cons_sql', 'La consulta contiene palabras clave bloqueadas.')
+        elif form.is_valid():
             form.save()
             return redirect('consultas_dinamicas_list')
     else:
@@ -1071,6 +1097,14 @@ class ConsultasDinamicasUpdateView(UpdateView):
     form_class = ConsultasDinamicasForm
     template_name = 'ConsultasDinamicas/consultas_dinamicas_form.html'
     success_url = reverse_lazy('consultas_dinamicas_list')
+
+    def form_valid(self, form):
+        blocked_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'ALTER', 'TRUNCATE', 'EXECUTE', 'GRANT', 'REVOKE']
+        query = form.cleaned_data.get('cons_sql', '').upper()
+        if any(keyword in query for keyword in blocked_keywords):
+            form.add_error('cons_sql', 'La consulta contiene palabras clave bloqueadas.')
+            return self.form_invalid(form)
+        return super().form_valid(form)
 
 @method_decorator(Permisos_Admin('Consultas', 'delete'), name='dispatch')
 class ConsultasDinamicasDeleteView(DeleteView):
@@ -1101,7 +1135,7 @@ class ConsultasDinamicasDeleteView(DeleteView):
 
 #         return resultados
 
-@Permisos_Admin('Consultas', 'read')
+# @Permisos_Admin('Consultas', 'read')
 def ejecutar_reporte(id_reporte):
     with connection.cursor() as cursor:
         cursor.execute("BEGIN")

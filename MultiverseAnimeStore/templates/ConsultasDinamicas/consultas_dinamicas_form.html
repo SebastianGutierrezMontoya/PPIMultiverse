@@ -6,6 +6,16 @@
     {% csrf_token %}
     <!-- {{ form.as_p }} -->
 
+    
+    {% if form.errors %}
+        <div class="error-container" >
+            {% for field in form %}
+                {% for error in field.errors %}
+                    <div class="error-item" style="padding-bottom:14px;">{{ error }}</div>
+                {% endfor %}
+            {% endfor %}
+    {% endif %}
+
     {% for field in form %}
         <div class="form-floating">
           {{ field }}

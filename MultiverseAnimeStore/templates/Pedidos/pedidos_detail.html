@@ -6,7 +6,7 @@
     <li>Usuario: <a href="{% url 'usuarios_detail' object.usu.id_usuario %}">{{ object.usu.nombre }} {{ object.usu.primer_apellido }} ({{ object.usu.id_usuario }})</a></li>
     <li>Fecha: {{ object.ped_fecha_pedido }}</li>
     <li>Total: {{ object.ped_total }}</li>
-    <li>Estado: {{ object.ped_estado }}</li>
+    <li>Estado: {{ object.ped_estado.est_nombre }}</li>
     <li>Dirección de envío: {{ object.ped_direccion_envio }}</li>
     <li>Notas: {{ object.ped_notas }}</li>
 </ul>

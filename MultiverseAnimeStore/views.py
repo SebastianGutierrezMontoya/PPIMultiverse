@@ -1373,9 +1373,7 @@ def mis_pedidos_view(request):
 
     for pedido in pedidos:
         # Calcular el estado como texto
-        estado_map = {1: 'Pendiente', 2: 'Confirmado', 3: 'En preparación',
-                      4: 'Enviado', 5: 'Entregado', 6: 'Cancelado'}
-        pedido.estado_texto = estado_map.get(int(pedido.ped_estado or 1), 'Desconocido')
+        pedido.estado_texto = pedido.ped_estado.est_nombre if pedido.ped_estado else 'Pendiente'
         pedido.productos_count = PedidosProductos.objects.filter(ped=pedido).count()
 
     return render(request, 'Multiverse/mis_pedidos.html', {
@@ -1389,9 +1387,7 @@ def pedido_detalle_view(request, ped_id):
     """Muestra el detalle de un pedido específico del cliente."""
     pedido = get_object_or_404(Pedidos, pk=ped_id, usu=request.user)
 
-    estado_map = {1: 'Pendiente', 2: 'Confirmado', 3: 'En preparación',
-                  4: 'Enviado', 5: 'Entregado', 6: 'Cancelado'}
-    pedido.estado_texto = estado_map.get(int(pedido.ped_estado or 1), 'Desconocido')
+    pedido.estado_texto = pedido.ped_estado.est_nombre if pedido.ped_estado else 'Pendiente'
 
     productos = PedidosProductos.objects.filter(ped=pedido).select_related('prod', 'pped_estado')
 
@@ -1416,12 +1412,10 @@ def panel_dashboard(request):
     total_categorias = Categoria.objects.count()
     total_perfiles = Perfiles.objects.count()
 
-    estado_map = {1: 'Pendiente', 2: 'Confirmado', 3: 'En preparacion',
-                  4: 'Enviado', 5: 'Entregado', 6: 'Cancelado'}
-    pedidos_pendientes = Pedidos.objects.filter(ped_estado=1).count()
-    pedidos_recientes = Pedidos.objects.select_related('usu').order_by('-ped_fecha_pedido')[:5]
+    pedidos_pendientes = Pedidos.objects.filter(ped_estado_id=1).count()
+    pedidos_recientes = Pedidos.objects.select_related('usu', 'ped_estado').order_by('-ped_fecha_pedido')[:5]
     for p in pedidos_recientes:
-        p.estado_texto = estado_map.get(int(p.ped_estado or 1), 'Desconocido')
+        p.estado_texto = p.ped_estado.est_nombre if p.ped_estado else 'Pendiente'
 
     context = {
         'total_productos': total_productos,
@@ -1626,11 +1620,9 @@ def panel_pedidos_list(request):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')
         return redirect('home')
-    estado_map = {1: 'Pendiente', 2: 'Confirmado', 3: 'En preparacion',
-                  4: 'Enviado', 5: 'Entregado', 6: 'Cancelado'}
-    pedidos = Pedidos.objects.select_related('usu').all().order_by('-ped_fecha_pedido')[:20]
+    pedidos = Pedidos.objects.select_related('usu', 'ped_estado').all().order_by('-ped_fecha_pedido')[:20]
     for p in pedidos:
-        p.estado_texto = estado_map.get(int(p.ped_estado or 1), 'Desconocido')
+        p.estado_texto = p.ped_estado.est_nombre if p.ped_estado else 'Pendiente'
     return render(request, 'Admin/panel_pedidos.html', {
         'pedidos': pedidos,
         'section': 'pedidos',

@@ -29,17 +29,17 @@
                     <div style="text-align: right;">
                         <span style="font-size: 20px; font-weight: 900;">${{ pedido.ped_total|floatformat:0 }}</span>
                         <br>
-                        {% if pedido.ped_estado == 1 %}
+                        {% if pedido.ped_estado_id == 1 %}
                             <span style="display: inline-block; margin-top: 4px; padding: 4px 12px; border-radius: 20px; 
                                          font-size: 12px; font-weight: 700; background: rgba(234,179,8,0.15); color: #eab308;">
                                 ⏳ {{ pedido.estado_texto }}
                             </span>
-                        {% elif pedido.ped_estado == 5 %}
+                        {% elif pedido.ped_estado_id == 5 %}
                             <span style="display: inline-block; margin-top: 4px; padding: 4px 12px; border-radius: 20px; 
                                          font-size: 12px; font-weight: 700; background: rgba(34,197,94,0.15); color: #22c55e;">
                                 ✅ {{ pedido.estado_texto }}
                             </span>
-                        {% elif pedido.ped_estado == 6 %}
+                        {% elif pedido.ped_estado_id == 6 %}
                             <span style="display: inline-block; margin-top: 4px; padding: 4px 12px; border-radius: 20px; 
                                          font-size: 12px; font-weight: 700; background: rgba(239,68,68,0.15); color: #ef4444;">
                                 ❌ {{ pedido.estado_texto }}

@@ -55,9 +55,11 @@ class Pedidos(models.Model):
     usu = models.ForeignKey('Usuarios', models.DO_NOTHING)
     ped_fecha_pedido = models.DateField(blank=True, null=True)
     ped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    # ped_estado = models.IntegerField(max_length=1, blank=True, null=True, default=1)
-    #ped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='ped_estado')
-    ped_estado = models.FloatField(max_length=1, blank=True, null=True, default=1)
+    ped_estado = models.ForeignKey(
+        EstadoPedidos, models.DO_NOTHING,
+        db_column='ped_estado', default=1,
+        related_name='pedidos'
+    )
     ped_direccion_envio = models.CharField(max_length=200, blank=True, null=True)
     ped_notas = models.CharField(max_length=200, blank=True, null=True)
 

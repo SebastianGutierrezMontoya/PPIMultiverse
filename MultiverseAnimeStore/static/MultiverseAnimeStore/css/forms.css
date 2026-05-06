@@ -1,5 +1,4 @@
 .form-container {
-    
     max-width: 500px;
     margin: 40px auto;
     padding: 24px 32px;
@@ -10,8 +9,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 400px;
-    width: fit-content;
+    width: 100%;
 }
 
 .form-container > * {
@@ -42,6 +40,7 @@
     gap: 12px;
     align-items: center;
     margin-bottom: 16px;
+    flex-wrap: wrap;
 }
 
 .form-linear label {
@@ -50,7 +49,8 @@
 }
 
 .form-linear input[type="number"] {
-    width: 200%;
+    width: 120px;
+    max-width: 100%;
 }
 
 .form-linear button {
@@ -63,10 +63,46 @@
 }
 
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     form {
-        max-width: 95vw;
-        padding: 16px 8px;
+        max-width: 100%;
+        padding: 16px;
+    }
+
+    .form-container {
+        margin: 20px auto;
+        padding: 20px 16px;
+        max-width: 95%;
+    }
+
+    .form-linear {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .form-linear label {
+        white-space: normal;
+    }
+
+    .form-linear input[type="number"] {
+        width: 100%;
+    }
+
+    .form-floating textarea {
+        width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-container {
+        padding: 16px 12px;
+        margin: 16px auto;
+        border-radius: 8px;
     }
 }
 
@@ -85,11 +121,13 @@
 }
 
 .form-productos {
-    width: 400%;
+    width: 100%;
+    max-width: 400px;
 }
 
 .form-dato-contacto {
-    width: 400%;
+    width: 100%;
+    max-width: 400px;
 }
 
 .form-list {
@@ -140,7 +178,7 @@
 
 .form-floating textarea {
   resize: none;
-  width: 95%;
+  width: 100%;
 }
 
 .form-floating input:focus + label,

@@ -64,6 +64,9 @@ class Pedidos(models.Model):
     class Meta:
         managed = True
         db_table = 'pedidos'
+        constraints = [
+            models.CheckConstraint(check=models.Q(ped_total__gte=0), name='ck_total_no_negativo'),
+        ]
 
     def __str__(self):
         return f"Pedido {self.ped_id}"
@@ -142,6 +145,11 @@ class Productos(models.Model):
     class Meta:
         managed = True
         db_table = 'productos'
+        constraints = [
+            models.CheckConstraint(check=models.Q(prod_precio_venta__gt=0), name='ck_precio_positivo'),
+            models.CheckConstraint(check=models.Q(prod_stock__gte=0), name='ck_stock_no_negativo'),
+            models.CheckConstraint(check=models.Q(prod_descuento__lte=99), name='ck_descuento_maximo'),
+        ]
 
     def __str__(self):
         return self.prod_nombre or str(self.prod_id)
@@ -198,9 +206,9 @@ class Usuarios(models.Model):
     class Meta:
         managed = True
         db_table = 'usuarios'
-        # fields = ['id_usuario', 'nombre', 'primer_apellido', 'segundo_apellido', 'fecha_nacimiento',
-        #            'password_hash', 'usuario_id_sexo', 'usuario_id_rol']
-        
+        constraints = [
+            models.CheckConstraint(check=models.Q(activo=0) | models.Q(activo=1), name='ck_activo_valido'),
+        ]
 
     def __str__(self):
         
@@ -250,6 +258,9 @@ class Contactos(models.Model):
     class Meta:
         managed = True
         db_table = 'contactos'
+        constraints = [
+            models.UniqueConstraint(fields=['id_usuario', 'tipo_contacto'], name='uq_usuario_tipo_contacto'),
+        ]
 
     def __str__(self):
         return self.dato_contacto or str(self.id_contacto)

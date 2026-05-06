@@ -26,7 +26,7 @@ def descontar_stock_y_actualizar_total(sender, instance, created, **kwargs):
         return
 
     Productos.objects.filter(pk=instance.prod_id).update(
-        prod_stock=models.F('prod_stock') - instance.pped_cantidad
+        prod_stock=F('prod_stock') - instance.pped_cantidad
     )
 
     total_real = PedidosProductos.objects.filter(ped=instance.ped).aggregate(

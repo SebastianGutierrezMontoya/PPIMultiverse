@@ -1214,66 +1214,66 @@ def checkout_view(request):
 
             from .forms import get_next_id_model_name
 
-            # ── Fase 2: Deduplicación por teléfono ──
-            # Si este teléfono ya pertenece a un invitado (activo=0), reusamos ese usuario
-            contacto_existente = Contactos.objects.filter(
-                dato_contacto=telefono_invitado,
-                id_usuario__activo=0
-            ).select_related('id_usuario').first()
+            with transaction.atomic():
+                # ── Fase 2: Deduplicación por teléfono ──
+                contacto_existente = Contactos.objects.filter(
+                    dato_contacto=telefono_invitado,
+                    id_usuario__activo=0
+                ).select_related('id_usuario').first()
 
-            if contacto_existente:
-                usuario = contacto_existente.id_usuario
-                if direccion_envio:
-                    tiene_direccion = Contactos.objects.filter(
-                        id_usuario=usuario, tipo_contacto_id=3
-                    ).exists()
-                    if not tiene_direccion:
+                if contacto_existente:
+                    usuario = contacto_existente.id_usuario
+                    if direccion_envio:
+                        tiene_direccion = Contactos.objects.filter(
+                            id_usuario=usuario, tipo_contacto_id=3
+                        ).exists()
+                        if not tiene_direccion:
+                            Contactos.objects.create(
+                                id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                                dato_contacto=direccion_envio,
+                                tipo_contacto_id=3,
+                                id_usuario=usuario,
+                            )
+                else:
+                    # ── Crear nuevo usuario invitado ──
+                    next_id_num = get_next_id_model_name(Usuarios, 'id_usuario')
+                    new_id = f"USR-{next_id_num}"
+
+                    random_pass = secrets.token_hex(16)
+                    hashed = hash_password(random_pass)
+
+                    sexo_default = Sexos.objects.get(pk=3)
+                    perfil_cliente = Perfiles.objects.get(pk=2)
+
+                    partes_nombre = nombre_invitado.split(maxsplit=1)
+                    nombre = partes_nombre[0] if partes_nombre else nombre_invitado
+                    primer_apellido = partes_nombre[1] if len(partes_nombre) > 1 else "Invitado"
+
+                    usuario = Usuarios.objects.create(
+                        id_usuario=new_id,
+                        nombre=nombre,
+                        primer_apellido=primer_apellido,
+                        password_hash=hashed,
+                        activo=0,
+                        usuario_id_sexo=sexo_default,
+                        usuario_id_perfil=perfil_cliente,
+                    )
+
+                    # ── Fase 1: 2 contactos (teléfono + dirección) ──
+                    Contactos.objects.create(
+                        id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                        dato_contacto=telefono_invitado,
+                        tipo_contacto_id=1,
+                        id_usuario=usuario,
+                    )
+
+                    if direccion_envio:
                         Contactos.objects.create(
                             id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
                             dato_contacto=direccion_envio,
                             tipo_contacto_id=3,
                             id_usuario=usuario,
                         )
-            else:
-                # ── Crear nuevo usuario invitado ──
-                next_id_num = get_next_id_model_name(Usuarios, 'id_usuario')
-                new_id = f"USR-{next_id_num}"
-
-                random_pass = secrets.token_hex(16)
-                hashed = hash_password(random_pass)
-
-                sexo_default = Sexos.objects.get(pk=3)
-                perfil_cliente = Perfiles.objects.get(pk=2)
-
-                partes_nombre = nombre_invitado.split(maxsplit=1)
-                nombre = partes_nombre[0] if partes_nombre else nombre_invitado
-                primer_apellido = partes_nombre[1] if len(partes_nombre) > 1 else "Invitado"
-
-                usuario = Usuarios.objects.create(
-                    id_usuario=new_id,
-                    nombre=nombre,
-                    primer_apellido=primer_apellido,
-                    password_hash=hashed,
-                    activo=0,
-                    usuario_id_sexo=sexo_default,
-                    usuario_id_perfil=perfil_cliente,
-                )
-
-                # ── Fase 1: 2 contactos (teléfono + dirección) ──
-                Contactos.objects.create(
-                    id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
-                    dato_contacto=telefono_invitado,
-                    tipo_contacto_id=1,
-                    id_usuario=usuario,
-                )
-
-                if direccion_envio:
-                    Contactos.objects.create(
-                        id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
-                        dato_contacto=direccion_envio,
-                        tipo_contacto_id=3,
-                        id_usuario=usuario,
-                    )
 
             # NOTAS: ya no se marca [INVITADO - telefono] — los contactos son trazables
             notas_pedido = request.POST.get('ped_notas', '').strip()
@@ -1304,10 +1304,10 @@ def checkout_view(request):
             messages.error(request, 'No hay productos válidos en el carrito.')
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        next_ped_id = (Pedidos.objects.aggregate(max_id=Max('ped_id'))['max_id'] or 0) + 1
-
         try:
             with transaction.atomic():
+                Pedidos.objects.select_for_update().first()
+                next_ped_id = (Pedidos.objects.aggregate(max_id=Max('ped_id'))['max_id'] or 0) + 1
                 pedido = Pedidos.objects.create(
                     ped_id=next_ped_id,
                     usu=usuario,

@@ -1,29 +1,30 @@
 from django import forms
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Perfiles, Consultas_Dinamicas, EstadoPedidos
 from datetime import date as Date
-from django.db import connection
+from django.db import connection, transaction
+from django.db.models import Max
 
 
 def next_int_id(model, field_name):
     """
     Devuelve max(CAST(field AS INTEGER)) + 1.
-    Compatible con PostgreSQL. Fallback seguro si falla.
+    Envuelto en transacción con select_for_update para evitar race conditions en PostgreSQL.
     """
     table = model._meta.db_table
-    # Consulta compatible con PostgreSQL
     sql = f"""
         SELECT MAX(
             CASE WHEN {field_name} ~ '^[0-9]+$' THEN {field_name}::integer ELSE NULL END
         ) FROM {table}
     """
     try:
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-            row = cursor.fetchone()
-            maxval = row[0] if row else None
-            return int(maxval or 0) + 1
+        with transaction.atomic():
+            model.objects.select_for_update().first()
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                row = cursor.fetchone()
+                maxval = row[0] if row else None
+                return int(maxval or 0) + 1
     except Exception:
-        # fallback seguro
         return model.objects.count() + 1
 
 
@@ -39,9 +40,7 @@ def next_consecutive_id(model, field):
     return expected
 
 
-#funcion para tener el siguiente valor de id de un capo de texto con formato "TEXTO-123"
 def get_next_id(value):
-    # Busca el ultimo numero al final del string (ej: 'USR-15' -> 15, 'admin' -> 1)
     import re
     match = re.search(r'(\d+)$', value)
     if match:
@@ -51,16 +50,16 @@ def get_next_id(value):
 
 def get_next_id_model_name(model, field_name):
     """
-    Recibe un modelo y el nombre del campo, obtiene el último valor del campo,
-    lo parsea como string con número, y devuelve el siguiente valor numérico.
+    Recibe un modelo y el nombre del campo, obtiene el último valor del campo
+    con select_for_update para evitar race conditions en PostgreSQL.
     """
-    last_obj = model.objects.order_by(f'-{field_name}').first()
-    if last_obj:
-        value = getattr(last_obj, field_name)
-
-        return get_next_id(value)
-    else:
-        return 1
+    with transaction.atomic():
+        last_obj = model.objects.select_for_update().order_by(f'-{field_name}').first()
+        if last_obj:
+            value = getattr(last_obj, field_name)
+            return get_next_id(value)
+        else:
+            return 1
 
 
 class PedidosForm(forms.ModelForm):

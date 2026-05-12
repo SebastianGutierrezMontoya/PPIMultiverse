@@ -504,21 +504,22 @@ class ProductosDeleteView(DeleteView):
 #productos auditoria
 @Permisos_Admin('Productos', 'read')
 def ProductosAuditoriaView(request):
-    # productos_auditoria = Productos_Auditoria.objects.all()
+    # productos_auditoria_raw = Productos_Auditoria.objects.values('creation_date', 'au_type', 'auditoria').order_by('-creation_date')
     # productos_auditoria_raw = Productos_Auditoria.objects.raw(
     # "SELECT rownum AS id, creation_date, au_type, auditoria FROM productos_auditoria"
     # )
 
     productos_auditoria_raw = Productos_Auditoria.objects.raw("""
     SELECT 
-        ROW_NUMBER() OVER (ORDER BY creation_date DESC) AS id,
+        ctid AS dummy_id,
         creation_date,
         au_type,
         auditoria
     FROM productos_auditoria
+    ORDER BY creation_date DESC
     """)
 
-
+    # print("DEBUG: Productos_Auditoria raw data:", productos_auditoria_raw)
 # Convertimos los objetos y reemplazamos au_type por texto
     productos_auditoria = []
     for p in productos_auditoria_raw:

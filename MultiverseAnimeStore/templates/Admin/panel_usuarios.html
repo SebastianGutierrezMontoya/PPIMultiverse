@@ -1,0 +1,79 @@
+{% extends "Admin/panel_base.html" %}
+
+{% block panel_content %}
+<div class="panel-content-header">
+    <div>
+        <h2>Usuarios</h2>
+        <p>Gestión de usuarios del sistema.</p>
+    </div>
+    <div class="panel-actions">
+        <a href="{% url 'panel_usuarios_crear' %}" class="panel-btn panel-btn-primary">+ Nuevo Usuario</a>
+    </div>
+</div>
+
+<form method="get" class="panel-search">
+    <input type="text" name="q" class="panel-search-input" value="{{ query|default:'' }}" placeholder="Buscar por nombre o ID de usuario...">
+    <button type="submit" class="panel-btn panel-btn-secondary panel-btn-sm">Buscar</button>
+    {% if query %}
+        <a href="{% url 'panel_usuarios' %}" class="panel-search-clear">✕ Limpiar</a>
+    {% endif %}
+</form>
+
+{% if usuarios %}
+<div class="panel-table-wrapper">
+    <table class="panel-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Apellidos</th>
+                <th>Sexo</th>
+                <th>Perfil</th>
+                <th>Activo</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in usuarios %}
+            <tr>
+                <td style="color:#64748b; font-family:monospace;">{{ u.id_usuario }}</td>
+                <td style="color:#ffffff; font-weight:600;">{{ u.nombre }}</td>
+                <td>{{ u.primer_apellido|default:"" }} {{ u.segundo_apellido|default:"" }}</td>
+                <td>{{ u.usuario_id_sexo.nombre_sexo|default:"—" }}</td>
+                <td>{{ u.usuario_id_perfil.nombre|default:"—" }}</td>
+                <td>
+                    {% if u.activo == 1 or u.activo == True %}
+                        <span style="color:#4ade80;">✅ Activo</span>
+                    {% else %}
+                        <span style="color:#f87171;">❌ Inactivo</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <a href="{% url 'panel_usuarios_editar' u.id_usuario %}" class="panel-btn panel-btn-primary panel-btn-sm">Editar</a>
+                        <a href="{% url 'usuarios_detail' u.pk %}" class="panel-btn panel-btn-secondary panel-btn-sm">Ver</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="panel-pagination">
+        <span>Página {{ page }} de {{ total_paginas }}</span>
+        <div class="panel-pagination-links">
+            {% if page > 1 %}
+                <a href="?page=1{% if query %}&q={{ query }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">«</a>
+                <a href="?page={{ page|add:-1 }}{% if query %}&q={{ query }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">‹ Anterior</a>
+            {% endif %}
+            {% if page < total_paginas %}
+                <a href="?page={{ page|add:1 }}{% if query %}&q={{ query }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">Siguiente ›</a>
+                <a href="?page={{ total_paginas }}{% if query %}&q={{ query }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">»</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="panel-alert panel-alert-info">No se encontraron usuarios.</div>
+{% endif %}
+{% endblock %}

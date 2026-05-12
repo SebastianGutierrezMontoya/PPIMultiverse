@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Perfilpermisos, Modulos, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
-from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm
+from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm, SexosForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q, Max
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
@@ -10,8 +10,9 @@ from django.contrib import messages
 import re
 from functools import wraps
 from django.forms import modelform_factory
-import psycopg2
+# import psycopg2
 import json
+import secrets
 from datetime import date
 from decimal import Decimal
 from django.core.paginator import Paginator
@@ -78,28 +79,26 @@ def Login_requerido():
 
     return decorator
 
-# Función para extraer mensajes de error de SQL Server
+# Función para extraer mensajes de error de BD (compatible PostgreSQL y otros)
 def _extract_db_message(exc):
-    """Extrae el mensaje amigable de una excepción SQL Server."""
+    """Extrae el mensaje amigable de una excepción de base de datos."""
     text = str(exc) or ''
-    # print("DEBUG: Mensaje de error completo:", text)
     
-    # Buscar patrón: [SQL Server]mensaje(código)(SQLExecDirectW)
-    m = re.search(r'\[SQL Server\](.+?)\s*\(\d+\)\s*\(SQLExecDirectW\)', text)
-    if m:
-        return m.group(1).strip()
+    # PostgreSQL: buscar después de "DETAIL:" o "HINT:" o "ERROR:"
+    for prefix in ['DETAIL:  ', 'HINT:  ', 'ERROR:  ', 'CONTEXT:  ']:
+        if prefix in text:
+            idx = text.find(prefix) + len(prefix)
+            end = text.find('\n', idx)
+            return text[idx:end].strip() if end > 0 else text[idx:].strip()
     
-    # Si no encuentra el patrón anterior, busca [SQL Server]mensaje(código)
-    m = re.search(r'\[SQL Server\](.+?)\s*\(\d+\)', text)
-    if m:
-        return m.group(1).strip()
-    
-    # Fallback: primera línea no vacía
+    # Fallback: primera línea no vacía que no parezca traceback
     for line in text.splitlines():
         line = line.strip()
-        if line and not line.startswith('['):
-            return line
+        if line and not line.startswith('[') and not line.startswith('Traceback'):
+            if len(line) > 10 and line[0].isupper():  # parece un mensaje real
+                return line
     
+    # Último recurso
     return text.strip() or 'Error de base de datos.'
 
 def admin_home(request):
@@ -113,16 +112,20 @@ def hash_password(password):
 
 # Login
 def login_view(request):
+    # Si ya está autenticado, redirigir al catálogo (no mostrar login)
+    if request.user.is_authenticated:
+        return redirect('catalogo')
+
     if request.method == 'POST':
         usuario = request.POST.get('usuario')
         contraseña = request.POST.get('contraseña')
 
         try:
             user = Usuarios.objects.get(id_usuario=usuario, password_hash=hash_password(contraseña))
-            # user = authenticate(request, username=usuario, password=hash_password(contraseña))  # Si usas el sistema de autenticación de Django
-            # login(request, user)  # Si usas el sistema de autenticación de Django
             request.session['user_id'] = user.id_usuario
-            return redirect('admin_home')
+            # Los administradores van al panel; los clientes al catálogo
+            destino = request.POST.get('next', 'catalogo')
+            return redirect(destino)
         except Usuarios.DoesNotExist:
             messages.error(request, 'Credenciales inválidas. Inténtalo de nuevo.')
 
@@ -138,42 +141,59 @@ def register_view(request):
         segundo_apellido = request.POST.get('segundo_apellido')
         fecha_nacimiento = request.POST.get('fecha_nacimiento')
         sexo_id = request.POST.get('sexo')
+        telefono = request.POST.get('telefono', '').strip()
+        direccion = request.POST.get('direccion', '').strip()
 
-        contactos_relacionados = request.POST.getlist('contactos_relacionados')
-
+        if not telefono:
+            messages.error(request, 'El teléfono es obligatorio.')
+            return render(request, 'Sesion/register.html', {'Sexos': Sexos.objects.values('id_sexo', 'nombre_sexo')})
 
         if Usuarios.objects.filter(id_usuario=usuario).exists():
             messages.error(request, 'El nombre de usuario ya existe. Elige otro.')
         else:
-
             sexo = get_object_or_404(Sexos, pk=sexo_id)
+            perfil_cliente = Perfiles.objects.filter(id_perfil=2).first()
 
-            Usuarios.objects.create(
+            user = Usuarios.objects.create(
                 id_usuario=usuario,
                 password_hash=hash_password(contraseña),
                 nombre=nombre,
                 primer_apellido=primer_apellido,
                 segundo_apellido=segundo_apellido,
                 fecha_nacimiento=fecha_nacimiento,
-                usuario_id_sexo=sexo
+                usuario_id_sexo=sexo,
+                usuario_id_perfil=perfil_cliente,
+                activo=1
             )
 
-            ContactosCreateView(contactos_relacionados, usuario)
+            from .forms import get_next_id_model_name
+            Contactos.objects.create(
+                id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                dato_contacto=telefono,
+                tipo_contacto_id=1,
+                id_usuario=user,
+            )
+
+            if direccion:
+                Contactos.objects.create(
+                    id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                    dato_contacto=direccion,
+                    tipo_contacto_id=3,
+                    id_usuario=user,
+                )
+
             messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
             return redirect('login')
-        
-    Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
+
     Sexo = Sexos.objects.values('id_sexo', 'nombre_sexo')
 
-    return render(request, 'Sesion/register.html', {'sidebar': 0, 'Tipo_Contacto': Tipo_Contacto, 'Sexos': Sexo})
+    return render(request, 'Sesion/register.html', {'Sexos': Sexo})
 
 # logout
 def logout_view(request):
-    # Aquí podrías limpiar la sesión o cualquier dato relacionado con el usuario
-    # logout(request)  # Si estás usando el sistema de autenticación de Django
     request.session.flush()
-    messages.info(request, 'Has cerrado sesión exitosamente.')
-    return redirect('login')
+    messages.success(request, 'Has cerrado sesión. ¡Vuelve pronto!')
+    return redirect('home')
 
 #Categorias
 
@@ -255,16 +275,12 @@ def PedidosProductosCreateView(productos_seleccionados, id_pedido):
                 pped_estado=pped_estado
             )
 
-        # VALIDACIÓN FINAL DEL PEDIDO 
-        cursor = connection.cursor()
-        desactivar_trigger()
-        try:
-            cursor.execute("CALL sp_cerrar_pedido(%s)", [id_pedido])
-        except Exception as e:
-            # Esto fuerza rollback de toda la transacción
-            raise DatabaseError(e)
-        finally:
-            activar_trigger()
+        # VALIDACIÓN FINAL DEL PEDIDO (reemplazo de sp_cerrar_pedido de Oracle)
+        # Calcular total actualizado del pedido basado en productos
+        total_real = PedidosProductos.objects.filter(ped=pedido).aggregate(
+            total=Sum('pped_total')
+        )['total'] or 0
+        Pedidos.objects.filter(pk=id_pedido).update(ped_total=total_real)
         
 
 
@@ -327,6 +343,11 @@ class PedidosDetailView(DetailView):
     model = Pedidos
     template_name = 'Pedidos/pedidos_detail.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contactos'] = Contactos.objects.filter(id_usuario=self.object.usu)
+        return context
+
 @Permisos_Admin('Pedidos', 'create')
 def PedidosCreateView(request):
     Json = {}
@@ -361,17 +382,8 @@ def PedidosUpdateView(request, pk):
     pedido = get_object_or_404(Pedidos, pk=pk)
     productos_relacionados = PedidosProductos.objects.filter(ped=pedido)
 
-    Estado = None
-    
-    cursor = connection.cursor()
-    try:
-        cursor.execute("SELECT fn_estado_pedido(%s)", [pedido.ped_id])
-        resultado = cursor.fetchone()
-        Estado = resultado[0] if resultado else None
-
-    except Exception as e:
-        # Esto fuerza rollback de toda la transacción
-        raise DatabaseError(e)
+    # Obtener estado del pedido (reemplazo de fn_estado_pedido de Oracle)
+    Estado = pedido.ped_estado
         
 
 
@@ -597,6 +609,11 @@ class UsuariosListView(ListView):
 class UsuariosDetailView(DetailView):
     model = Usuarios
     template_name = 'Usuarios/usuarios_detail.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['contactos'] = Contactos.objects.filter(id_usuario=self.object)
+        return context
 
 @Permisos_Admin('Usuarios', 'create')
 def UsuariosCreateView(request):
@@ -934,14 +951,14 @@ class SexosDetailView(DetailView):
 @method_decorator(Permisos_Admin('Sexos', 'create'), name='dispatch')
 class SexosCreateView(CreateView):
     model = Sexos
-    fields = '__all__'
+    form_class = SexosForm
     template_name = 'Usuarios/sexos_form.html'
     success_url = reverse_lazy('sexos_list')
 
 @method_decorator(Permisos_Admin('Sexos', 'update'), name='dispatch')
 class SexosUpdateView(UpdateView):
     model = Sexos
-    fields = '__all__'
+    form_class = SexosForm
     template_name = 'Usuarios/sexos_form.html'
     success_url = reverse_lazy('sexos_list')
 
@@ -1137,19 +1154,30 @@ class ConsultasDinamicasDeleteView(DeleteView):
 
 # @Permisos_Admin('Consultas', 'read')
 def ejecutar_reporte(id_reporte):
-    with connection.cursor() as cursor:
-        cursor.execute("BEGIN")
-        cursor.execute("SELECT fn_ejecutar_reporte(%s)", [id_reporte])
-        cursor.execute('FETCH ALL FROM "<unnamed portal 1>"')
+    """
+    Ejecuta una consulta dinámica guardada en Consultas_Dinamicas.
+    Reemplazo de fn_ejecutar_reporte de Oracle.
+    """
+    try:
+        consulta = Consultas_Dinamicas.objects.get(cons_id=id_reporte)
+        sql = consulta.cons_sql
 
-        columnas = [col[0] for col in cursor.description]
-        resultados = []
+        # Validar que solo sea SELECT
+        if not sql.strip().upper().startswith('SELECT'):
+            raise Exception('Solo se permiten consultas SELECT')
 
-        for fila in cursor.fetchall():
-            resultados.append(dict(zip(columnas, fila)))
-
-        cursor.execute("COMMIT")
-        return resultados
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            columnas = [col[0] for col in cursor.description]
+            resultados = []
+            for fila in cursor.fetchall():
+                resultados.append(dict(zip(columnas, fila)))
+            return resultados
+    except Consultas_Dinamicas.DoesNotExist:
+        return []
+    except Exception as e:
+        print(f"Error ejecutando reporte {id_reporte}: {e}")
+        return []
 
 @Permisos_Admin('Consultas', 'read')
 def reporte_view(request, id):
@@ -1163,10 +1191,28 @@ def reporte_view(request, id):
 
 
 def home_view(request):
-    return render(request, 'Multiverse/home.html')
+    """Landing page: hero, categorías destacadas, últimos productos, redes sociales."""
+    categorias = Categoria.objects.all()
+
+    # Contar productos por categoría (para mostrar el badge)
+    from django.db.models import Count
+    categorias_conteo = Categoria.objects.annotate(
+        productos_count=Count('productos')
+    )
+
+    # Top 4 categorías para hero cards (las que más productos tienen)
+    hero_categories = categorias_conteo.order_by('-productos_count')[:4]
+
+    # Últimos 8 productos agregados
+    ultimos_productos = Productos.objects.select_related('cat').order_by('-prod_id')[:8]
+
+    return render(request, 'Multiverse/landing.html', {
+        'categorias': categorias_conteo,
+        'hero_categories': hero_categories,
+        'ultimos_productos': ultimos_productos,
+    })
 
 
-@Login_requerido()
 def checkout_view(request):
     print("DEBUG: checkout_view called with method:", request.method)
     if request.method == 'POST':
@@ -1184,10 +1230,91 @@ def checkout_view(request):
             messages.error(request, 'El carrito está vacío. No se creó ningún pedido.')
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        if not getattr(request.user, 'is_authenticated', False):
-            print("DEBUG: Usuario no autenticado, redirigiendo.")
-            messages.error(request, 'Debes iniciar sesión para crear el pedido.')
-            return redirect(request.META.get('HTTP_REFERER', '/'))
+        # ── DETERMINAR USUARIO ──────────────────────────────────────
+        # Si está autenticado, usamos su usuario.
+        # Si NO está autenticado (invitado), creamos un usuario temporal
+        # para cumplir con la FK de Pedidos, sin tocar el esquema de la BD.
+        # ─────────────────────────────────────────────────────────────
+        if request.user.is_authenticated:
+            usuario = request.user
+        else:
+            nombre_invitado = request.POST.get('nombre_invitado', '').strip()
+            telefono_invitado = request.POST.get('telefono_invitado', '').strip()
+            direccion_envio = request.POST.get('ped_direccion_envio', '').strip()
+
+            if not nombre_invitado or not telefono_invitado:
+                messages.error(request, 'Debes ingresar tu nombre y teléfono para continuar.')
+                return redirect(request.META.get('HTTP_REFERER', '/'))
+
+            from .forms import get_next_id_model_name
+
+            with transaction.atomic():
+                # ── Fase 2: Deduplicación por teléfono ──
+                contacto_existente = Contactos.objects.filter(
+                    dato_contacto=telefono_invitado,
+                    id_usuario__activo=0
+                ).select_related('id_usuario').first()
+
+                if contacto_existente:
+                    usuario = contacto_existente.id_usuario
+                    if direccion_envio:
+                        tiene_direccion = Contactos.objects.filter(
+                            id_usuario=usuario, tipo_contacto_id=3
+                        ).exists()
+                        if not tiene_direccion:
+                            Contactos.objects.create(
+                                id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                                dato_contacto=direccion_envio,
+                                tipo_contacto_id=3,
+                                id_usuario=usuario,
+                            )
+                else:
+                    # ── Crear nuevo usuario invitado ──
+                    next_id_num = get_next_id_model_name(Usuarios, 'id_usuario')
+                    new_id = f"USR-{next_id_num}"
+
+                    random_pass = secrets.token_hex(16)
+                    hashed = hash_password(random_pass)
+
+                    sexo_default = Sexos.objects.get(pk=3)
+                    perfil_cliente = Perfiles.objects.get(pk=2)
+
+                    partes_nombre = nombre_invitado.split(maxsplit=1)
+                    nombre = partes_nombre[0] if partes_nombre else nombre_invitado
+                    primer_apellido = partes_nombre[1] if len(partes_nombre) > 1 else "Invitado"
+
+                    usuario = Usuarios.objects.create(
+                        id_usuario=new_id,
+                        nombre=nombre,
+                        primer_apellido=primer_apellido,
+                        password_hash=hashed,
+                        activo=0,
+                        usuario_id_sexo=sexo_default,
+                        usuario_id_perfil=perfil_cliente,
+                    )
+
+                    # ── Fase 1: 2 contactos (teléfono + dirección) ──
+                    Contactos.objects.create(
+                        id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                        dato_contacto=telefono_invitado,
+                        tipo_contacto_id=1,
+                        id_usuario=usuario,
+                    )
+
+                    if direccion_envio:
+                        Contactos.objects.create(
+                            id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                            dato_contacto=direccion_envio,
+                            tipo_contacto_id=3,
+                            id_usuario=usuario,
+                        )
+
+            # NOTAS: ya no se marca [INVITADO - telefono] — los contactos son trazables
+            notas_pedido = request.POST.get('ped_notas', '').strip()
+            request.POST = request.POST.copy()
+            request.POST['ped_notas'] = notas_pedido or 'Pedido creado desde carrito público'
+
+        # ── FIN: usuario definido ─────────────────────────────────────
 
         productos_seleccionados = []
         total_calculado = Decimal('0.00')
@@ -1211,19 +1338,19 @@ def checkout_view(request):
             messages.error(request, 'No hay productos válidos en el carrito.')
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        next_ped_id = (Pedidos.objects.aggregate(max_id=Max('ped_id'))['max_id'] or 0) + 1
-
         try:
             with transaction.atomic():
+                Pedidos.objects.select_for_update().first()
+                next_ped_id = (Pedidos.objects.aggregate(max_id=Max('ped_id'))['max_id'] or 0) + 1
                 pedido = Pedidos.objects.create(
                     ped_id=next_ped_id,
-                    usu=request.user,
+                    usu=usuario,
                     ped_fecha_pedido=date.today(),
                     ped_total=total_calculado,
                     ped_direccion_envio=request.POST.get('ped_direccion_envio', ''),
-                    ped_notas=request.POST.get('ped_notas', 'Pedido creado desde carrito público')
+                    ped_notas=request.POST.get('ped_notas', 'Pedido creado desde carrito público'),
                 )
-                print(f"DEBUG: Pedido creado con ID {pedido.ped_id} para usuario {request.user.id_usuario} con total {total_calculado}")
+                print(f"DEBUG: Pedido creado con ID {pedido.ped_id} para usuario {usuario.id_usuario} con total {total_calculado}")
                 PedidosProductosCreateView(productos_seleccionados, pedido.ped_id)
 
         except DatabaseError as e:
@@ -1231,27 +1358,385 @@ def checkout_view(request):
             messages.error(request, _extract_db_message(e))
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
-        messages.success(request, f'Pedido {pedido.ped_id} creado correctamente.')
-        return redirect(request.META.get('HTTP_REFERER', '/'))
+        redirect_dest = 'mis_pedidos' if request.user.is_authenticated else 'home'
+        messages.success(request, f'✅ Pedido #{pedido.ped_id} creado correctamente. Te contactaremos pronto.')
+        return redirect(redirect_dest)
 
-    return redirect(request.META.get('HTTP_REFERER', '/'))
+    return redirect('catalogo')
 
 
 def catalogo_view(request):
-    productos = Productos.objects.select_related('cat').all()
+    """Catálogo público con búsqueda por texto y filtro por categoría."""
+    productos = Productos.objects.select_related('cat').all().order_by('prod_id')
     paginate_by = 40
     prod_nombre = request.GET.get('prod_nombre', '')
+    cat_id = request.GET.get('cat', '')
 
+    # ── Búsqueda por texto ──
     if prod_nombre:
         productos = productos.filter(
             Q(prod_nombre__icontains=prod_nombre) | Q(prod_descripcion__icontains=prod_nombre)
         )
 
+    # ── Filtro por categoría ──
+    if cat_id:
+        productos = productos.filter(cat_id=cat_id)
+
     paginator = Paginator(productos, paginate_by)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # Listado de categorías para mostrar como filtros en el catálogo
+    categorias = Categoria.objects.all()
+
     return render(request, 'Multiverse/catalogo.html', {
         'productos': page_obj,
         'prod_nombre': prod_nombre,
+        'cat_id': cat_id,
+        'categorias': categorias,
+    })
+
+
+# ---------------------------------------------------------------------------
+# PERFIL DEL CLIENTE - Mis Pedidos
+# ---------------------------------------------------------------------------
+@Login_requerido()
+def mis_pedidos_view(request):
+    """Muestra los pedidos del cliente logueado."""
+    pedidos = Pedidos.objects.filter(usu=request.user).order_by('-ped_fecha_pedido')
+
+    for pedido in pedidos:
+        # Calcular el estado como texto
+        pedido.estado_texto = pedido.ped_estado.est_nombre if pedido.ped_estado else 'Pendiente'
+        pedido.productos_count = PedidosProductos.objects.filter(ped=pedido).count()
+
+    return render(request, 'Multiverse/mis_pedidos.html', {
+        'pedidos': pedidos,
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def pedido_detalle_view(request, ped_id):
+    """Muestra el detalle de un pedido específico del cliente."""
+    pedido = get_object_or_404(Pedidos, pk=ped_id, usu=request.user)
+
+    pedido.estado_texto = pedido.ped_estado.est_nombre if pedido.ped_estado else 'Pendiente'
+
+    productos = PedidosProductos.objects.filter(ped=pedido).select_related('prod', 'pped_estado')
+
+    return render(request, 'Multiverse/pedido_detalle.html', {
+        'pedido': pedido,
+        'productos': productos,
+        'sidebar': 0,
+    })
+
+
+# ─── Panel de Control (visor dark, capa aparte) ───
+
+@Login_requerido()
+def panel_dashboard(request):
+    # Solo administradores (perfil_id=1) pueden ver el panel
+    if not getattr(request.user, 'usuario_id_perfil_id', None) == 1:
+        messages.error(request, 'No tienes permiso para acceder al panel de gestión.')
+        return redirect('home')
+    total_productos = Productos.objects.count()
+    total_usuarios = Usuarios.objects.count()
+    total_pedidos = Pedidos.objects.count()
+    total_categorias = Categoria.objects.count()
+    total_perfiles = Perfiles.objects.count()
+
+    pedidos_pendientes = Pedidos.objects.filter(ped_estado_id=1).count()
+    pedidos_recientes = Pedidos.objects.select_related('usu', 'ped_estado').order_by('-ped_fecha_pedido')[:5]
+    for p in pedidos_recientes:
+        p.estado_texto = p.ped_estado.est_nombre if p.ped_estado else 'Pendiente'
+
+    context = {
+        'total_productos': total_productos,
+        'total_usuarios': total_usuarios,
+        'total_pedidos': total_pedidos,
+        'total_categorias': total_categorias,
+        'total_perfiles': total_perfiles,
+        'pedidos_pendientes': pedidos_pendientes,
+        'pedidos_recientes': pedidos_recientes,
+        'section': 'dashboard',
+        'sidebar': 0,
+    }
+    return render(request, 'Admin/panel_dashboard.html', context)
+
+
+@Login_requerido()
+def panel_productos_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    page = int(request.GET.get('page', 1))
+    query = request.GET.get('q', '')
+    paginate_by = 10
+
+    queryset = Productos.objects.select_related('cat').all().order_by('prod_id')
+    if query:
+        queryset = queryset.filter(prod_nombre__icontains=query)
+
+    paginator = Paginator(queryset, paginate_by)
+    productos_page = paginator.get_page(page)
+
+    return render(request, 'Admin/panel_productos.html', {
+        'productos': productos_page.object_list,
+        'page': page,
+        'total_paginas': paginator.num_pages,
+        'query': query,
+        'section': 'productos',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_productos_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    if request.method == 'POST':
+        form = ProductosForm(request.POST, request.FILES)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Producto creado exitosamente.')
+                return redirect('panel_productos')
+    else:
+        form = ProductosForm()
+
+    return render(request, 'Admin/panel_producto_form.html', {
+        'form': form,
+        'section': 'productos',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_productos_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    producto = get_object_or_404(Productos, pk=pk)
+    if request.method == 'POST':
+        form = ProductosForm(request.POST, request.FILES, instance=producto)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Producto actualizado exitosamente.')
+                return redirect('panel_productos')
+    else:
+        form = ProductosForm(instance=producto)
+
+    return render(request, 'Admin/panel_producto_form.html', {
+        'form': form,
+        'producto': producto,
+        'section': 'productos',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_usuarios_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    page = int(request.GET.get('page', 1))
+    query = request.GET.get('q', '')
+    paginate_by = 10
+
+    queryset = Usuarios.objects.select_related('usuario_id_sexo', 'usuario_id_perfil').all().order_by('id_usuario')
+    if query:
+        queryset = queryset.filter(Q(nombre__icontains=query) | Q(id_usuario__icontains=query))
+
+    paginator = Paginator(queryset, paginate_by)
+    usuarios_page = paginator.get_page(page)
+
+    return render(request, 'Admin/panel_usuarios.html', {
+        'usuarios': usuarios_page.object_list,
+        'page': page,
+        'total_paginas': paginator.num_pages,
+        'query': query,
+        'section': 'usuarios',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_usuarios_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
+
+    if request.method == 'POST':
+        form = UsuariosForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    usuario = form.save()
+                    contactos = request.POST.getlist('contactos_relacionados')
+                    if contactos:
+                        ContactosCreateView(contactos, usuario.id_usuario)
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Usuario creado exitosamente.')
+                return redirect('panel_usuarios')
+    else:
+        form = UsuariosForm()
+
+    return render(request, 'Admin/panel_usuario_form.html', {
+        'form': form,
+        'Tipo_Contacto': Tipo_Contacto,
+        'section': 'usuarios',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_usuarios_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    usuario = get_object_or_404(Usuarios, pk=pk)
+    contactos = Contactos.objects.filter(id_usuario=usuario)
+    Tipo_Contacto = Config_Contacto.objects.values('id_regla', 'nombre_contacto')
+
+    if request.method == 'POST':
+        form = UsuariosForm(request.POST, instance=usuario)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+                    contactos_data = request.POST.getlist('contactos_relacionados_editados')
+                    contactos_actualizar = []
+                    for item in contactos_data:
+                        parts = item.split(',')
+                        if len(parts) == 3:
+                            contactos_actualizar.append({
+                                'id_contacto': parts[2],
+                                'tipo_contacto': parts[0],
+                                'dato_contacto': parts[1],
+                            })
+                    if contactos_actualizar:
+                        # Reusamos la funcion existente
+                        ContactosUpdateView(contactos_actualizar)
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Usuario actualizado exitosamente.')
+                return redirect('panel_usuarios')
+    else:
+        form = UsuariosForm(instance=usuario)
+
+    return render(request, 'Admin/panel_usuario_form.html', {
+        'form': form,
+        'usuario': usuario,
+        'contactos': contactos,
+        'Tipo_Contacto': Tipo_Contacto,
+        'section': 'usuarios',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_pedidos_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    pedidos = Pedidos.objects.select_related('usu', 'ped_estado').all().order_by('-ped_fecha_pedido')[:20]
+    for p in pedidos:
+        p.estado_texto = p.ped_estado.est_nombre if p.ped_estado else 'Pendiente'
+    return render(request, 'Admin/panel_pedidos.html', {
+        'pedidos': pedidos,
+        'section': 'pedidos',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_categorias_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    categorias = Categoria.objects.all().order_by('cat_id')
+    return render(request, 'Admin/panel_categorias.html', {
+        'categorias': categorias,
+        'section': 'categorias',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_roles_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    roles = Roles.objects.all().order_by('id_rol')
+    return render(request, 'Admin/panel_roles.html', {
+        'roles': roles,
+        'section': 'roles',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_perfiles_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    perfiles = Perfiles.objects.select_related('rol_id').all().order_by('id_perfil')
+    return render(request, 'Admin/panel_perfiles.html', {
+        'perfiles': perfiles,
+        'section': 'perfiles',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_sexos_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    sexos = Sexos.objects.all().order_by('id_sexo')
+    return render(request, 'Admin/panel_sexos.html', {
+        'sexos': sexos,
+        'section': 'sexos',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_estados_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    estados = EstadoPedidos.objects.all().order_by('id_estado')
+    return render(request, 'Admin/panel_estados.html', {
+        'estados': estados,
+        'section': 'estados',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_consultas_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    consultas = Consultas_Dinamicas.objects.all().order_by('id_consulta')
+    return render(request, 'Admin/panel_consultas.html', {
+        'consultas': consultas,
+        'section': 'consultas',
+        'sidebar': 0,
     })

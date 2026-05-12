@@ -1,5 +1,4 @@
 .form-container {
-    
     max-width: 500px;
     margin: 40px auto;
     padding: 24px 32px;
@@ -10,8 +9,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 400px;
-    width: fit-content;
+    width: 100%;
 }
 
 .form-container > * {
@@ -42,6 +40,7 @@
     gap: 12px;
     align-items: center;
     margin-bottom: 16px;
+    flex-wrap: wrap;
 }
 
 .form-linear label {
@@ -50,7 +49,8 @@
 }
 
 .form-linear input[type="number"] {
-    width: 200%;
+    width: 120px;
+    max-width: 100%;
 }
 
 .form-linear button {
@@ -63,10 +63,46 @@
 }
 
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
     form {
-        max-width: 95vw;
-        padding: 16px 8px;
+        max-width: 100%;
+        padding: 16px;
+    }
+
+    .form-container {
+        margin: 20px auto;
+        padding: 20px 16px;
+        max-width: 95%;
+    }
+
+    .form-linear {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .form-linear label {
+        white-space: normal;
+    }
+
+    .form-linear input[type="number"] {
+        width: 100%;
+    }
+
+    .form-floating textarea {
+        width: 100%;
+    }
+
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-container {
+        padding: 16px 12px;
+        margin: 16px auto;
+        border-radius: 8px;
     }
 }
 
@@ -85,11 +121,13 @@
 }
 
 .form-productos {
-    width: 400%;
+    width: 100%;
+    max-width: 400px;
 }
 
 .form-dato-contacto {
-    width: 400%;
+    width: 100%;
+    max-width: 400px;
 }
 
 .form-list {
@@ -135,11 +173,12 @@
   border: 1px solid #ccc;
   border-radius: 6px;
   font-size: 1rem;
+  box-sizing: border-box;
 }
 
 .form-floating textarea {
   resize: none;
-  width: 95%;
+  width: 100%;
 }
 
 .form-floating input:focus + label,
@@ -153,4 +192,92 @@
   color: var(--primary-color);
 }
 
+/* ------------------------------------------------------------------ */
+/* ASTERISCOS EN CAMPOS OBLIGATORIOS                                  */
+/* ------------------------------------------------------------------ */
 
+/* Dentro de form-floating: el label está después del input */
+.form-floating input[required] + label::after,
+.form-floating select[required] + label::after,
+.form-floating textarea[required] + label::after {
+    content: " *";
+    color: #ef4444;
+    font-weight: 900;
+}
+
+/* Fuera de form-floating: labels con clase required-label */
+label.required-label::after {
+    content: " *";
+    color: #ef4444;
+    font-weight: 900;
+}
+
+/* Inputs requeridos con borde rojo sutil al enfocar */
+input[required]:focus,
+select[required]:focus,
+textarea[required]:focus {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* ASTERISCOS EN form.as_p (label BEFORE input)                       */
+/* ------------------------------------------------------------------ */
+form p input[required] ~ label,
+form p select[required] ~ label,
+form p textarea[required] ~ label {
+    /* Los labels están ANTES del input en form.as_p, 
+       así que ~ no funciona. Usamos JS como fallback. */
+}
+
+/* ------------------------------------------------------------------ */
+/* MENSAJES DE ERROR                                                  */
+/* ------------------------------------------------------------------ */
+.form-errors {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+}
+
+.error-item {
+    color: #ef4444;
+    font-size: 0.85rem;
+    padding: 4px 0;
+}
+
+.error-container {
+    margin-bottom: 16px;
+}
+
+/* ------------------------------------------------------------------ */
+/* BOTONES                                                            */
+/* ------------------------------------------------------------------ */
+.form-container button[type="submit"],
+form button[type="submit"] {
+    background: var(--primary-color, #6c63ff);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.form-container button[type="submit"]:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.btn-link {
+    color: var(--primary-color, #6c63ff);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}

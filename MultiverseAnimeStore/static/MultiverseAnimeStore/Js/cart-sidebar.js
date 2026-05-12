@@ -157,38 +157,102 @@ function removeFromCart(index) {
 
 function openCheckoutModal() {
   const modal = document.getElementById('checkout-modal');
-  if (modal) {
-    modal.style.display = 'flex';
-  }
+  const overlay = document.getElementById('checkout-overlay');
+  const error = document.getElementById('checkout-error');
+  if (modal) modal.style.display = 'flex';
+  if (overlay) overlay.style.display = 'block';
+  if (error) error.classList.add('hidden');
 }
 
 function closeCheckoutModal() {
   const modal = document.getElementById('checkout-modal');
-  if (modal) {
-    modal.style.display = 'none';
-  }
+  const overlay = document.getElementById('checkout-overlay');
+  if (modal) modal.style.display = 'none';
+  if (overlay) overlay.style.display = 'none';
 }
 
 function submitCheckoutForm() {
-  const addressInput = document.getElementById('checkout_address');
   const notesInput = document.getElementById('checkout_notes');
+  const nameInput = document.getElementById('checkout_name');
+  const phoneInput = document.getElementById('checkout_phone');
+  const calleInput = document.getElementById('checkout_calle');
+  const ciudadInput = document.getElementById('checkout_ciudad');
+  const paisInput = document.getElementById('checkout_pais');
+  const barrioInput = document.getElementById('checkout_barrio');
   const addressHidden = document.getElementById('ped_direccion_envio_input');
   const notesHidden = document.getElementById('ped_notas_input');
+  const nameHidden = document.getElementById('nombre_invitado_input');
+  const phoneHidden = document.getElementById('telefono_invitado_input');
   const form = document.getElementById('checkout-form');
+  const error = document.getElementById('checkout-error');
+  const isAuthenticated = window.isAuthenticated;
 
-  if (!addressInput || !notesInput || !addressHidden || !notesHidden || !form) {
+  if (!notesInput || !addressHidden || !notesHidden || !form) {
     return;
   }
 
-  addressHidden.value = addressInput.value.trim();
+  const calleVal = calleInput ? calleInput.value.trim() : '';
+  const ciudadVal = ciudadInput ? ciudadInput.value.trim() : '';
+  const paisVal = paisInput ? paisInput.value.trim() : '';
+  const barrioVal = barrioInput ? barrioInput.value.trim() : '';
+
+  if (!calleVal || !ciudadVal || !paisVal) {
+    if (error) {
+      error.textContent = 'Completa la dirección: calle, ciudad y país son obligatorios.';
+      error.classList.remove('hidden');
+    }
+    if (calleInput && !calleVal) calleInput.classList.add('error');
+    if (ciudadInput && !ciudadVal) ciudadInput.classList.add('error');
+    if (paisInput && !paisVal) paisInput.classList.add('error');
+    return;
+  }
+
+  const parts = [calleVal, ciudadVal, paisVal];
+  if (barrioVal) parts.push(barrioVal);
+  addressHidden.value = parts.join(' | ');
+
+  if (!isAuthenticated) {
+    const nameVal = nameInput ? nameInput.value.trim() : '';
+    const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+    if (!nameVal || !phoneVal) {
+      if (error) {
+        error.textContent = 'Debes ingresar tu nombre y teléfono para continuar.';
+        error.classList.remove('hidden');
+      }
+      if (nameInput && !nameVal) nameInput.classList.add('error');
+      if (phoneInput && !phoneVal) phoneInput.classList.add('error');
+      return;
+    }
+    if (nameHidden) nameHidden.value = nameVal;
+    if (phoneHidden) phoneHidden.value = phoneVal;
+  }
+
   notesHidden.value = notesInput.value.trim();
+
   form.submit();
   clearCartCache();
+}
+
+function clearInputError(input) {
+  if (input) input.classList.remove('error');
 }
 
 function initCart() {
   cart = loadCartFromCache();
   renderCart();
+
+  var nameGroup = document.getElementById('checkout-name-group');
+  var phoneGroup = document.getElementById('checkout-phone-group');
+  var nameInput = document.getElementById('checkout_name');
+  var phoneInput = document.getElementById('checkout_phone');
+
+  if (window.isAuthenticated) {
+    if (nameGroup) nameGroup.style.display = 'none';
+    if (phoneGroup) phoneGroup.style.display = 'none';
+  } else {
+    if (nameInput) nameInput.addEventListener('input', function() { clearInputError(this); });
+    if (phoneInput) phoneInput.addEventListener('input', function() { clearInputError(this); });
+  }
 }
 
 document.addEventListener('DOMContentLoaded', initCart);

@@ -1,29 +1,30 @@
 from django import forms
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Perfiles, Consultas_Dinamicas, EstadoPedidos
 from datetime import date as Date
-from django.db import connection
+from django.db import connection, transaction
+from django.db.models import Max
 
 
 def next_int_id(model, field_name):
     """
-    Devuelve max(TO_NUMBER(field)) + 1 usando una consulta que solo considera valores totalmente numéricos.
-    Fallback: devuelve model.objects.count() + 1 si hay cualquier problema.
+    Devuelve max(CAST(field AS INTEGER)) + 1.
+    Envuelto en transacción con select_for_update para evitar race conditions en PostgreSQL.
     """
     table = model._meta.db_table
-    # Consulta compatible con Oracle: toma solo valores que son enteros (regex) y obtiene el máximo
     sql = f"""
         SELECT MAX(
-            CASE WHEN REGEXP_LIKE({field_name}, '^[0-9]+$') THEN TO_NUMBER({field_name}) ELSE NULL END
+            CASE WHEN {field_name} ~ '^[0-9]+$' THEN {field_name}::integer ELSE NULL END
         ) FROM {table}
     """
     try:
-        with connection.cursor() as cursor:
-            cursor.execute(sql)
-            row = cursor.fetchone()
-            maxval = row[0] if row else None
-            return int(maxval or 0) + 1
+        with transaction.atomic():
+            model.objects.select_for_update().first()
+            with connection.cursor() as cursor:
+                cursor.execute(sql)
+                row = cursor.fetchone()
+                maxval = row[0] if row else None
+                return int(maxval or 0) + 1
     except Exception:
-        # fallback seguro
         return model.objects.count() + 1
 
 
@@ -39,33 +40,26 @@ def next_consecutive_id(model, field):
     return expected
 
 
-#funcion para tener el siguiente valor de id de un capo de texto con formato "TEXTO-123"
 def get_next_id(value):
-
-    parts = value.split('-')
-    print(value)
-    if parts:
-        last_part = parts[-1]
-        try:
-            num = int(last_part)
-            return num + 1
-        except ValueError:
-            return None
-    return None
+    import re
+    match = re.search(r'(\d+)$', value)
+    if match:
+        return int(match.group(1)) + 1
+    return 1
 
 
 def get_next_id_model_name(model, field_name):
     """
-    Recibe un modelo y el nombre del campo, obtiene el último valor del campo,
-    lo parsea como string con número, y devuelve el siguiente valor numérico.
+    Recibe un modelo y el nombre del campo, obtiene el último valor del campo
+    con select_for_update para evitar race conditions en PostgreSQL.
     """
-    last_obj = model.objects.order_by(f'-{field_name}').first()
-    if last_obj:
-        value = getattr(last_obj, field_name)
-
-        return get_next_id(value)
-    else:
-        return 1
+    with transaction.atomic():
+        last_obj = model.objects.select_for_update().order_by(f'-{field_name}').first()
+        if last_obj:
+            value = getattr(last_obj, field_name)
+            return get_next_id(value)
+        else:
+            return 1
 
 
 class PedidosForm(forms.ModelForm):
@@ -80,12 +74,14 @@ class PedidosForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['usu'].queryset = Usuarios.objects.all()
         self.fields['usu'].label_from_instance = lambda obj: f"{obj.nombre} {obj.primer_apellido}"
+        self.fields['usu'].required = True
         self.fields['ped_id'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['ped_id'].initial = next_int_id(Pedidos, 'ped_id')
         self.fields['ped_total'].widget.attrs['readonly'] = True
         self.fields['ped_total'].initial = 0.00
         self.fields['ped_direccion_envio'].widget.attrs.update({'placeholder': 'Ingrese la dirección de envío'})
+        self.fields['ped_direccion_envio'].required = True
         self.fields['ped_notas'].widget.attrs.update({'placeholder': 'Ingrese notas adicionales (opcional)'})
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
@@ -229,6 +225,14 @@ class UsuariosForm(forms.ModelForm):
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['id_usuario'].initial = "USR-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
         self.fields['activo'].widget.attrs.update({'min': 0, 'max': 1, 'step': '1'})
+        # Forzar required en campos obligatorios del usuario
+        self.fields['nombre'].required = True
+        self.fields['primer_apellido'].required = True
+        self.fields['password_hash'].required = True
+        self.fields['usuario_id_sexo'].required = True
+        self.fields['usuario_id_perfil'].required = True
+        self.fields['segundo_apellido'].required = False
+        self.fields['fecha_nacimiento'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['fecha_nacimiento'].widget.attrs.update({'class': 'form-control datepicker'})
@@ -267,6 +271,8 @@ class CategoriaForm(forms.ModelForm):
         self.fields['cat_id'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id (cat_id es char; la función maneja solo valores numéricos)...
         self.fields['cat_id'].initial = "CAT-" + str(get_next_id_model_name(Categoria, 'cat_id'))
+        self.fields['cat_nombre'].required = True
+        self.fields['cat_descripcion'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -290,11 +296,17 @@ class ProductosForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['cat'].queryset = Categoria.objects.all()
         self.fields['cat'].label_from_instance = lambda obj: obj.cat_nombre
+        self.fields['cat'].required = True
         self.fields['prod_id'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
         "usr-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
 
         self.fields['prod_id'].initial = "PROD-" + str(get_next_id_model_name(Productos, 'prod_id'))
+        # Forzar required en campos que deben tener valor
+        self.fields['prod_nombre'].required = True
+        self.fields['prod_precio_venta'].required = False
+        self.fields['prod_stock'].required = False
+        self.fields['prod_descripcion'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['prod_precio_venta'].widget.attrs.update({'step': '0.01'})
@@ -317,6 +329,17 @@ class ProductosForm(forms.ModelForm):
         self.fields['prod_precio_venta'].widget.attrs['required'] = True
         self.fields['prod_stock'].widget.attrs['required'] = True
         self.fields['prod_descuento'].widget.attrs['required'] = True
+    def clean_prod_precio_venta(self):
+        valor = self.cleaned_data.get('prod_precio_venta')
+        if valor is None or valor == '':
+            return 0.00
+        return valor
+
+    def clean_prod_stock(self):
+        valor = self.cleaned_data.get('prod_stock')
+        if valor is None or valor == '':
+            return 0
+        return valor
 
 
 class RolesForm(forms.ModelForm):
@@ -329,6 +352,7 @@ class RolesForm(forms.ModelForm):
         self.fields['id_rol'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['id_rol'].initial = next_int_id(Roles, 'id_rol')
+        self.fields['nombre'].required = True
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -355,6 +379,7 @@ class PerfilesForm(forms.ModelForm):
         self.fields['id_perfil'].widget.attrs['readonly'] = True
         # ...cambiado: usar next_int_id en vez de count()+1...
         self.fields['id_perfil'].initial = next_int_id(Perfiles, 'id_perfil')
+        self.fields['nombre'].required = True
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -383,6 +408,7 @@ class EstadoPedidosForm(forms.ModelForm):
         # self.fields['est_id'].initial = next_int_id(EstadoPedidos, 'est_id') # cambio aca
         self.fields['est_id'].initial = next_consecutive_id(EstadoPedidos, 'est_id')
         self.fields['est_id'].widget.attrs.update({'title': 'La id del estado de Entregado debe ser la mayor de todas' })
+        self.fields['est_nombre'].required = True
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
 
@@ -395,6 +421,20 @@ class EstadoPedidosForm(forms.ModelForm):
 
         self.fields['est_id'].widget.attrs['required'] = True
         self.fields['est_nombre'].widget.attrs['required'] = True
+class SexosForm(forms.ModelForm):
+    class Meta:
+        model = Sexos
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['id_sexo'].widget.attrs['readonly'] = True
+        self.fields['nombre_sexo'].required = True
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
+
 
 class ConsultasDinamicasForm(forms.ModelForm):
     class Meta:

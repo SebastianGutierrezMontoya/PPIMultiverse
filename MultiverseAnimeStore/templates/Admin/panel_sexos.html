@@ -1,0 +1,24 @@
+{% extends "Admin/panel_base.html" %}
+{% block panel_content %}
+<div class="panel-content-header">
+    <div><h2>Sexos</h2><p>Catálogo de sexos.</p></div>
+    <div class="panel-actions">
+        <a href="{% url 'admin_home' %}" class="panel-btn panel-btn-secondary">↩️ Admin Clásico</a>
+    </div>
+</div>
+{% if sexos %}
+<div class="panel-table-wrapper">
+    <table class="panel-table">
+        <thead><tr><th>ID</th><th>Nombre</th></tr></thead>
+        <tbody>
+            {% for s in sexos %}
+            <tr>
+                <td style="color:#64748b; font-family:monospace;">{{ s.id_sexo }}</td>
+                <td style="color:#ffffff; font-weight:600;">{{ s.nombre_sexo }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}<div class="panel-alert panel-alert-info">No hay sexos.</div>{% endif %}
+{% endblock %}

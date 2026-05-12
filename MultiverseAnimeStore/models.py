@@ -18,7 +18,7 @@ class Consultas_Dinamicas(models.Model):
     cons_descripcion = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'consultas_dinamicas'
 
     def __str__(self):
@@ -30,7 +30,7 @@ class Categoria(models.Model):
     cat_descripcion = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'categoria'
         app_label = 'MultiverseAnimeStore'
 
@@ -44,7 +44,7 @@ class EstadoPedidos(models.Model):
     est_nombre = models.CharField(max_length=50, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'estadopedidos'
 
     def __str__(self):
@@ -55,15 +55,20 @@ class Pedidos(models.Model):
     usu = models.ForeignKey('Usuarios', models.DO_NOTHING)
     ped_fecha_pedido = models.DateField(blank=True, null=True)
     ped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
-    # ped_estado = models.IntegerField(max_length=1, blank=True, null=True, default=1)
-    #ped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='ped_estado')
-    ped_estado = models.FloatField(max_length=1, blank=True, null=True, default=1)
+    ped_estado = models.ForeignKey(
+        EstadoPedidos, models.DO_NOTHING,
+        db_column='ped_estado', default=1,
+        related_name='pedidos'
+    )
     ped_direccion_envio = models.CharField(max_length=200, blank=True, null=True)
     ped_notas = models.CharField(max_length=200, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'pedidos'
+        constraints = [
+            models.CheckConstraint(check=models.Q(ped_total__gte=0), name='ck_total_no_negativo'),
+        ]
 
     def __str__(self):
         return f"Pedido {self.ped_id}"
@@ -81,7 +86,7 @@ class PedidosProductos(models.Model):
     pped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='pped_estado')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'pedidos_productos'
 
 
@@ -92,7 +97,7 @@ class Perfiles(models.Model):
     descripcion = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'perfiles'
 
     def __str__(self):
@@ -108,7 +113,7 @@ class Modulos(models.Model):
 
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'modulos'
 
     def __str__(self):
@@ -125,14 +130,14 @@ class Perfilpermisos(models.Model):
     can_delete = models.CharField(max_length=1, blank=True, null=True, default='N')
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'perfilpermisos'
 
 
 class Productos(models.Model):
     prod_id = models.CharField(primary_key=True, max_length=10)
     cat = models.ForeignKey(Categoria, models.DO_NOTHING)
-    prod_nombre = models.CharField(max_length=100, blank=True, null=True)
+    prod_nombre = models.CharField(max_length=100, blank=False, null=False, default='Sin nombre')
     prod_descripcion = models.CharField(max_length=400, blank=True, null=True)
     prod_precio_venta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     prod_stock = models.IntegerField(blank=True, null=True)
@@ -140,21 +145,26 @@ class Productos(models.Model):
     prod_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'productos'
+        constraints = [
+            models.CheckConstraint(check=models.Q(prod_precio_venta__gt=0), name='ck_precio_positivo'),
+            models.CheckConstraint(check=models.Q(prod_stock__gte=0), name='ck_stock_no_negativo'),
+            models.CheckConstraint(check=models.Q(prod_descuento__lte=99), name='ck_descuento_maximo'),
+        ]
 
     def __str__(self):
         return self.prod_nombre or str(self.prod_id)
 
 
 class Productos_Auditoria(models.Model):
-    dummy_id = models.AutoField(primary_key=True),
+    dummy_id = models.AutoField(primary_key=True)
     creation_date = models.DateField(blank=True, null=True)
     au_type = models.IntegerField(blank=True, null=True)
     auditoria = models.CharField(max_length=500, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'productos_auditoria'
 
 
@@ -164,7 +174,7 @@ class Roles(models.Model):
     descripcion = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'roles'
 
     def __str__(self):
@@ -177,7 +187,7 @@ class Sexos(models.Model):
     nombre_sexo = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'sexos'
 
     def __str__(self):
@@ -196,11 +206,11 @@ class Usuarios(models.Model):
     activo = models.FloatField(max_length=1, blank=True, null=True, default=1)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'usuarios'
-        # fields = ['id_usuario', 'nombre', 'primer_apellido', 'segundo_apellido', 'fecha_nacimiento',
-        #            'password_hash', 'usuario_id_sexo', 'usuario_id_rol']
-        
+        constraints = [
+            models.CheckConstraint(check=models.Q(activo=0) | models.Q(activo=1), name='ck_activo_valido'),
+        ]
 
     def __str__(self):
         
@@ -218,7 +228,7 @@ class Config_Contacto(models.Model):
     mensaje_error = models.CharField(max_length=200, blank=True, null=False)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'config_contacto'
 
     def __str__(self):
@@ -248,8 +258,11 @@ class Contactos(models.Model):
     id_usuario = models.ForeignKey(Usuarios, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)
 
     class Meta:
-        managed = False
+        managed = True
         db_table = 'contactos'
+        constraints = [
+            models.UniqueConstraint(fields=['id_usuario', 'tipo_contacto'], name='uq_usuario_tipo_contacto'),
+        ]
 
     def __str__(self):
         return self.dato_contacto or str(self.id_contacto)

@@ -1,13 +1,23 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container">
-<h2>{{ object.nombre }}</h2>
+<h2>{{ object.nombre }} {{ object.primer_apellido }}</h2>
 <ul>
-    <li>Primer apellido: {{ object.primer_apellido }}</li>
-    <li>Segundo apellido: {{ object.segundo_apellido }}</li>
-    <li>Fecha nacimiento: {{ object.fecha_nacimiento }}</li>
-    <li>Rol: {{ object.usuario_id_rol.nombre }}</li>
-    <li>Estado: {{ object.usuario_id_estado.nombre }}</li>
+    <li>ID: {{ object.id_usuario }}</li>
+    <li>Segundo apellido: {{ object.segundo_apellido|default:"—" }}</li>
+    <li>Fecha nacimiento: {{ object.fecha_nacimiento|default:"—" }}</li>
+    <li>Sexo: {{ object.usuario_id_sexo.nombre_sexo }}</li>
+    <li>Perfil: {{ object.usuario_id_perfil.nombre }}</li>
+    <li>Activo: {{ object.activo|yesno:"Sí,No" }}</li>
+</ul>
+
+<h3>Contactos</h3>
+<ul>
+{% for c in contactos %}
+    <li>{{ c.tipo_contacto.nombre_contacto|default:"Contacto" }}: {{ c.dato_contacto }}</li>
+{% empty %}
+    <li>Sin contactos registrados.</li>
+{% endfor %}
 </ul>
 <div class="form-linear">
     <a class="btn-link" href="{% url 'usuarios_update' object.pk %}">Editar</a>

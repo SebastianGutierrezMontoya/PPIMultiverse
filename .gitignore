@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+
+# Django
+*.sqlite3
+db.sqlite3
+media/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp files
+cookies.txt
+*.log
+/tmp/
+
+# Documentation generated files
+*.svg
+*.dot
+*.png
+*.dbd
+run_*.sh
+make_*.sh
+fix_*.py
+generate_*.py
+create_*.py
+convert_*.py
+simple_*.sh
+start_*.sh
+
+# Project
+venv/
+*.pyc
+__pycache__/
+
+# Agent instructions (local only, not for remote)
+AGENTS.md
+
+# Local settings (override para SQLite dev)
+PPIMultiverse/settings_dev.py

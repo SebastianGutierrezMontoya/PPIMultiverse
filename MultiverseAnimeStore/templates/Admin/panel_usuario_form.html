@@ -1,0 +1,79 @@
+{% extends "Admin/panel_base.html" %}
+
+{% block panel_content %}
+<div class="panel-content-header">
+    <div>
+        <h2>{% if usuario %}Editar{% else %}Crear{% endif %} Usuario</h2>
+        <p>{% if usuario %}Modificando: {{ usuario.nombre }}{% else %}Nuevo usuario del sistema.{% endif %}</p>
+    </div>
+</div>
+
+<div class="panel-form-card">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="panel-alert panel-alert-error">
+            {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="panel-form-group">
+            <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
+                {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.errors %}
+            <p style="font-size:11px; color:#f87171; margin-top:4px;">{{ field.errors.0 }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        {# Contactos (solo creación) #}
+        {% if not usuario %}
+        <div class="panel-form-group" style="margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.06);">
+            <label style="margin-bottom:12px;">📞 Contactos</label>
+            <div id="contactosContainer">
+                <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+                    <select name="tipo_contacto" style="flex:1; padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#ffffff;">
+                        <option value="">Tipo de contacto</option>
+                        {% for tipo in Tipo_Contacto %}
+                        <option value="{{ tipo.id_regla }}">{{ tipo.nombre_contacto }}</option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="dato_contacto" placeholder="Valor del contacto" style="flex:2; padding:10px 14px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#ffffff;">
+                </div>
+                <button type="button" id="addContacto" class="panel-btn panel-btn-secondary panel-btn-sm">+ Agregar otro contacto</button>
+            </div>
+        </div>
+        {% endif %}
+
+        {# Contactos existentes (edición) #}
+        {% if usuario and contactos %}
+        <div class="panel-form-group" style="margin-top:24px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.06);">
+            <label style="margin-bottom:12px;">📞 Contactos relacionados</label>
+            {% for c in contactos %}
+            <div style="display:flex; gap:12px; align-items:center; margin-bottom:10px; padding:10px; background:rgba(255,255,255,0.03); border-radius:8px;">
+                <select name="tipo_contacto_editado_{{ c.id_contacto }}" style="flex:1; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#ffffff;">
+                    <option value=1 {% if c.tipo_contacto.id_regla == 1 %}selected{% endif %}>Correo</option>
+                    <option value=2 {% if c.tipo_contacto.id_regla == 2 %}selected{% endif %}>Teléfono</option>
+                    <option value=3 {% if c.tipo_contacto.id_regla == 3 %}selected{% endif %}>Dirección</option>
+                    <option value=4 {% if c.tipo_contacto.id_regla == 4 %}selected{% endif %}>Postal</option>
+                </select>
+                <input type="text" name="dato_contacto_editado_{{ c.id_contacto }}" value="{{ c.dato_contacto }}" style="flex:2; padding:8px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(255,255,255,0.05); color:#ffffff;">
+                <input type="hidden" name="contactos_relacionados_editados" value="{{ c.tipo_contacto.id_regla }},{{ c.dato_contacto }},{{ c.id_contacto }}">
+            </div>
+            {% empty %}
+            <p style="color:#64748b; font-size:12px;">No hay contactos relacionados.</p>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="panel-form-actions">
+            <button type="submit" class="panel-btn panel-btn-primary">💾 Guardar</button>
+            <a href="{% url 'panel_usuarios' %}" class="panel-btn panel-btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

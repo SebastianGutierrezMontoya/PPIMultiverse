@@ -1,0 +1,25 @@
+{% extends "Admin/panel_base.html" %}
+{% block panel_content %}
+<div class="panel-content-header">
+    <div><h2>Categorías</h2><p>Gestión de categorías de productos.</p></div>
+    <div class="panel-actions">
+        <a href="{% url 'admin_home' %}" class="panel-btn panel-btn-secondary">↩️ Admin Clásico</a>
+    </div>
+</div>
+{% if categorias %}
+<div class="panel-table-wrapper">
+    <table class="panel-table">
+        <thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th></tr></thead>
+        <tbody>
+            {% for c in categorias %}
+            <tr>
+                <td style="color:#64748b; font-family:monospace;">{{ c.cat_id }}</td>
+                <td style="color:#ffffff; font-weight:600;">{{ c.cat_nombre }}</td>
+                <td>{{ c.cat_descripcion|default:"—" }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}<div class="panel-alert panel-alert-info">No hay categorías.</div>{% endif %}
+{% endblock %}

@@ -56,8 +56,23 @@
         <hr>
         <p>&copy; 2024 Multiverse Anime Store</p>
     </footer> -->
-</body>
-</html>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(el) {
+        if (el.closest('.form-floating')) return;
+        var label = document.querySelector('label[for="' + el.id + '"]');
+        if (label && !label.querySelector('.required-star')) {
+            var star = document.createElement('span');
+            star.className = 'required-star';
+            star.textContent = ' *';
+            star.style.color = '#ef4444';
+            star.style.fontWeight = '900';
+            label.appendChild(star);
+        }
+    });
+});
+</script>
 
 {% if request.resolver_match.url_name == 'pedidos_create' %}
     <script src="{% static 'MultiverseAnimeStore/Js/pedidos_form.js' %}"></script>
@@ -71,8 +86,10 @@
     <script src="{% static 'MultiverseAnimeStore/Js/usuarios_form.js' %}"></script>
 {% endif %}
 
-
 {% if request.resolver_match.url_name == 'register' %}
     <script src="{% static 'MultiverseAnimeStore/Js/usuarios_form.js' %}"></script>
 {% endif %}
+</body>
+
+</html>
 

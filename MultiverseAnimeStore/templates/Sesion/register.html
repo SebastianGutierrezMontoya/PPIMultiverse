@@ -1,95 +1,270 @@
-{% extends "base.html" %}
+{% extends "Multiverse/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    #register-page-body {
+        background-color: #ffffff;
+        min-height: calc(100vh - 72px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    .register-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 28px;
+        padding: 40px;
+        max-width: 460px;
+        width: 100%;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .register-logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 16px;
+        background: transparent !important;
+    }
+    .register-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .register-title {
+        text-align: center;
+        font-weight: 900;
+        font-style: italic;
+        text-transform: uppercase;
+        color: #111;
+        margin-bottom: 28px;
+        font-size: 1.3rem;
+    }
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 16px;
+    }
+    .form-grid .full-width {
+        grid-column: 1 / -1;
+    }
+    .form-group {
+        margin-bottom: 18px;
+    }
+    .form-group label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+    .form-input {
+        width: 100%;
+        padding: 12px 16px;
+        background: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        color: #111;
+        outline: none;
+        font-size: 14px;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+    .form-input:focus {
+        border-color: var(--accent, #f37d15);
+        box-shadow: 0 0 0 3px rgba(243,125,21,0.1);
+    }
+    .form-input.error {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+    }
+    .form-input.error:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
+    }
+    .register-btn {
+        width: 100%;
+        background: #f37d15;
+        color: #fff;
+        border: none;
+        padding: 16px;
+        border-radius: 14px;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 8px;
+    }
+    .register-btn:hover {
+        background: #e06d10;
+        box-shadow: 0 0 15px rgba(243, 125, 21, 0.2);
+    }
+    .register-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    .register-footer {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 13px;
+        color: #6b7280;
+    }
+    .register-footer a {
+        color: #f37d15;
+        font-weight: 700;
+        text-decoration: none;
+    }
+    .register-footer a:hover {
+        text-decoration: underline;
+    }
+    .error-msg {
+        color: #ef4444;
+        font-size: 11px;
+        font-weight: 600;
+        margin-top: 4px;
+        display: none;
+    }
+    .error-msg.visible {
+        display: block;
+    }
+    .password-match-error {
+        color: #ef4444;
+        font-size: 11px;
+        font-weight: 600;
+        margin-top: -12px;
+        margin-bottom: 18px;
+        display: none;
+    }
+    .password-match-error.visible {
+        display: block;
+    }
+    @media (max-width: 480px) {
+        .register-card {
+            padding: 24px 20px;
+        }
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<div id="register-page-body">
+    <div class="register-card">
+        <div class="register-logo">
+            <img src="{% static 'icono_tienda.png' %}" alt="Logo">
+        </div>
+        <h2 class="register-title">Crear Cuenta Multiverso</h2>
 
-
-<form method="post" class="form-container">
-    <h2 class="form-header">Registrar Usuario</h2>
-
-    {% csrf_token %}
-
-
-    {% if form.errors %}
-        <div class="error-container">
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <div class="error-item">{{ error }}</div>
-                {% endfor %}
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div class="error-item">{{ message }}</div>
             {% endfor %}
-    {% endif %}
+        </div>
+        {% endif %}
 
-    
-        <div class="form-floating">
-          <input type="text" name="usuario" value="" maxlength="50" class="form-control" placeholder=" " required="" id="id_id_usuario" required>
-          <label for="id_id_usuario">* Nombre de Usuario</label>
-        </div>
-    
-        <div class="form-floating">
-          <input type="text" name="nombre" maxlength="300" class="form-control" placeholder=" " id="id_nombre" required>
-          <label for="id_nombre">* Nombre</label>
-        </div>
-    
-        <div class="form-floating">
-          <input type="text" name="primer_apellido" maxlength="50" class="form-control" placeholder=" " id="id_primer_apellido">
-          <label for="id_primer_apellido">Primer apellido</label>
-        </div>
-    
-        <div class="form-floating">
-          <input type="text" name="segundo_apellido" maxlength="50" class="form-control" placeholder=" " id="id_segundo_apellido">
-          <label for="id_segundo_apellido">Segundo apellido</label>
-        </div>
-    
-        <div class="form-floating">
-          <input type="date" name="fecha_nacimiento" class="form-control datepicker" placeholder=" " id="id_fecha_nacimiento" required>
-          <label for="id_fecha_nacimiento">* Fecha nacimiento</label>
-        </div>
-    
-        <div class="form-floating">
-          <input type="password" name="contraseña" maxlength="255" class="form-control" placeholder=" " id="id_password_hash" required>
-          <label for="id_password_hash">* Contraseña</label>
-        </div>
-    
-        <div class="form-floating">
-          <select name="sexo" class="form-control" placeholder=" " required="" id="id_usuario_id_sexo" required>
-                <option value="" selected="">---------</option>
-                {% for sexo in Sexos %}
-                    <option value="{{ sexo.id_sexo }}">{{ sexo.nombre_sexo }}</option>
-                {% endfor %}
+        <form method="post" id="registerForm" novalidate>
+            {% csrf_token %}
 
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label for="id_usuario">Nombre de usuario</label>
+                    <input type="text" name="usuario" id="id_usuario" class="form-input" placeholder="ej: sky_ryan" required maxlength="50">
+                    <div class="error-msg" id="err-usuario">Campo obligatorio</div>
+                </div>
 
-            </select>
-          <label for="id_usuario_id_sexo">* Usuario id sexo</label>
-        </div>
-    
-    
+                <div class="form-group">
+                    <label for="id_nombre">Nombre</label>
+                    <input type="text" name="nombre" id="id_nombre" class="form-input" placeholder="Juan" maxlength="300">
+                    <div class="error-msg" id="err-nombre">Campo obligatorio</div>
+                </div>
 
-    <div class="form-list">
-    <div id="contactosContainer" class="form-contactos">
-        <div class="contacto-row form-linear">
-            <p> Contacto:</p>
-            <select name="tipo_contacto">
-                <option value="">Tipo de contacto</option>
-                {% for tipo in Tipo_Contacto %}
-                    <option value="{{ tipo.id_regla }}">{{ tipo.nombre_contacto }}</option>
-                {% endfor %}
-            </select>
-            <label> Dato:</label> <input type="text" name="dato_contacto" class="form-dato-contacto">
+                <div class="form-group">
+                    <label for="id_primer_apellido">Primer apellido</label>
+                    <input type="text" name="primer_apellido" id="id_primer_apellido" class="form-input" placeholder="Pérez" maxlength="50">
+                    <div class="error-msg" id="err-primer_apellido">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_segundo_apellido">Segundo apellido</label>
+                    <input type="text" name="segundo_apellido" id="id_segundo_apellido" class="form-input" placeholder="García" maxlength="50">
+                </div>
+
+                <div class="form-group">
+                    <label for="id_fecha_nacimiento">Fecha de nacimiento</label>
+                    <input type="date" name="fecha_nacimiento" id="id_fecha_nacimiento" class="form-input">
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="id_usuario_id_sexo">Sexo</label>
+                    <select name="sexo" id="id_usuario_id_sexo" class="form-input" required>
+                        <option value="">Seleccionar</option>
+                        {% for sexo in Sexos %}
+                        <option value="{{ sexo.id_sexo }}">{{ sexo.nombre_sexo }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="error-msg" id="err-sexo">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="id_telefono">Teléfono</label>
+                    <input type="tel" name="telefono" id="id_telefono" class="form-input" placeholder="Ej. 3001234567" required maxlength="20">
+                    <div class="error-msg" id="err-telefono">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="id_direccion_calle">Dirección — Calle</label>
+                    <input type="text" name="direccion_calle" id="id_direccion_calle" class="form-input" placeholder="Ej. Calle 123 #45-67" required maxlength="100">
+                    <div class="error-msg" id="err-direccion_calle">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_direccion_ciudad">Ciudad</label>
+                    <input type="text" name="direccion_ciudad" id="id_direccion_ciudad" class="form-input" placeholder="Ej. Bogotá" required maxlength="50">
+                    <div class="error-msg" id="err-direccion_ciudad">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="id_direccion_pais">País</label>
+                    <input type="text" name="direccion_pais" id="id_direccion_pais" class="form-input" placeholder="Ej. Colombia" required maxlength="50">
+                    <div class="error-msg" id="err-direccion_pais">Campo obligatorio</div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="id_direccion_barrio">Barrio <span style="font-weight:400;text-transform:none;color:#9ca3af;">(opcional)</span></label>
+                    <input type="text" name="direccion_barrio" id="id_direccion_barrio" class="form-input" placeholder="Ej. Chapinero" maxlength="50">
+                </div>
+
+                <input type="hidden" name="direccion" id="id_direccion" value="">
+
+                <div class="form-group full-width">
+                    <label for="id_password_hash">Contraseña</label>
+                    <input type="password" name="contraseña" id="id_password_hash" class="form-input" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    <div class="error-msg" id="err-password">Mínimo 6 caracteres</div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="id_confirmar_contraseña">Confirmar contraseña</label>
+                    <input type="password" name="confirmar_contraseña" id="id_confirmar_contraseña" class="form-input" placeholder="Repite la contraseña" required>
+                    <div class="error-msg" id="err-confirm">Campo obligatorio</div>
+                </div>
+                <div class="password-match-error" id="err-password-match">Las contraseñas no coinciden</div>
+            </div>
+
+            <button type="submit" class="register-btn" id="registerSubmitBtn">Crear Cuenta</button>
+        </form>
+
+        <div class="register-footer">
+            ¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a>
         </div>
-        <button type="button" id="addContacto">Agregar Contacto</button>
     </div>
-    
+</div>
 
-    
-
-    </div>
-
-    <div class="form-linear form-center">
-        
-        <button type="submit">Registrar</button>
-
-        <a href="/usuarios/" class="btn-link">Volver</a>
-        
-    </div>
-</form>
-
-
+<script src="{% static 'MultiverseAnimeStore/Js/register.js' %}"></script>
 {% endblock %}

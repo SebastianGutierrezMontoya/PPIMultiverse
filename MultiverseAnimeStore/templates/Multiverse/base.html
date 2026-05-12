@@ -1,12 +1,16 @@
 {% load static %}
-
-<html>
+<!DOCTYPE html>
+<html lang="es">
     <head>
-        
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Multiverse Anime Store</title>
+        <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/public-base.css' %}">
         <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/navbar.css' %}">
         <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/cart-sidebar.css' %}">
         <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/catalogo.css' %}">
-        
+        <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/forms.css' %}">
+        {% block extra_head %}{% endblock %}
 
     </head>
     <body>
@@ -26,10 +30,29 @@
 
     
 
-    </body>
-
+    <script>
+        window.isAuthenticated = {% if user.is_authenticated %}true{% else %}false{% endif %};
+    </script>
     <script src="{% static 'MultiverseAnimeStore/Js/cart-sidebar.js' %}"></script>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(el) {
+            if (el.closest('.form-floating')) return;
+            var label = document.querySelector('label[for="' + el.id + '"]');
+            if (label && !label.querySelector('.required-star')) {
+                var star = document.createElement('span');
+                star.className = 'required-star';
+                star.textContent = ' *';
+                star.style.color = '#ef4444';
+                star.style.fontWeight = '900';
+                label.appendChild(star);
+            }
+        });
+    });
+    </script>
+
+    </body>
 
 </html>
 

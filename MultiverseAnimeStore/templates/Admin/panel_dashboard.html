@@ -1,0 +1,89 @@
+{% extends "Admin/panel_base.html" %}
+
+{% block panel_content %}
+<div class="panel-content-header">
+    <div>
+        <h2>Dashboard</h2>
+        <p>Bienvenido{% if user.is_authenticated %}, {{ user.nombre|default:user.id_usuario }}{% endif %}. Resumen general del sistema.</p>
+    </div>
+</div>
+
+<div class="panel-grid">
+    <div class="panel-card">
+        <div class="panel-card-icon">📦</div>
+        <div class="panel-card-label">Productos</div>
+        <div class="panel-card-value">{{ total_productos }}</div>
+        <div class="panel-card-sub">en catálogo</div>
+    </div>
+    <div class="panel-card">
+        <div class="panel-card-icon">👥</div>
+        <div class="panel-card-label">Usuarios</div>
+        <div class="panel-card-value">{{ total_usuarios }}</div>
+        <div class="panel-card-sub">registrados</div>
+    </div>
+    <div class="panel-card">
+        <div class="panel-card-icon">📋</div>
+        <div class="panel-card-label">Pedidos</div>
+        <div class="panel-card-value">{{ total_pedidos }}</div>
+        <div class="panel-card-sub">totales</div>
+    </div>
+    <div class="panel-card">
+        <div class="panel-card-icon">⏳</div>
+        <div class="panel-card-label">Pendientes</div>
+        <div class="panel-card-value">{{ pedidos_pendientes }}</div>
+        <div class="panel-card-sub">por procesar</div>
+    </div>
+    <div class="panel-card">
+        <div class="panel-card-icon">🏷️</div>
+        <div class="panel-card-label">Categorías</div>
+        <div class="panel-card-value">{{ total_categorias }}</div>
+        <div class="panel-card-sub">activas</div>
+    </div>
+    <div class="panel-card">
+        <div class="panel-card-icon">🔐</div>
+        <div class="panel-card-label">Perfiles</div>
+        <div class="panel-card-value">{{ total_perfiles }}</div>
+        <div class="panel-card-sub">de acceso</div>
+    </div>
+</div>
+
+{% if pedidos_recientes %}
+<div class="panel-table-wrapper">
+    <div class="panel-content-header" style="margin-bottom: 0; padding: 16px 20px;">
+        <h3 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0;">Pedidos Recientes</h3>
+    </div>
+    <table class="panel-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Usuario</th>
+                <th>Fecha</th>
+                <th>Total</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pedido in pedidos_recientes %}
+            <tr>
+                <td><span style="color: #f37d15;">#{{ pedido.ped_id }}</span></td>
+                <td>{{ pedido.usu.nombre|default:pedido.usu.id_usuario }}</td>
+                <td>{{ pedido.ped_fecha_pedido|date:"d/m/Y" }}</td>
+                <td style="font-weight: 600;">${{ pedido.ped_total|floatformat:2 }}</td>
+                <td>
+                    {% if pedido.estado_texto == 'Pendiente' %}
+                        <span style="color: #fbbf24;">⏳ {{ pedido.estado_texto }}</span>
+                    {% elif pedido.estado_texto == 'Entregado' %}
+                        <span style="color: #4ade80;">✅ {{ pedido.estado_texto }}</span>
+                    {% elif pedido.estado_texto == 'Cancelado' %}
+                        <span style="color: #f87171;">❌ {{ pedido.estado_texto }}</span>
+                    {% else %}
+                        <span style="color: #94a3b8;">{{ pedido.estado_texto }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

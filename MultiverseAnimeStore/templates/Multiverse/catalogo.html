@@ -1,69 +1,160 @@
 {% extends "Multiverse/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/catalogo.css' %}">
+<style>
+    /* Estilos adicionales para Filtros y Buscador */
+    .catalog-layout {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        gap: 30px;
+        padding: 40px 0;
+    }
+
+    /* FILTROS LATERALES */
+    .filters-sidebar {
+        background: #fff;
+        border-radius: 20px;
+        padding: 24px;
+        border: 1px solid var(--border-soft);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .filter-group { margin-bottom: 30px; }
+    .filter-title {
+        font-size: 11px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: var(--accent);
+        margin-bottom: 15px;
+        display: block;
+    }
+
+    .filter-pill {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 15px;
+        border-radius: 12px;
+        text-decoration: none;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s;
+        margin-bottom: 5px;
+    }
+
+    .filter-pill:hover, .filter-pill.active {
+        background: var(--accent-soft);
+        color: var(--accent);
+    }
+
+    .filter-icon { font-size: 1.2rem; }
+
+    @media (max-width: 992px) {
+        .catalog-layout { grid-template-columns: 1fr; }
+        .filters-sidebar { position: static; margin-bottom: 20px; }
+        .filter-options { display: flex; flex-wrap: wrap; gap: 10px; }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="container">
+    <div class="catalog-layout">
+        
+        <!-- SIDEBAR DE FILTROS -->
+        <aside class="filters-sidebar">
+            <div class="filter-group">
+                <span class="filter-title">Categorías</span>
+                <div class="filter-options">
+                    <a href="{% url 'catalogo' %}" class="filter-pill {% if not cat_id %}active{% endif %}">
+                        <span class="filter-icon">🌌</span> Todas
+                    </a>
+                    {% for cat in categorias %}
+                    <a href="{% url 'catalogo' %}?cat={{ cat.cat_id }}" class="filter-pill {% if cat_id == cat.cat_id|stringformat:'s' %}active{% endif %}">
+                        <span class="filter-icon">
+                            {% with n=cat.cat_nombre|lower %}
+                                {% if 'figura' in n %}🗿{% elif 'manga' in n %}📚{% elif 'accesorio' in n %}🎒{% elif 'ropa' in n or 'camiseta' in n %}👕{% elif 'carta' in n or 'tcg' in n %}🃏{% elif 'peluche' in n %}🧸{% else %}📦{% endif %}
+                            {% endwith %}
+                        </span>
+                        {{ cat.cat_nombre }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
 
-<!-- <p class="text-center text-2xl mt-10">Bienvenido al catalogo Multiverse Anime Store</p> -->
-<form method="get" class="search-bar">
-    <div class="form-linear search-container">
-    <label for="prod_nombre"></label>
-    <input type="text" name="prod_nombre" id="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="Busqueda">
-    <button type="submit" class="search-button">Buscar</button>
-    {% if prod_nombre %}
-        <a href="{% url 'catalogo' %}">Limpiar</a>
-    {% endif %}
+            <div class="filter-group">
+                <span class="filter-title">Ayuda</span>
+                <p style="font-size: 12px; color: #94a3b8; line-height: 1.5;">Selecciona una categoría para filtrar los productos del Multiverso.</p>
+            </div>
+        </aside>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <main>
+            <!-- BUSCADOR REDISEÑADO -->
+            <div class="search-wrapper" style="margin-top: 0; max-width: 100%;">
+                <form method="get" class="search-box">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" name="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="¿Qué pieza buscas para tu colección?">
+                    {% if cat_id %}<input type="hidden" name="cat" value="{{ cat_id }}">{% endif %}
+                    <button type="submit" class="search-button">Buscar</button>
+                    {% if prod_nombre %}
+                        <a href="{% url 'catalogo' %}{% if cat_id %}?cat={{ cat_id }}{% endif %}" class="clear-search">×</a>
+                    {% endif %}
+                </form>
+            </div>
+
+            <!-- GRID DE PRODUCTOS -->
+            <div class="catalogo-container" style="padding: 0; margin-top: 30px;">
+                {% for producto in productos %}
+                <div class="bento-card">
+                    <div class="bento-media">
+                        {% if producto.prod_imagen_url %}
+                            <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
+                        {% else %}
+                            <img src="{% static 'imagen_defecto.png' %}" alt="Multiverse" style="padding: 20px;">
+                        {% endif %}
+                        <div class="bento-action">
+                            <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}')">
+                                + Agregar al Pedido
+                            </button>
+                        </div>
+                    </div>
+                    <div class="bento-footer">
+                        <div>
+                            <h3 class="bento-title">{{ producto.prod_nombre }}</h3>
+                            <p class="bento-subtitle">{{ producto.cat.cat_nombre }}</p>
+                        </div>
+                        <span class="bento-price">${{ producto.prod_precio_venta|floatformat:0 }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="grid-column: 1 / -1; text-align: center; padding: 100px 0;">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">🛸</div>
+                    <h3 style="color: #1e293b; font-weight: 800; text-transform: uppercase;">No se encontró nada</h3>
+                    <p style="color: #94a3b8;">Intenta con otros términos o cambia de categoría.</p>
+                    <a href="{% url 'catalogo' %}" class="btn btn-dark mt-3" style="border-radius: 12px; padding: 12px 24px; font-weight: 800; text-transform: uppercase; font-size: 12px;">Limpiar todo</a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- PAGINACIÓN -->
+            <div class="pagination">
+                {% if productos.has_previous %}
+                    <a href="?page={{ productos.previous_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}{% if cat_id %}&cat={{ cat_id }}{% endif %}">«</a>
+                {% endif %}
+                <span>Página {{ productos.number }} de {{ productos.paginator.num_pages }}</span>
+                {% if productos.has_next %}
+                    <a href="?page={{ productos.next_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}{% if cat_id %}&cat={{ cat_id }}{% endif %}">»</a>
+                {% endif %}
+            </div>
+        </main>
+
     </div>
-    
-</form>
-
-
-<div class ="catalogo-container">
-
-
-{% for producto in productos %}
-
-
-<div class="bento-card">
-
-  <!-- MEDIA -->
-  <div class="bento-media">
-        <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}">
-
-        <div class="bento-overlay"></div>
-
-        <div class="bento-action">
-          <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}')">
-            Agregar al Pedido
-          </button>
-        </div>
-  </div>
-
-  <!-- FOOTER -->
-  <div class="bento-footer">
-       <div>
-         <h3 class="bento-title">{{ producto.prod_nombre }}</h3>
-         <p class="bento-subtitle">{{ producto.cat.cat_nombre }}</p>
-       </div>
-
-       <span class="bento-price">${{ producto.prod_precio_venta }}</span>
-    </div>
-
 </div>
-       
-{% endfor %}
-
-
-</div>
-
-<div class="pagination">
-    {% if productos.has_previous %}
-        <a href="?page={{ productos.previous_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Anterior</a>
-
-    {% endif %}
-
-    <span>Página {{ productos.number }} de {{ productos.paginator.num_pages }}</span>
-
-    {% if productos.has_next %}
-        <a href="?page={{ productos.next_page_number }}{% if prod_nombre %}&prod_nombre={{ prod_nombre }}{% endif %}">Siguiente</a>
-    {% endif %}
-
 {% endblock %}

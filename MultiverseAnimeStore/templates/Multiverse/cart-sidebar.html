@@ -1,41 +1,28 @@
+<div id="cart-overlay" onclick="toggleCart()"></div>
+
 <div id="cart-sidebar">
 
-  <!-- HEADER -->
-  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:48px;">
+  <div class="cart-sidebar-header">
     <div>
-      <h2 style="font-size:28px; font-weight:900; text-transform:uppercase; font-style:italic;">
-        Pedido
-      </h2>
-      <p style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:0.15em;">
-        Resumen de selección
-      </p>
+      <h2 class="cart-sidebar-title">Pedido</h2>
+      <p class="cart-sidebar-subtitle">Resumen de selección</p>
     </div>
-
     <button onclick="toggleCart()" class="cart-close-btn">
       <i class="fas fa-times"></i>
     </button>
   </div>
 
-  <div id="cart-items" style="flex:1;">
-    <div style="text-align:center; padding:80px 0;">
-      <i class="fas fa-shopping-bag" style="font-size:60px; color:#1e293b; margin-bottom:16px;"></i>
-      <p style="color:#475569; font-weight:700; text-transform:uppercase; font-size:10px; letter-spacing:0.2em;">
-        Carrito vacío
-      </p>
+  <div id="cart-items" class="cart-items-list">
+    <div class="cart-empty">
+      <i class="fas fa-shopping-bag"></i>
+      <p>Carrito vacío</p>
     </div>
   </div>
 
-
-  <div style="padding-top:32px; border-top:1px solid rgba(255,255,255,0.05);">
-    
-    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:32px;">
-      <span style="color:#94a3b8; font-weight:700; text-transform:uppercase; font-size:10px; letter-spacing:0.15em;">
-        Total estimado
-      </span>
-
-      <span id="cart-total" style="font-size:32px; font-weight:900;">
-        $ 0
-      </span>
+  <div class="cart-sidebar-footer">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Total estimado</span>
+      <span id="cart-total">$ 0</span>
     </div>
 
     <form method="post" action="{% url 'checkout' %}" id="checkout-form">
@@ -47,41 +34,74 @@
         <input type="hidden" name="cart_total" id="cart_total_input">
         <input type="hidden" name="ped_direccion_envio" id="ped_direccion_envio_input">
         <input type="hidden" name="ped_notas" id="ped_notas_input">
+        <input type="hidden" name="nombre_invitado" id="nombre_invitado_input">
+        <input type="hidden" name="telefono_invitado" id="telefono_invitado_input">
       </div>
 
-      <button type="button" class="cart-confirm" onclick="openCheckoutModal()">
-        Confirmar por WhatsApp
+      <button type="button" class="checkout-btn" onclick="openCheckoutModal()">
+        Confirmar Pedido
       </button>
+    </form>
+  </div>
+</div>
 
-      <div id="checkout-modal" style="display:none; position:fixed; inset:0; z-index:300; background:rgba(0,0,0,0.6); align-items:center; justify-content:center;">
-        <div style="background:var(--sidebar-bg); border-radius:24px; width:min(450px,95%); padding:30px; box-shadow:0 20px 60px rgba(0,0,0,0.35);">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
-            <div>
-              <h3 style="margin:0;">Confirmar pedido</h3>
-              <p style="margin:8px 0 0; color:rgba(255,255,255,0.75); font-size:0.95rem;">Ingresa los datos faltantes antes de enviar.</p>
-            </div>
-            <button type="button" onclick="closeCheckoutModal()" style="background:none; border:none; color:#fff; font-size:1.4rem; cursor:pointer;">×</button>
-          </div>
+<div id="checkout-overlay" class="checkout-overlay" style="display:none;" onclick="closeCheckoutModal()"></div>
 
-          <div style="display:flex; flex-direction:column; gap:16px;">
-            <label style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem; color:rgba(255,255,255,0.9);">
-              Dirección de envío
-              <input id="checkout_address" type="text" placeholder="Ej. Calle 123, Ciudad" style="width:100%; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:#fff;" />
-            </label>
+<div id="checkout-modal" class="checkout-modal" style="display:none;">
+  <div class="checkout-modal-content">
+    <div class="checkout-modal-header">
+      <div>
+        <h3>Confirmar pedido</h3>
+        <p>Ingresa los datos para finalizar tu compra.</p>
+      </div>
+      <button type="button" onclick="closeCheckoutModal()" class="checkout-modal-close">&times;</button>
+    </div>
 
-            <label style="display:flex; flex-direction:column; gap:8px; font-size:0.95rem; color:rgba(255,255,255,0.9);">
-              Notas del pedido
-              <textarea id="checkout_notes" placeholder="Ej. Entregar en horario de la tarde" rows="4" style="width:100%; padding:14px; border-radius:14px; border:1px solid rgba(255,255,255,0.14); background:rgba(255,255,255,0.05); color:#fff;"></textarea>
-            </label>
-          </div>
+    <div id="checkout-error" class="checkout-error hidden">
+      Completa todos los campos obligatorios antes de continuar.
+    </div>
 
-          <div style="display:flex; justify-content:flex-end; gap:12px; margin-top:24px;">
-            <button type="button" onclick="closeCheckoutModal()" style="padding:14px 18px; border:none; border-radius:14px; background:rgba(255,255,255,0.08); color:#fff; cursor:pointer;">Cancelar</button>
-            <button type="button" onclick="submitCheckoutForm()" style="padding:14px 18px; border:none; border-radius:14px; background:var(--accent); color:#020617; font-weight:900; cursor:pointer;">Enviar pedido</button>
-          </div>
+    <div class="checkout-modal-body">
+      <div class="checkout-field" id="checkout-name-group">
+        <label for="checkout_name">Nombre completo</label>
+        <input id="checkout_name" type="text" placeholder="Ej. Juan Pérez" class="checkout-input" />
+      </div>
+
+      <div class="checkout-field" id="checkout-phone-group">
+        <label for="checkout_phone">Teléfono de contacto</label>
+        <input id="checkout_phone" type="tel" placeholder="Ej. 3001234567" class="checkout-input" />
+      </div>
+
+      <div class="checkout-field">
+        <label for="checkout_calle">Dirección — Calle</label>
+        <input id="checkout_calle" type="text" placeholder="Ej. Calle 123 #45-67" class="checkout-input" />
+      </div>
+
+      <div class="checkout-row-duo">
+        <div class="checkout-field">
+          <label for="checkout_ciudad">Ciudad</label>
+          <input id="checkout_ciudad" type="text" placeholder="Ej. Bogotá" class="checkout-input" />
+        </div>
+        <div class="checkout-field">
+          <label for="checkout_pais">País</label>
+          <input id="checkout_pais" type="text" placeholder="Ej. Colombia" class="checkout-input" />
         </div>
       </div>
-    </form>
 
+      <div class="checkout-field">
+        <label for="checkout_barrio">Barrio <span style="color:#94a3b8;font-weight:400;font-size:0.8em;">(opcional)</span></label>
+        <input id="checkout_barrio" type="text" placeholder="Ej. Chapinero" class="checkout-input" />
+      </div>
+
+      <div class="checkout-field">
+        <label for="checkout_notes">Notas del pedido</label>
+        <textarea id="checkout_notes" placeholder="Opcional" rows="3" class="checkout-input"></textarea>
+      </div>
+    </div>
+
+    <div class="checkout-modal-actions">
+      <button type="button" onclick="closeCheckoutModal()" class="checkout-btn-secondary">Cancelar</button>
+      <button type="button" onclick="submitCheckoutForm()" class="checkout-btn-primary">Enviar pedido</button>
+    </div>
   </div>
 </div>

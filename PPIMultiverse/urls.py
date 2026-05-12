@@ -16,14 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from MultiverseAnimeStore.views import (
-    home_view,
-    login_view,
-    logout_view,
-    register_view,
-    catalogo_view,
-    checkout_view
-)
+from django.contrib import admin
+from django.urls import path, include
+from MultiverseAnimeStore.views import home_view, catalogo_view, login_view, logout_view, register_view, checkout_view, mis_pedidos_view, pedido_detalle_view
 
 urlpatterns = [
     path('admindjango/', admin.site.urls),
@@ -37,4 +32,7 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('register/', register_view, name='register'),
+
+    path('mis-pedidos/', mis_pedidos_view, name='mis_pedidos'),
+    path('mis-pedidos/<int:ped_id>/', pedido_detalle_view, name='pedido_detalle'),
 ]

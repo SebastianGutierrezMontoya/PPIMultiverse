@@ -1,32 +1,109 @@
-
-        <nav class="navbar">
+<nav class="navbar">
   <div class="navbar-container">
 
-    <div class="navbar-logo" onclick="showSection('inicio')">
-      <div class="navbar-logo-icon">
-        <i class="fas fa-meteor"></i>
-      </div>
-      <div>
+    <a href="{% url 'home' %}" class="navbar-logo">
+      <div class="navbar-logo-icon"></div>
+      <div class="navbar-logo-text">
         <h1 class="navbar-title">Multiverse</h1>
         <span class="navbar-subtitle">Anime Store</span>
       </div>
-    </div>
+    </a>
 
-    <div class="navbar-menu">
+    <div class="navbar-menu" id="navbarMenu">
       <a class="navbar-link" href="{% url 'home' %}">Inicio</a>
       <a class="navbar-link" href="{% url 'catalogo' %}">Catálogo</a>
-      <a class="navbar-link">Mis Pedidos</a>
-      <a class="navbar-link navbar-link-muted" href="{% url 'admin_home' %}">Gestión</a>
+      {% if user.is_authenticated %}
+      <a class="navbar-link" href="{% url 'mis_pedidos' %}">Mis Pedidos</a>
+      {% endif %}
+      {% if user.is_authenticated and user.usuario_id_perfil_id == 1 %}
+      <a class="navbar-link navbar-link-muted" href="{% url 'panel_dashboard' %}">Gestión</a>
+      {% endif %}
     </div>
 
+    <form class="navbar-search" method="GET" action="{% url 'catalogo' %}">
+      <input
+        type="text"
+        name="prod_nombre"
+        class="navbar-search-input"
+        placeholder="Buscar productos..."
+        value=""
+        aria-label="Buscar productos"
+      />
+      <button type="submit" class="navbar-search-btn" aria-label="Buscar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      </button>
+    </form>
+
     <div class="navbar-actions">
-      <button class="navbar-cart" onclick="toggleCart()">
-        <i class="fas fa-shopping-cart"></i>
+      <button class="navbar-cart" onclick="toggleCart()" title="Ver carrito">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+      </button>
+
+      {% if user.is_authenticated %}
+        <div class="navbar-user-badge">
+            <svg class="user-icon-orange" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <span class="navbar-user-name">{{ user.nombre|default:user.id_usuario }}</span>
+        </div>
+        <a class="navbar-link navbar-link-muted navbar-logout" href="{% url 'logout' %}">Salir</a>
+      {% else %}
+        <a class="navbar-link navbar-login-link" href="{% url 'login' %}">Ingresar</a>
+      {% endif %}
+
+      <button class="navbar-hamburger" id="navbarHamburger" onclick="toggleMobileMenu()" aria-label="Menú">
+        <span></span>
+        <span></span>
+        <span></span>
       </button>
     </div>
 
   </div>
 </nav>
-      
 
-    
+<div class="mobile-drawer" id="mobileDrawer">
+  <div class="mobile-drawer-header">
+    <span class="mobile-drawer-title">Menú</span>
+    <button class="mobile-drawer-close" onclick="toggleMobileMenu()">&times;</button>
+  </div>
+  <div class="mobile-drawer-search">
+    <form method="GET" action="{% url 'catalogo' %}">
+      <input type="text" name="prod_nombre" class="mobile-search-input" placeholder="Buscar productos..." aria-label="Buscar productos" />
+      <button type="submit" class="mobile-search-btn">Buscar</button>
+    </form>
+  </div>
+  <div class="mobile-drawer-links">
+    <a class="mobile-link" href="{% url 'home' %}" onclick="closeMobileMenu()">Inicio</a>
+    <a class="mobile-link" href="{% url 'catalogo' %}" onclick="closeMobileMenu()">Catálogo</a>
+    {% if user.is_authenticated %}
+    <a class="mobile-link" href="{% url 'mis_pedidos' %}" onclick="closeMobileMenu()">Mis Pedidos</a>
+    <div class="mobile-divider"></div>
+    <div class="mobile-user-info">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+      <span>{{ user.nombre|default:user.id_usuario }}</span>
+    </div>
+    <a class="mobile-link mobile-link-logout" href="{% url 'logout' %}" onclick="closeMobileMenu()">Cerrar Sesión</a>
+    {% else %}
+    <div class="mobile-divider"></div>
+    <a class="mobile-link mobile-link-login" href="{% url 'login' %}" onclick="closeMobileMenu()">Iniciar Sesión</a>
+    <a class="mobile-link mobile-link-register" href="{% url 'register' %}" onclick="closeMobileMenu()">Crear Cuenta</a>
+    {% endif %}
+    {% if user.is_authenticated and user.usuario_id_perfil_id == 1 %}
+    <div class="mobile-divider"></div>
+    <a class="mobile-link" href="{% url 'panel_dashboard' %}" onclick="closeMobileMenu()">Gestión</a>
+    {% endif %}
+  </div>
+</div>
+<div class="mobile-overlay" id="mobileOverlay" onclick="toggleMobileMenu()"></div>
+
+<script>
+function toggleMobileMenu() {
+  document.getElementById('mobileDrawer').classList.toggle('open');
+  document.getElementById('mobileOverlay').classList.toggle('open');
+  document.body.classList.toggle('no-scroll');
+}
+
+function closeMobileMenu() {
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('mobileOverlay').classList.remove('open');
+  document.body.classList.remove('no-scroll');
+}
+</script>

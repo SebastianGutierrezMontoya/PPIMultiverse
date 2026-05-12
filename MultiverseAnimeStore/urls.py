@@ -63,6 +63,21 @@ from .views import (
     # login_view,
     # register_view,
     admin_home,
+    # Panel de Control
+    panel_dashboard,
+    panel_productos_list,
+    panel_productos_crear,
+    panel_productos_editar,
+    panel_usuarios_list,
+    panel_usuarios_crear,
+    panel_usuarios_editar,
+    panel_pedidos_list,
+    panel_categorias_list,
+    panel_roles_list,
+    panel_perfiles_list,
+    panel_sexos_list,
+    panel_estados_list,
+    panel_consultas_list,
 )
 
 urlpatterns = [
@@ -148,4 +163,19 @@ urlpatterns = [
 
     path('consultas_dinamicas/reporte/<int:id>/', reporte_view, name='consultas_dinamicas_reporte'),
 
+    # ─── Panel de Control (visor dark, capa aparte) ───
+    path('panel/', panel_dashboard, name='panel_dashboard'),
+    path('panel/productos/', panel_productos_list, name='panel_productos'),
+    path('panel/productos/crear/', panel_productos_crear, name='panel_productos_crear'),
+    path('panel/productos/<str:pk>/editar/', panel_productos_editar, name='panel_productos_editar'),
+    path('panel/usuarios/', panel_usuarios_list, name='panel_usuarios'),
+    path('panel/usuarios/crear/', panel_usuarios_crear, name='panel_usuarios_crear'),
+    path('panel/usuarios/<str:pk>/editar/', panel_usuarios_editar, name='panel_usuarios_editar'),
+    path('panel/pedidos/', panel_pedidos_list, name='panel_pedidos'),
+    path('panel/categorias/', panel_categorias_list, name='panel_categorias'),
+    path('panel/roles/', panel_roles_list, name='panel_roles'),
+    path('panel/perfiles/', panel_perfiles_list, name='panel_perfiles'),
+    path('panel/sexos/', panel_sexos_list, name='panel_sexos'),
+    path('panel/estados/', panel_estados_list, name='panel_estados'),
+    path('panel/consultas/', panel_consultas_list, name='panel_consultas'),
 ]

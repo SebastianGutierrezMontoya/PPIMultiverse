@@ -1,36 +1,106 @@
-{% extends "base.html" %}
+{% extends "Multiverse/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    #login-page-body {
+        background-color: #ffffff;
+        min-height: calc(100vh - 72px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .login-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 28px;
+        padding: 40px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .login-logo {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 20px;
+        background: transparent !important;
+    }
+    .login-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .login-title {
+        text-align: center;
+        font-weight: 900;
+        font-style: italic;
+        text-transform: uppercase;
+        color: #111;
+        margin-bottom: 30px;
+    }
+    .form-input {
+        width: 100%;
+        padding: 14px 20px;
+        background: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 14px;
+        color: #111;
+        margin-bottom: 20px;
+        outline: none;
+        font-size: 14px;
+    }
+    .form-input:focus { border-color: var(--accent, #f37d15); box-shadow: 0 0 0 3px rgba(243,125,21,0.1); }
+    .btn-login {
+        width: 100%;
+        background: #f37d15;
+        color: #fff;
+        border: none;
+        padding: 16px;
+        border-radius: 14px;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .btn-login:hover {
+        background: #e06d10;
+        box-shadow: 0 0 15px rgba(243, 125, 21, 0.2);
+    }
+    @media (max-width: 480px) {
+        .login-card { padding: 28px 20px; }
+        #login-page-body { padding: 20px; }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
+<div id="login-page-body">
+    <div class="login-card">
+        <div class="login-logo">
+            <img src="{% static 'icono_tienda.png' %}" alt="Logo">
+        </div>
+        <h2 class="login-title">Acceso Multiverso</h2>
 
-<div class="form-container">
-    <h2 class="form-header">Login</h2>
-    <form method="post">
-        {% csrf_token %}
-        
-        {% if form.errors %}
-        <div class="error-container">
-            {% for field in form %}
-                {% for error in field.errors %}
-                    <div class="error-item">{{ error }}</div>
-                {% endfor %}
+        {% if messages %}
+        <div style="margin-bottom: 20px;">
+            {% for message in messages %}
+            <div style="color:#ef4444; font-size:13px; font-weight:600; text-align:center; padding:10px; background:rgba(239,68,68,0.08); border-radius:12px;">{{ message }}</div>
             {% endfor %}
+        </div>
         {% endif %}
-
-        <div class="form-floating">
-          <input type="text" name="usuario" value="" maxlength="50" class="form-control" placeholder=" " required="" id="id_id_usuario">
-          <label for="id_id_usuario">Nombre de Usuario</label>
-        </div>
-
-
-        <div class="form-floating">
-          <input type="password" name="contraseña" maxlength="255" class="form-control" placeholder=" " id="id_password_hash">
-          <label for="id_password_hash">Contraseña</label>
-        </div>
         
-
-        <button type="submit" class="btn btn-primary">Entrar</button>
-    </form>
-
-
+        <form method="post">
+            {% csrf_token %}
+            <input type="text" name="usuario" class="form-input" placeholder="Usuario" required>
+            <input type="password" name="contraseña" class="form-input" placeholder="Contraseña" required>
+            <button type="submit" class="btn-login">Entrar</button>
+        </form>
+        
+        <p style="text-align:center; margin-top:20px; font-size:13px; color:#6b7280;">
+            ¿No tienes cuenta? <a href="{% url 'register' %}" style="color:#f37d15; text-decoration:none; font-weight:700;">Regístrate</a>
+        </p>
+    </div>
 </div>
-
 {% endblock %}

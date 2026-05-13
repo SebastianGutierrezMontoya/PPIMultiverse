@@ -1,0 +1,36 @@
+{% extends "Admin/panel_base.html" %}
+
+{% block panel_content %}
+<div class="panel-content-header">
+    <div><h2>Reporte de Consulta</h2><p>Resultados de la consulta dinámica.</p></div>
+    <div class="panel-actions">
+        <a href="{% url 'panel_consultas' %}" class="panel-btn panel-btn-secondary">↩️ Volver a Consultas</a>
+    </div>
+</div>
+{% if resultado %}
+<div class="panel-table-wrapper">
+    <table class="panel-table">
+        <thead>
+            <tr>
+                {% for col in resultado.0.keys %}
+                <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for fila in resultado %}
+            <tr>
+                {% for valor in fila.values %}
+                <td style="color:#ffffff; font-weight:600;">{{ valor }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% else %}
+<div class="panel-alert panel-alert-info">La consulta no retornó resultados.</div>
+
+{% endif %}
+{% endblock %}

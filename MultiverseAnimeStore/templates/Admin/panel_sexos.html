@@ -3,18 +3,24 @@
 <div class="panel-content-header">
     <div><h2>Sexos</h2><p>Catálogo de sexos.</p></div>
     <div class="panel-actions">
+        <a href="{% url 'panel_sexos_crear' %}" class="panel-btn panel-btn-primary">+ Nuevo Sexo</a>
         <a href="{% url 'admin_home' %}" class="panel-btn panel-btn-secondary">↩️ Admin Clásico</a>
     </div>
 </div>
 {% if sexos %}
 <div class="panel-table-wrapper">
     <table class="panel-table">
-        <thead><tr><th>ID</th><th>Nombre</th></tr></thead>
+        <thead><tr><th>ID</th><th>Nombre</th><th>Acciones</th></tr></thead>
         <tbody>
             {% for s in sexos %}
             <tr>
                 <td style="color:#64748b; font-family:monospace;">{{ s.id_sexo }}</td>
                 <td style="color:#ffffff; font-weight:600;">{{ s.nombre_sexo }}</td>
+                <td>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <a href="{% url 'panel_sexos_editar' s.id_sexo %}" class="panel-btn panel-btn-primary panel-btn-sm">Editar</a>
+                    </div>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

@@ -76,8 +76,13 @@ from .views import (
     panel_roles_list,
     panel_perfiles_list,
     panel_sexos_list,
+    panel_sexos_editar,
+    panel_sexos_crear,
     panel_estados_list,
     panel_consultas_list,
+    panel_consultas_crear,
+    panel_consultas_editar,
+    panel_consultas_reporte,
 )
 
 urlpatterns = [
@@ -176,6 +181,11 @@ urlpatterns = [
     path('panel/roles/', panel_roles_list, name='panel_roles'),
     path('panel/perfiles/', panel_perfiles_list, name='panel_perfiles'),
     path('panel/sexos/', panel_sexos_list, name='panel_sexos'),
+    path('panel/sexos/<int:pk>/editar/', panel_sexos_editar, name='panel_sexos_editar'),
+    path('panel/sexos/crear/', panel_sexos_crear, name='panel_sexos_crear'),
     path('panel/estados/', panel_estados_list, name='panel_estados'),
     path('panel/consultas/', panel_consultas_list, name='panel_consultas'),
+    path('panel/consultas/crear/', panel_consultas_crear, name='panel_consultas_crear'),
+    path('panel/consultas/<int:pk>/editar/', panel_consultas_editar, name='panel_consultas_editar'),
+    path('panel/consultas/<int:id>/reporte/', panel_consultas_reporte, name='panel_consultas_reporte'),
 ]

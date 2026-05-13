@@ -1716,6 +1716,59 @@ def panel_sexos_list(request):
         'sidebar': 0,
     })
 
+@Login_requerido()
+def panel_sexos_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+
+    sexo = get_object_or_404(Sexos, pk=pk)
+    if request.method == 'POST':
+        form = SexosForm(request.POST, instance=sexo)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Sexo actualizado exitosamente.')
+                return redirect('panel_sexos')
+    else:
+        form = SexosForm(instance=sexo)
+        
+    return render(request, 'Admin/panel_sexo_form.html', {
+        'form': form,
+        'sexo': sexo,
+        'section': 'sexos',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_sexos_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = SexosForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Sexo creado exitosamente.')
+                return redirect('panel_sexos')
+    else:
+        form = SexosForm()
+    return render(request, 'Admin/panel_sexo_form.html', {
+        'form': form,
+        'section': 'sexos',
+        'sidebar': 0,
+    })
+
 
 @Login_requerido()
 def panel_estados_list(request):
@@ -1735,9 +1788,81 @@ def panel_consultas_list(request):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')
         return redirect('home')
-    consultas = Consultas_Dinamicas.objects.all().order_by('id_consulta')
+    consultas = Consultas_Dinamicas.objects.all().order_by('cons_id')
     return render(request, 'Admin/panel_consultas.html', {
         'consultas': consultas,
         'section': 'consultas',
         'sidebar': 0,
     })
+
+@Login_requerido()
+def panel_consultas_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    if request.method == 'POST':
+        form = ConsultasDinamicasForm(request.POST)
+        blocked_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'ALTER', 'TRUNCATE', 'EXECUTE', 'GRANT', 'REVOKE']
+        query = request.POST.get('cons_sql', '').upper()
+        if any(keyword in query for keyword in blocked_keywords):
+            form.add_error('cons_sql', 'La consulta contiene palabras clave bloqueadas.')
+        elif form.is_valid():
+            form.save()
+            messages.success(request, 'Consulta creada exitosamente.')
+            return redirect('panel_consultas')
+    else:
+        form = ConsultasDinamicasForm()
+    return render(request, 'Admin/panel_consultas_form.html', {
+        'form': form,
+        'section': 'consultas',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_consultas_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    consulta = get_object_or_404(Consultas_Dinamicas, pk=pk)
+    if request.method == 'POST':
+        form = ConsultasDinamicasForm(request.POST, instance=consulta)
+        blocked_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'ALTER', 'TRUNCATE', 'EXECUTE', 'GRANT', 'REVOKE']
+        query = request.POST.get('cons_sql', '').upper()
+        if any(keyword in query for keyword in blocked_keywords):
+            form.add_error('cons_sql', 'La consulta contiene palabras clave bloqueadas.')
+        elif form.is_valid():
+            form.save()
+            messages.success(request, 'Consulta actualizada exitosamente.')
+            return redirect('panel_consultas')
+    else:
+        form = ConsultasDinamicasForm(instance=consulta)
+    return render(request, 'Admin/panel_consultas_form.html', {
+        'form': form,
+        'consulta': consulta,
+        'section': 'consultas',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_consultas_reporte(request, id):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    data = ejecutar_reporte(id)
+    return render(request, "Admin/panel_consultas_reporte.html", {"resultado": data})
+
+
+
+@Login_requerido()
+def panel_config_contactos_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    config_contactos = Config_Contacto.objects.all().order_by('id_regla')
+    return render(request, 'Admin/panel_config_contactos.html', {
+        'config_contactos': config_contactos,
+        'section': 'config_contactos',
+        'sidebar': 0,
+    })
+

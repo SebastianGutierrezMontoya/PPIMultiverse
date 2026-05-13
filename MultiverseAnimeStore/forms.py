@@ -421,6 +421,7 @@ class EstadoPedidosForm(forms.ModelForm):
 
         self.fields['est_id'].widget.attrs['required'] = True
         self.fields['est_nombre'].widget.attrs['required'] = True
+        
 class SexosForm(forms.ModelForm):
     class Meta:
         model = Sexos
@@ -429,6 +430,7 @@ class SexosForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['id_sexo'].widget.attrs['readonly'] = True
+        self.fields['id_sexo'].initial = next_int_id(Sexos, 'id_sexo')
         self.fields['nombre_sexo'].required = True
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})

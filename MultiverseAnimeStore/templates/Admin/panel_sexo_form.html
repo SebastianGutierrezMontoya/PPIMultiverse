@@ -1,0 +1,36 @@
+{% extends "Admin/panel_base.html" %}
+
+{% block panel_content %}
+<div class="panel-content-header">
+    <div>
+        <h2>{% if sexo %}Editar{% else %}Crear{% endif %} Sexo</h2>
+        <p>{% if sexo %}Modificando: {{ sexo.sexo_nombre }}{% else %}Nuevo sexo para el catálogo.{% endif %}</p>
+    </div>
+</div>
+
+<div class="panel-form-card">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="panel-alert panel-alert-error">
+            {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div class="panel-form-group">
+            <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
+                {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.errors %}
+            <p style="font-size:11px; color:#f87171; margin-top:4px;">{{ field.errors.0 }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="panel-btn panel-btn-primary">Guardar</button>
+        <a href="{% url 'panel_sexos' %}" class="panel-btn panel-btn-secondary">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

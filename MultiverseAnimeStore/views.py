@@ -1703,6 +1703,117 @@ def panel_perfiles_list(request):
         'sidebar': 0,
     })
 
+@Login_requerido()
+def panel_perfiles_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+
+    perfil = get_object_or_404(Perfiles, pk=pk)
+    if request.method == 'POST':
+        form = PerfilesForm(request.POST, instance=perfil)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Perfil actualizado exitosamente.')
+                return redirect('panel_perfiles')
+    else:
+        form = PerfilesForm(instance=perfil)
+        
+    return render(request, 'Admin/panel_perfiles_form.html', {
+        'form': form,
+        'perfil': perfil,
+        'section': 'perfiles',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_perfiles_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = PerfilesForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Perfil creado exitosamente.')
+                return redirect('panel_perfiles')
+    else:
+        form = PerfilesForm()
+    return render(request, 'Admin/panel_perfiles_form.html', {
+        'form': form,
+        'section': 'perfiles',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_perfiles_permisos(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+
+    perfil = get_object_or_404(Perfiles, pk=pk)
+    modulos = Modulos.objects.all()
+
+    if request.method == 'POST':
+        for modulo in modulos:
+            permiso_obj, created = Perfilpermisos.objects.get_or_create(
+                perfil_id=perfil,
+                mod_id=modulo
+            )
+            
+            for tipo in ['read', 'create', 'update', 'delete']:
+                field_name = f'perm_{modulo.nombre_mod}_{tipo}'
+                setattr(permiso_obj, f'can_{tipo}', 'Y' if request.POST.get(field_name) == 'on' else 'N')
+            
+            permiso_obj.save()
+        return redirect('panel_perfiles')
+
+    
+    # Preparar datos para mostrar todos los módulos
+    permisos_asignados = {}
+    modulo_permisos = Perfilpermisos.objects.filter(perfil_id=perfil).select_related('mod_id')
+    
+    # Crear un diccionario de permisos existentes para búsqueda rápida
+    permisos_dict = {mp.mod_id.id_mod: mp for mp in modulo_permisos}
+    
+    # Para cada módulo, obtener sus permisos (o valores por defecto)
+    for modulo in modulos:
+        if modulo.id_mod in permisos_dict:
+            permiso = permisos_dict[modulo.id_mod]
+            permisos_asignados[modulo.nombre_mod] = {
+                'read': permiso.can_read == 'Y',
+                'create': permiso.can_create == 'Y',
+                'update': permiso.can_update == 'Y',
+                'delete': permiso.can_delete == 'Y',
+            }
+        else:
+            # Valores por defecto si no existe el permiso
+            permisos_asignados[modulo.nombre_mod] = {
+                'read': False,
+                'create': False,
+                'update': False,
+                'delete': False,
+            }
+    
+
+    return render(request, 'Admin/panel_perfiles_permisos.html', {
+        'perfil': perfil,
+        'permisos_asignados': permisos_asignados,
+        'section': 'perfiles',
+
+    })
+
 
 @Login_requerido()
 def panel_sexos_list(request):

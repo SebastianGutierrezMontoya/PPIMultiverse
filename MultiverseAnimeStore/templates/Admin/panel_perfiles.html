@@ -9,7 +9,7 @@
 {% if perfiles %}
 <div class="panel-table-wrapper">
     <table class="panel-table">
-        <thead><tr><th>ID</th><th>Nombre</th><th>Rol</th><th>Descripción</th></tr></thead>
+        <thead><tr><th>ID</th><th>Nombre</th><th>Rol</th><th>Descripción</th><th>Acciones</th></tr></thead>
         <tbody>
             {% for p in perfiles %}
             <tr>
@@ -17,6 +17,10 @@
                 <td style="color:#ffffff; font-weight:600;">{{ p.nombre }}</td>
                 <td>{{ p.rol_id.nombre|default:"—" }}</td>
                 <td>{{ p.descripcion|default:"—" }}</td>
+                <td>
+                    <a href="{% url 'panel_perfiles_editar' pk=p.id_perfil %}" class="panel-btn panel-btn-primary panel-btn-sm">Editar</a>
+                    <a href="{% url 'panel_perfiles_permisos' pk=p.id_perfil %}" class="panel-btn panel-btn-secondary panel-btn-sm">Permisos</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

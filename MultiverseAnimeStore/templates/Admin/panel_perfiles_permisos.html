@@ -1,0 +1,53 @@
+{% extends "Admin/panel_base.html" %}
+
+{% block panel_content %}
+
+<div class="panel-content-header">
+    <div>
+        <h2>Permisos del Perfil: {{ perfil.nombre }}</h2>
+        <span>Asigna los permisos para cada módulo a este perfil</span>
+    </div>
+    <div>
+        <a href="{% url 'panel_perfiles' %}" class="panel-btn panel-btn-secondary">↩️Volver al Panel de Perfiles</a>
+    </div>
+</div>
+
+<div class="panel-form-card">
+    <h2>Permisos del Perfil: {{ perfil.nombre }}</h2>
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="panel-alert panel-alert-error">
+            {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+        </div>
+        {% endif %}
+
+        <table class="panel-table">
+            <thead>
+                <tr>
+                    <th>Módulo</th>
+                    <th>Leer</th>
+                    <th>Crear</th>
+                    <th>Actualizar</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for modulo_nombre, permisos in permisos_asignados.items %}
+                <tr>
+                    <td>{{ modulo_nombre }}</td>
+                    <td><input type="checkbox" name="perm_{{ modulo_nombre }}_read" {% if permisos.read %}checked{% endif %}></td>
+                    <td><input type="checkbox" name="perm_{{ modulo_nombre }}_create" {% if permisos.create %}checked{% endif %}></td>
+                    <td><input type="checkbox" name="perm_{{ modulo_nombre }}_update" {% if permisos.update %}checked{% endif %}></td>
+                    <td><input type="checkbox" name="perm_{{ modulo_nombre }}_delete" {% if permisos.delete %}checked{% endif %}></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="panel-btn panel-btn-primary">Guardar Permisos</button>
+        <a href="{% url 'panel_perfiles' %}" class="panel-btn panel-btn-secondary">Volver al Panel de Perfiles</a>
+    </form>
+</div>
+
+{% endblock %}

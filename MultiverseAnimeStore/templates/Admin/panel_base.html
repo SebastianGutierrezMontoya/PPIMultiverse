@@ -45,6 +45,12 @@
             <a href="{% url 'panel_perfiles' %}" class="panel-nav-link {% if section == 'perfiles' %}active{% endif %}">
                 <span class="nav-icon">👤</span> Perfiles
             </a>
+            <a href="{% url 'panel_config_contacto' %}" class="panel-nav-link {% if section == 'config_contacto' %}active{% endif %}">
+                <span class="nav-icon">📞</span> Config. Contacto
+            </a>
+            <a href="{% url 'panel_estados' %}" class="panel-nav-link {% if section == 'estados' %}active{% endif %}">
+                <span class="nav-icon">⚙️</span> Estados de Pedido
+            </a>
         </div>
 
         <div class="panel-nav-section" style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; margin-top: 8px;">

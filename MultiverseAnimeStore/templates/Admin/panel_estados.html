@@ -9,12 +9,15 @@
 {% if estados %}
 <div class="panel-table-wrapper">
     <table class="panel-table">
-        <thead><tr><th>ID</th><th>Nombre</th></tr></thead>
+        <thead><tr><th>ID</th><th>Nombre</th><th>Acciones</th></tr></thead>
         <tbody>
             {% for e in estados %}
             <tr>
-                <td style="color:#64748b; font-family:monospace;">{{ e.id_estado }}</td>
+                <td style="color:#64748b; font-family:monospace;">{{ e.est_id }}</td>
                 <td style="color:#ffffff; font-weight:600;">{{ e.est_nombre }}</td>
+                <td>
+                    <a href="{% url 'panel_estados_editar' e.est_id %}" class="panel-btn panel-btn-sm panel-btn-primary">Editar</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

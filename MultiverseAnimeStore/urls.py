@@ -79,10 +79,15 @@ from .views import (
     panel_sexos_editar,
     panel_sexos_crear,
     panel_estados_list,
+    panel_estados_crear,
+    panel_estados_editar,
     panel_consultas_list,
     panel_consultas_crear,
     panel_consultas_editar,
     panel_consultas_reporte,
+    panel_config_contacto_list,
+    panel_config_contacto_crear,
+    panel_config_contacto_editar,
 )
 
 urlpatterns = [
@@ -184,8 +189,13 @@ urlpatterns = [
     path('panel/sexos/<int:pk>/editar/', panel_sexos_editar, name='panel_sexos_editar'),
     path('panel/sexos/crear/', panel_sexos_crear, name='panel_sexos_crear'),
     path('panel/estados/', panel_estados_list, name='panel_estados'),
+    path('panel/estados/crear/', panel_estados_crear, name='panel_estados_crear'),
+    path('panel/estados/<int:pk>/editar/', panel_estados_editar, name='panel_estados_editar'),
     path('panel/consultas/', panel_consultas_list, name='panel_consultas'),
     path('panel/consultas/crear/', panel_consultas_crear, name='panel_consultas_crear'),
     path('panel/consultas/<int:pk>/editar/', panel_consultas_editar, name='panel_consultas_editar'),
     path('panel/consultas/<int:id>/reporte/', panel_consultas_reporte, name='panel_consultas_reporte'),
+    path('panel/config_contacto/', panel_config_contacto_list, name='panel_config_contacto'),
+    path('panel/config_contacto/crear/', panel_config_contacto_crear, name='panel_config_contacto_crear'),
+    path('panel/config_contacto/<int:pk>/editar/', panel_config_contacto_editar, name='panel_config_contacto_editar'),
 ]

@@ -3,17 +3,16 @@
 {% block panel_content %}
 <div class="panel-content-header">
     <div>
-        <h2>{% if consulta %}Editar{% else %}Crear{% endif %} Consulta</h2>
-        <p>{% if consulta %}Modificando: {{ consulta.cons_nombre }}{% else %}Nueva consulta para el sistema.{% endif %}</p>
+        <h2>{% if estado %}Editar{% else %}Crear{% endif %} Estado de Pedido</h2>
+        <span>{% if estado %}Modifica los detalles del estado de pedido{% else %}Rellena el formulario para crear un nuevo estado de pedido{% endif %}</span>
     </div>
     <div>
-        <a href="{% url 'panel_consultas' %}" class="panel-btn panel-btn-secondary">↩️Volver a Consultas Dinámicas</a>
+        <a href="{% url 'panel_estados' %}" class="panel-btn panel-btn-secondary">↩️Volver a Estados de Pedido</a>
     </div>
 </div>
 <div class="panel-form-card">
-    <form method="post">
+    <form method="post" >
         {% csrf_token %}
-
         {% if form.non_field_errors %}
         <div class="panel-alert panel-alert-error">
             {% for err in form.non_field_errors %}{{ err }}{% endfor %}
@@ -32,7 +31,7 @@
         </div>
         {% endfor %}
         <button type="submit" class="panel-btn panel-btn-primary">Guardar</button>
-        <a href="{% url 'panel_consultas' %}" class="panel-btn panel-btn-secondary">Cancelar</a>
+        <a href="{% url 'panel_estados' %}" class="panel-btn panel-btn-secondary">Cancelar</a>
     </form>
 </div>
 {% endblock %}

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Perfilpermisos, Modulos, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
-from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm, SexosForm
+from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm, SexosForm, ConfigContactoForm
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q, Max
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
@@ -1775,12 +1775,66 @@ def panel_estados_list(request):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')
         return redirect('home')
-    estados = EstadoPedidos.objects.all().order_by('id_estado')
+    estados = EstadoPedidos.objects.all().order_by('est_id')
     return render(request, 'Admin/panel_estados.html', {
         'estados': estados,
         'section': 'estados',
         'sidebar': 0,
     })
+
+@Login_requerido()
+def panel_estados_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+
+    estado = get_object_or_404(EstadoPedidos, pk=pk)
+    if request.method == 'POST':
+        form = EstadoPedidosForm(request.POST, instance=estado)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Estado de pedido actualizado exitosamente.')
+                return redirect('panel_estados')
+    else:
+        form = EstadoPedidosForm(instance=estado)
+        
+    return render(request, 'Admin/panel_estado_form.html', {
+        'form': form,
+        'estado': estado,
+        'section': 'estados',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_estados_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = EstadoPedidosForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Estado de pedido creado exitosamente.')
+                return redirect('panel_estados')
+    else:
+        form = EstadoPedidosForm()
+    return render(request, 'Admin/panel_estado_form.html', {
+        'form': form,
+        'section': 'estados',
+        'sidebar': 0,
+    })
+
 
 
 @Login_requerido()
@@ -1855,14 +1909,66 @@ def panel_consultas_reporte(request, id):
 
 
 @Login_requerido()
-def panel_config_contactos_list(request):
+def panel_config_contacto_list(request):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')
         return redirect('home')
     config_contactos = Config_Contacto.objects.all().order_by('id_regla')
-    return render(request, 'Admin/panel_config_contactos.html', {
+    return render(request, 'Admin/panel_config_contacto.html', {
         'config_contactos': config_contactos,
         'section': 'config_contactos',
         'sidebar': 0,
     })
+
+@Login_requerido()
+def panel_config_contacto_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    if request.method == 'POST':
+        form = ConfigContactoForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Regla de contacto creada exitosamente.')
+                return redirect('panel_config_contactos')
+    else:
+        form = ConfigContactoForm()
+    return render(request, 'Admin/panel_config_contacto_form.html', {
+        'form': form,
+        'section': 'config_contactos',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_config_contacto_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    config_contacto = get_object_or_404(Config_Contacto, pk=pk)
+    if request.method == 'POST':
+        form = ConfigContactoForm(request.POST, instance=config_contacto)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Regla de contacto actualizada exitosamente.')
+                return redirect('panel_config_contactos')
+    else:
+        form = ConfigContactoForm(instance=config_contacto)
+    return render(request, 'Admin/panel_config_contacto_form.html', {
+        'form': form,
+        'config_contacto': config_contacto,
+        'section': 'config_contactos',
+        'sidebar': 0,
+    })
+
+
 

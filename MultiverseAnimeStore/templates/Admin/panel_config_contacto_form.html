@@ -3,11 +3,11 @@
 {% block panel_content %}
 <div class="panel-content-header">
     <div>
-        <h2>{% if consulta %}Editar{% else %}Crear{% endif %} Consulta</h2>
-        <p>{% if consulta %}Modificando: {{ consulta.cons_nombre }}{% else %}Nueva consulta para el sistema.{% endif %}</p>
+        <h2>{% if config_contacto %}Editar{% else %}Crear{% endif %} Regla de Contacto</h2>
+        <p>{% if config_contacto %}Modificando: {{ config_contacto.nombre_contacto }}{% else %}Nueva regla para validar datos de contacto.{% endif %}</p>
     </div>
-    <div>
-        <a href="{% url 'panel_consultas' %}" class="panel-btn panel-btn-secondary">↩️Volver a Consultas Dinámicas</a>
+    <div class="panel-actions">
+        <a href="{% url 'panel_config_contacto' %}" class="panel-btn panel-btn-secondary">↩️ Volver al Listado</a>
     </div>
 </div>
 <div class="panel-form-card">
@@ -31,8 +31,10 @@
             {% endif %}
         </div>
         {% endfor %}
-        <button type="submit" class="panel-btn panel-btn-primary">Guardar</button>
-        <a href="{% url 'panel_consultas' %}" class="panel-btn panel-btn-secondary">Cancelar</a>
+        <div class="panel-form-actions">
+            <button type="submit" class="panel-btn panel-btn-primary">💾 Guardar</button>
+            <a href="{% url 'panel_config_contacto' %}" class="panel-btn panel-btn-secondary">Cancelar</a>
+        </div>
     </form>
 </div>
 {% endblock %}

@@ -1,5 +1,5 @@
 from django import forms
-from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Perfiles, Consultas_Dinamicas, EstadoPedidos
+from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Usuarios, Sexos, EstadoPedidos, Perfiles, Consultas_Dinamicas, EstadoPedidos, Config_Contacto
 from datetime import date as Date
 from django.db import connection, transaction
 from django.db.models import Max
@@ -230,7 +230,7 @@ class UsuariosForm(forms.ModelForm):
         self.fields['primer_apellido'].required = True
         self.fields['password_hash'].required = True
         self.fields['usuario_id_sexo'].required = True
-        self.fields['usuario_id_perfil'].required = True
+        self.fields['usuario_id_perfil'].required = False
         self.fields['segundo_apellido'].required = False
         self.fields['fecha_nacimiento'].required = False
         for field in self.fields.values():
@@ -475,4 +475,27 @@ class ConsultasDinamicasForm(forms.ModelForm):
         return sql
 
 
+ 
+class ConfigContactoForm(forms.ModelForm):
+    class Meta:
+        model = Config_Contacto
+        fields = ['id_regla', 'nombre_contacto', 'descripcion', 'regex_val', 'min_length', 'max_length', 'mensaje_error']
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['id_regla'].widget.attrs['readonly'] = True
+        self.fields['id_regla'].initial = next_int_id(Contactos, 'id_regla')
+        self.fields['nombre_contacto'].required = True
+        self.fields['mensaje_error'].required = True
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
+        self.fields['id_regla'].label = "* ID de Regla de Contacto"
+        self.fields['nombre_contacto'].label = "* Nombre de Regla de Contacto"
+        self.fields['descripcion'].label = "Descripción de Regla de Contacto"
+        self.fields['regex_val'].label = "Expresión Regular de Validación"
+        self.fields['min_length'].label = "Longitud Mínima"
+        self.fields['max_length'].label = "Longitud Máxima"
+        self.fields['mensaje_error'].label = "* Mensaje de Error"
     

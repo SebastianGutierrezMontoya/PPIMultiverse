@@ -1,0 +1,30 @@
+{% extends "Admin/panel_base.html" %}
+
+{% block panel_content %}
+<div class="panel-content-header">
+    <div><h2>Configuracion de Contactos</h2><p>Listado de reglas de contacto</p></div>
+    <div class="panel-actions">
+        <a href="{% url 'panel_config_contacto_crear' %}" class="panel-btn panel-btn-primary">+ Nueva Regla</a>
+        <a href="{% url 'admin_home' %}" class="panel-btn panel-btn-secondary">↩️ Admin Clásico</a>
+    </div>
+</div>
+{% if config_contactos %}
+<div class="panel-table-wrapper">
+    <table class="panel-table">
+        <thead><tr><th>ID</th><th>Tipo</th><th>Valor</th><th>Acciones</th></tr></thead>
+        <tbody>
+            {% for c in config_contactos %}
+            <tr>
+                <td style="color:#64748b; font-family:monospace;">{{ c.id_regla }}</td>
+                <td style="color:#ffffff; font-weight:600;">{{ c.nombre_contacto }}</td>
+                <td style="color:#ffffff; font-weight:600;">{{ c.regex_val }}</td>
+                <td>
+                    <a href="{% url 'panel_config_contacto_editar' pk=c.id_regla %}" class="panel-btn panel-btn-sm panel-btn-primary">Editar</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}<div class="panel-alert panel-alert-info">No hay reglas de contacto.</div>{% endif %}
+{% endblock %}

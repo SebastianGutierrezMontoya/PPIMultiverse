@@ -58,7 +58,9 @@
     @media (max-width: 992px) {
         .catalog-layout { grid-template-columns: 1fr; }
         .filters-sidebar { position: static; margin-bottom: 20px; }
-        .filter-options { display: flex; flex-wrap: wrap; gap: 10px; }
+        .filter-options { display: none !important; }
+        .filter-select-mobile { display: block; }
+        .filter-title { margin-bottom: 10px; }
     }
 </style>
 {% endblock %}
@@ -106,7 +108,7 @@
             <div class="search-wrapper" style="margin-top: 0; max-width: 100%;">
                 <form method="get" class="search-box">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <input type="text" name="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="¿Qué pieza buscas para tu colección?">
+                    <input type="text" name="prod_nombre" class="search-input" value="{{ prod_nombre|default:'' }}" placeholder="Buscar productos...">
                     {% if cat_id %}<input type="hidden" name="cat" value="{{ cat_id }}">{% endif %}
                     <button type="submit" class="search-button">Buscar</button>
                     {% if prod_nombre %}

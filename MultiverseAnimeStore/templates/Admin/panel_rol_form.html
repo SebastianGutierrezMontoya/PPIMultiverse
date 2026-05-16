@@ -1,0 +1,43 @@
+{% extends "Admin/panel_base.html" %}
+
+{% block panel_content %}
+<div class="panel-content-header">
+    <div>
+        <h2>{% if rol %}Editar{% else %}Crear{% endif %} Rol</h2>
+        <p>{% if rol %}Modificando: {{ rol.rol_nombre }}{% else %}Nuevo rol para asignar permisos.{% endif %}</p>
+    </div>
+    <div class="panel-actions">
+        <a href="{% url 'panel_roles' %}" class="panel-btn panel-btn-secondary">↩️ Volver al Listado</a>
+    </div>
+</div>
+
+<div class="panel-form-card">
+<form method="post" class="panel-form">
+    {% csrf_token %}
+    <div class="panel-form-group">
+        <label for="rol_nombre">Nombre del Rol</label>
+        <input type="text" id="rol_nombre" name="rol_nombre" value="{{ rol.rol_nombre|default:'' }}" required>
+    </div>
+
+    <div class="panel-form-group">
+        <label for="rol_descripcion">Descripción</label>
+        <textarea id="rol_descripcion" name="rol_descripcion" rows="4">{{ rol.rol_descripcion|default:'' }}</textarea>
+    </div>
+
+    <div class="panel-form-group">
+        <label>Permisos</label>
+        <div class="permissions-list">
+            {% for permiso in permisos %}
+            <div class="permission-item">
+                <input type="checkbox" id="permiso_{{ permiso.id }}" name="permisos" value="{{ permiso.id }}"
+                    {% if permiso in rol.permisos.all %}checked{% endif %}>
+                <label for="permiso_{{ permiso.id }}">{{ permiso.nombre }}</label>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <button type="submit" class="panel-btn panel-btn-primary">{% if rol %}Actualizar{% else %}Crear{% endif %}</button>
+</form>
+</div>
+{% endblock %}

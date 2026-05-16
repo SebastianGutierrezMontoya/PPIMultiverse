@@ -154,33 +154,42 @@ def register_view(request):
             sexo = get_object_or_404(Sexos, pk=sexo_id)
             perfil_cliente = Perfiles.objects.filter(id_perfil=2).first()
 
-            user = Usuarios.objects.create(
-                id_usuario=usuario,
-                password_hash=hash_password(contraseña),
-                nombre=nombre,
-                primer_apellido=primer_apellido,
-                segundo_apellido=segundo_apellido,
-                fecha_nacimiento=fecha_nacimiento,
-                usuario_id_sexo=sexo,
-                usuario_id_perfil=perfil_cliente,
-                activo=1
-            )
+            print(telefono, direccion)
 
-            from .forms import get_next_id_model_name
-            Contactos.objects.create(
-                id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
-                dato_contacto=telefono,
-                tipo_contacto_id=1,
-                id_usuario=user,
-            )
+            try:
+                with transaction.atomic():
 
-            if direccion:
-                Contactos.objects.create(
-                    id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
-                    dato_contacto=direccion,
-                    tipo_contacto_id=3,
-                    id_usuario=user,
-                )
+
+                    user = Usuarios.objects.create(
+                        id_usuario=usuario,
+                        password_hash=hash_password(contraseña),
+                        nombre=nombre,
+                        primer_apellido=primer_apellido,
+                        segundo_apellido=segundo_apellido,
+                        fecha_nacimiento=fecha_nacimiento,
+                        usuario_id_sexo=sexo,
+                        usuario_id_perfil=perfil_cliente,
+                        activo=1
+                    )
+
+                    from .forms import next_consecutive_id
+                    Contactos.objects.create(
+                        id_contacto=next_consecutive_id(Contactos, 'id_contacto'),
+                        dato_contacto=telefono,
+                        tipo_contacto_id=2,
+                        id_usuario=user,
+                    )
+
+                    if direccion:
+                        Contactos.objects.create(
+                            id_contacto=next_consecutive_id(Contactos, 'id_contacto') + 1,
+                            dato_contacto=direccion,
+                            tipo_contacto_id=3,
+                            id_usuario=user,
+                        )
+            except DatabaseError as e:
+                messages.error(request, _extract_db_message(e))
+                return render(request, 'Sesion/register.html', {'Sexos': Sexos.objects.values('id_sexo', 'nombre_sexo')})
 
             messages.success(request, 'Registro exitoso. Ahora puedes iniciar sesión.')
             return redirect('login')
@@ -1677,6 +1686,58 @@ def panel_categorias_list(request):
         'sidebar': 0,
     })
 
+@Login_requerido()
+def panel_categorias_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Categoría creada exitosamente.')
+                return redirect('panel_categorias')
+    else:
+        form = CategoriaForm()
+
+    return render(request, 'Admin/panel_categoria_form.html', {
+        'form': form,
+        'section': 'categorias',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_categorias_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    categoria = get_object_or_404(Categoria, pk=pk)
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST, instance=categoria)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Categoría actualizada exitosamente.')
+                return redirect('panel_categorias')
+    else:
+        form = CategoriaForm(instance=categoria)
+
+    return render(request, 'Admin/panel_categoria_form.html', {
+        'form': form,
+        'categoria': categoria,
+        'section': 'categorias',
+        'sidebar': 0,
+    })
+
 
 @Login_requerido()
 def panel_roles_list(request):
@@ -1690,6 +1751,57 @@ def panel_roles_list(request):
         'sidebar': 0,
     })
 
+@Login_requerido()
+def panel_roles_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    if request.method == 'POST':
+        form = RolesForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Rol creado exitosamente.')
+                return redirect('panel_roles')
+    else:
+        form = RolesForm()
+
+    return render(request, 'Admin/panel_rol_form.html', {
+        'form': form,
+        'section': 'roles',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_roles_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    rol = get_object_or_404(Roles, pk=pk)
+    if request.method == 'POST':
+        form = RolesForm(request.POST, instance=rol)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Rol actualizado exitosamente.')
+                return redirect('panel_roles')
+    else:
+        form = RolesForm(instance=rol)
+
+    return render(request, 'Admin/panel_rol_form.html', {
+        'form': form,
+        'rol': rol,
+        'section': 'roles',
+        'sidebar': 0,
+    })
 
 @Login_requerido()
 def panel_perfiles_list(request):

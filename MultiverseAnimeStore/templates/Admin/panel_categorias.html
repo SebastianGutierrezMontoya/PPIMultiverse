@@ -3,19 +3,23 @@
 <div class="panel-content-header">
     <div><h2>Categorías</h2><p>Gestión de categorías de productos.</p></div>
     <div class="panel-actions">
+        <a href="{% url 'panel_categorias_crear' %}" class="panel-btn panel-btn-primary">+ Nueva Categoría</a>
         <a href="{% url 'admin_home' %}" class="panel-btn panel-btn-secondary">↩️ Admin Clásico</a>
     </div>
 </div>
 {% if categorias %}
 <div class="panel-table-wrapper">
     <table class="panel-table">
-        <thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th></tr></thead>
+        <thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead>
         <tbody>
             {% for c in categorias %}
             <tr>
                 <td style="color:#64748b; font-family:monospace;">{{ c.cat_id }}</td>
                 <td style="color:#ffffff; font-weight:600;">{{ c.cat_nombre }}</td>
                 <td>{{ c.cat_descripcion|default:"—" }}</td>
+                <td>
+                    <a href="{% url 'panel_categorias_editar' pk=c.cat_id %}" class="panel-btn panel-btn-primary panel-btn-sm">Editar</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>

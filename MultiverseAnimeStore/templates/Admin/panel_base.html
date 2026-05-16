@@ -56,6 +56,17 @@
 
     {# ─── Content ─── #}
     <div class="panel-content">
+
+        <button class="panel-sidebar-toggle" onclick="togglePanelSidebar()" aria-label="Menú administración">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
+        <div class="panel-sidebar-overlay" id="panelSidebarOverlay" onclick="togglePanelSidebar()"></div>
+
         {% for mensaje in messages %}
         <div class="panel-alert panel-alert-{{ mensaje.tags }}">{{ mensaje }}</div>
         {% endfor %}
@@ -64,4 +75,12 @@
     </div>
 
 </div>
+
+<script>
+function togglePanelSidebar() {
+    document.querySelector('.panel-sidebar').classList.toggle('open');
+    document.getElementById('panelSidebarOverlay').classList.toggle('open');
+    document.body.classList.toggle('panel-no-scroll');
+}
+</script>
 {% endblock %}

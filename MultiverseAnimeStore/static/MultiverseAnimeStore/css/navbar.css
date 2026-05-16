@@ -411,7 +411,7 @@ main {
   }
 
   .navbar-subtitle {
-    font-size: 7px;
+    display: none;
   }
 
   .navbar-logo-icon {

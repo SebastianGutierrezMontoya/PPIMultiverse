@@ -71,6 +71,12 @@
         <aside class="filters-sidebar">
             <div class="filter-group">
                 <span class="filter-title">Categorías</span>
+                <select class="filter-select-mobile" onchange="if(this.value) window.location.href=this.value">
+                    <option value="{% url 'catalogo' %}" {% if not cat_id %}selected{% endif %}>Todas</option>
+                    {% for cat in categorias %}
+                    <option value="{% url 'catalogo' %}?cat={{ cat.cat_id }}" {% if cat_id == cat.cat_id|stringformat:'s' %}selected{% endif %}>{{ cat.cat_nombre }}</option>
+                    {% endfor %}
+                </select>
                 <div class="filter-options">
                     <a href="{% url 'catalogo' %}" class="filter-pill {% if not cat_id %}active{% endif %}">
                         <span class="filter-icon">🌌</span> Todas

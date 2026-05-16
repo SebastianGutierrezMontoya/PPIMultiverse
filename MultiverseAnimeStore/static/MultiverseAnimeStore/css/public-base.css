@@ -1,5 +1,6 @@
 :root {
   --accent: #f37d15;
+  --primary-color: #f37d15;
   --accent-soft: rgba(243, 125, 21, 0.1);
   --accent-hover: rgba(243, 125, 21, 0.2);
   --accent-shadow: rgba(243, 125, 21, 0.25);

@@ -57,10 +57,21 @@
 
     .filter-icon { font-size: 1.2rem; }
 
+    .mobile-category-label {
+        display: none;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #f37d15;
+        margin-bottom: 8px;
+    }
+
     @media (max-width: 992px) {
         .catalog-layout { grid-template-columns: 1fr; }
         .filters-sidebar { display: none; }
         .filter-select-mobile { display: block; margin-bottom: 16px; }
+        .mobile-category-label { display: block; }
     }
 </style>
 {% endblock %}
@@ -96,6 +107,7 @@
             </div>
         </aside>
 
+        <span class="mobile-category-label">Categorías</span>
         <select class="filter-select-mobile" onchange="if(this.value) window.location.href=this.value">
             <option value="{% url 'catalogo' %}" {% if not cat_id %}selected{% endif %}>Todas</option>
             {% for cat in categorias %}

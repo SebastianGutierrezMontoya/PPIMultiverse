@@ -37,10 +37,6 @@ body {
   .bento-card { padding: 12px; }
   .bento-title { font-size: 15px; }
   .bento-price { font-size: 16px; }
-  .search-wrapper { padding: 0 10px; }
-  .search-box { padding: 4px; }
-  .search-input { padding: 10px 12px; font-size: 14px; }
-  .search-button { padding: 10px 16px; font-size: 12px; }
 }
 
 /* =========================
@@ -289,5 +285,12 @@ body {
     background-repeat: no-repeat;
     background-position: right 14px center;
     cursor: pointer;
+}
+
+@media (max-width: 480px) {
+  .search-wrapper { padding: 0 8px; max-width: 100%; }
+  .search-box { padding: 4px; gap: 6px; }
+  .search-input { padding: 10px 12px; font-size: 14px; }
+  .search-button { padding: 10px 14px; font-size: 11px; }
 }
 

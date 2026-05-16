@@ -16,7 +16,7 @@ body {
 }
 
 .catalogo-container {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     display: grid;
     gap: 2rem;
     padding: 20px;
@@ -26,8 +26,8 @@ body {
 
 @media (max-width: 1200px) { .catalogo-container { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; } }
 @media (max-width: 992px) { .catalogo-container { grid-template-columns: repeat(2, 1fr); gap: 1.25rem; } }
-@media (max-width: 576px) { .catalogo-container { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; padding: 8px; } }
-@media (max-width: 380px) { .catalogo-container { grid-template-columns: 1fr; gap: 1rem; padding: 10px; } 
+@media (max-width: 576px) { .catalogo-container { grid-template-columns: 1fr; gap: 1rem; padding: 8px; } }
+@media (max-width: 380px) {
   .search-input { font-size: 13px; }
   .search-button { padding: 8px 14px; font-size: 11px; } }
 
@@ -47,7 +47,7 @@ body {
 ========================= */
 .search-wrapper {
     max-width: 700px;
-    margin: 40px auto;
+    margin: 0 auto 20px;
     padding: 0 20px;
 }
 

@@ -38,6 +38,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        if (document.querySelector('.panel-wrapper')) return;
         document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(el) {
             if (el.closest('.form-floating')) return;
             var label = document.querySelector('label[for="' + el.id + '"]');

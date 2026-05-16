@@ -57,11 +57,8 @@
 
     @media (max-width: 992px) {
         .catalog-layout { grid-template-columns: 1fr; }
-        .filters-sidebar { position: static; margin-bottom: 20px; }
-        .filter-options { display: none !important; }
-        .filter-select-mobile { display: block; }
-        .filter-title { margin-bottom: 10px; }
-        .filter-group:last-child { display: none; }
+        .filters-sidebar { display: none; }
+        .filter-select-mobile { display: block; margin-bottom: 16px; }
     }
 </style>
 {% endblock %}
@@ -74,12 +71,6 @@
         <aside class="filters-sidebar">
             <div class="filter-group">
                 <span class="filter-title">Categorías</span>
-                <select class="filter-select-mobile" onchange="if(this.value) window.location.href=this.value">
-                    <option value="{% url 'catalogo' %}" {% if not cat_id %}selected{% endif %}>Todas</option>
-                    {% for cat in categorias %}
-                    <option value="{% url 'catalogo' %}?cat={{ cat.cat_id }}" {% if cat_id == cat.cat_id|stringformat:'s' %}selected{% endif %}>{{ cat.cat_nombre }}</option>
-                    {% endfor %}
-                </select>
                 <div class="filter-options">
                     <a href="{% url 'catalogo' %}" class="filter-pill {% if not cat_id %}active{% endif %}">
                         <span class="filter-icon">🌌</span> Todas
@@ -102,6 +93,13 @@
                 <p style="font-size: 12px; color: #94a3b8; line-height: 1.5;">Selecciona una categoría para filtrar los productos del Multiverso.</p>
             </div>
         </aside>
+
+        <select class="filter-select-mobile" onchange="if(this.value) window.location.href=this.value">
+            <option value="{% url 'catalogo' %}" {% if not cat_id %}selected{% endif %}>Todas</option>
+            {% for cat in categorias %}
+            <option value="{% url 'catalogo' %}?cat={{ cat.cat_id }}" {% if cat_id == cat.cat_id|stringformat:'s' %}selected{% endif %}>{{ cat.cat_nombre }}</option>
+            {% endfor %}
+        </select>
 
         <!-- CONTENIDO PRINCIPAL -->
         <main>

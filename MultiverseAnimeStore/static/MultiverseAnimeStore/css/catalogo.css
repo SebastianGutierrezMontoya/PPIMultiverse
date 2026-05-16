@@ -290,8 +290,3 @@ body {
     cursor: pointer;
 }
 
-@media (max-width: 991px) {
-    .filter-select-mobile { display: block; }
-    .filter-options { display: none; }
-    .filter-title { margin-bottom: 10px; }
-}

@@ -18,7 +18,7 @@ from django.contrib import admin
 from django.urls import path, include
 from django.contrib import admin
 from django.urls import path, include
-from MultiverseAnimeStore.views import home_view, catalogo_view, login_view, logout_view, register_view, checkout_view, mis_pedidos_view, pedido_detalle_view
+from MultiverseAnimeStore.views import home_view, catalogo_view, login_view, logout_view, register_view, checkout_view, mis_pedidos_view, pedido_detalle_view, perfil_view, cambiar_contraseña
 
 urlpatterns = [
     path('admindjango/', admin.site.urls),
@@ -32,6 +32,8 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('register/', register_view, name='register'),
+    path('perfil/<str:pk>/', perfil_view, name='perfil'),
+    path('cambiar-contraseña/<str:pk>/', cambiar_contraseña, name='cambiar_contraseña'),
 
     path('mis-pedidos/', mis_pedidos_view, name='mis_pedidos'),
     path('mis-pedidos/<int:ped_id>/', pedido_detalle_view, name='pedido_detalle'),

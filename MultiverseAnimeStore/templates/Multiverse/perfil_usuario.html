@@ -1,0 +1,113 @@
+{% extends "Multiverse/base.html" %}
+{% load static %}
+
+
+{% block extra_head %}
+<style>
+    #login-page-body {
+        background-color: #ffffff;
+        min-height: calc(100vh - 72px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .login-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 28px;
+        padding: 40px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .login-logo {
+        width: 100px;
+        height: 100px;
+        margin: 0 auto 20px;
+        background: transparent !important;
+    }
+    .login-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .login-title {
+        text-align: center;
+        font-weight: 900;
+        font-style: italic;
+        text-transform: uppercase;
+        color: #111;
+        margin-bottom: 30px;
+    }
+    .form-input {
+        width: 100%;
+        padding: 14px 20px;
+        background: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 14px;
+        color: #111;
+        margin-bottom: 20px;
+        outline: none;
+        font-size: 14px;
+    }
+    .form-input:focus { border-color: var(--accent, #f37d15); box-shadow: 0 0 0 3px rgba(243,125,21,0.1); }
+    .btn-login {
+        width: 100%;
+        background: #f37d15;
+        color: #fff;
+        border: none;
+        padding: 16px;
+        border-radius: 14px;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .btn-login:hover {
+        background: #e06d10;
+        box-shadow: 0 0 15px rgba(243, 125, 21, 0.2);
+    }
+    @media (max-width: 480px) {
+        .login-card { padding: 28px 20px; }
+        #login-page-body { padding: 20px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-card">
+<div class="panel-content-header">
+    <div>
+        <h2>Perfil de Usuario</h2>
+        <p>Revisa y actualiza tu información personal.</p>
+    </div>
+</div>
+
+<div class="panel-form-card">
+    <form method="post">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="panel-alert panel-alert-error">
+            {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+        </div>
+        {% endif %}
+        {% for field in form %}
+        <div class="panel-form-group">
+            <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
+                {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.errors %}
+            <p style="font-size:11px; color:#f87171; margin-top:4px;">{{ field.errors.0 }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <button type="submit" class="panel-btn panel-btn-primary">Actualizar Perfil</button>
+        <a href="{% url 'cambiar_contraseña' pk=user.id_usuario %}" class="panel-btn panel-btn-secondary" style="margin-top: 10px;">Cambiar Contraseña</a>
+    </form>
+</div>
+</div>
+{% endblock %}

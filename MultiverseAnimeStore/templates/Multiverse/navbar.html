@@ -42,7 +42,9 @@
       {% if user.is_authenticated %}
         <div class="navbar-user-badge">
             <svg class="user-icon-orange" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            <a class="mobile-link" href="{% url 'perfil' pk=user.id_usuario %}" onclick="closeMobileMenu()">
             <span class="navbar-user-name">{{ user.nombre|default:user.id_usuario }}</span>
+            </a>
         </div>
         <a class="navbar-link navbar-link-muted navbar-logout" href="{% url 'logout' %}">Salir</a>
       {% else %}
@@ -78,7 +80,9 @@
     <div class="mobile-divider"></div>
     <div class="mobile-user-info">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-      <span>{{ user.nombre|default:user.id_usuario }}</span>
+      
+        <span>{{ user.nombre|default:user.id_usuario }}</span>
+
     </div>
     <a class="mobile-link mobile-link-logout" href="{% url 'logout' %}" onclick="closeMobileMenu()">Cerrar Sesión</a>
     {% else %}

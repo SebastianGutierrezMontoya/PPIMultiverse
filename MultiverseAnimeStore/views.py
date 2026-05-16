@@ -1590,6 +1590,7 @@ def panel_usuarios_crear(request):
 
     if request.method == 'POST':
         form = UsuariosForm(request.POST)
+        # form.password_hash = hash_password(form.cleaned_data['password'])
         if form.is_valid():
             try:
                 with transaction.atomic():
@@ -1624,6 +1625,8 @@ def panel_usuarios_editar(request, pk):
 
     if request.method == 'POST':
         form = UsuariosForm(request.POST, instance=usuario)
+        print(form)
+        # form.password_hash = hash_password(form.cleaned_data['password'])
         if form.is_valid():
             try:
                 with transaction.atomic():
@@ -2195,3 +2198,78 @@ def panel_config_contacto_editar(request, pk):
 
 
 
+@Login_requerido()
+def perfil_view(request, pk):
+    # if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+    #     messages.error(request, 'No tienes permiso para acceder a esta sección.')
+    #     return redirect('home')
+    if request.user.id_usuario != pk:
+        messages.error(request, 'No puedes acceder al perfil de otro usuario.')
+        return redirect('home')
+
+    if request.method == 'POST':
+        form = UsuariosForm(request.POST, instance=request.user)
+        
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Perfil actualizado exitosamente.')
+                return redirect('perfil', pk=pk)
+    else:
+        form = UsuariosForm(instance=request.user)
+        for field in form.fields.values():
+            field.widget.attrs.update({'class': 'form-control form-input'})
+
+        form.fields['password_hash'].widget.attrs.update({'class': 'form-control form-input hidden'})
+    """Vista de perfil del cliente logueado."""
+    usuario = request.user
+    contactos = Contactos.objects.filter(id_usuario=usuario)
+    return render(request, 'Multiverse/perfil_usuario.html', {
+        'usuario': usuario,
+        'contactos': contactos,
+        'form': form,
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def cambiar_contraseña(request, pk):
+    if request.user.id_usuario != pk:
+        messages.error(request, 'No puedes cambiar la contraseña de otro usuario.')
+        return redirect('home')
+
+    if request.method == 'POST':
+
+            contraseña_actual = request.POST.get('contraseña_actual')
+            if not check_password(contraseña_actual, request.user):
+                form.add_error('contraseña_actual', 'La contraseña actual es incorrecta.')
+
+            nueva_contraseña = request.POST.get('nueva_contraseña')
+            confirmacion_contraseña = request.POST.get('confirmacion_contraseña')
+
+            if nueva_contraseña != confirmacion_contraseña:
+                form.add_error('confirmacion_contraseña', 'Las contraseñas no coinciden.')
+            else:
+                try:
+                    with transaction.atomic():
+                        usuario = Usuarios.objects.get(pk=pk)
+                        usuario.password_hash = hash_password(nueva_contraseña)
+                        usuario.save()
+                except DatabaseError as e:
+                    form.add_error(None, _extract_db_message(e))
+                else:
+                    messages.success(request, 'Contraseña cambiada exitosamente.')
+                    return redirect('perfil', pk=pk)
+
+
+    return render(request, 'Multiverse/cambiar_contraseña.html', {
+
+        'sidebar': 0,
+    })
+
+
+def check_password(Contraseña_actual, usuario):
+    return hash_password(Contraseña_actual) == Usuarios.objects.get(id_usuario=usuario.id_usuario).password_hash

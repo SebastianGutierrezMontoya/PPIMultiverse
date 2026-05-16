@@ -32,18 +32,28 @@ function clearCartCache() {
   }
 }
 
+function updateBodyScroll() {
+  var cartOpen = cartSidebar && cartSidebar.classList.contains('open');
+  var drawer = document.getElementById('mobileDrawer');
+  var drawerOpen = drawer && drawer.classList.contains('open');
+  if (cartOpen || drawerOpen) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+}
+
 function toggleCart() {
   const isOpen = cartSidebar.classList.contains('open');
 
   if (isOpen) {
     cartSidebar.classList.remove('open');
     cartOverlay.classList.remove('open');
-    document.body.style.overflow = '';
   } else {
     cartSidebar.classList.add('open');
     cartOverlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
   }
+  updateBodyScroll();
 }
 
 
@@ -89,7 +99,7 @@ function renderCart() {
           <button onclick="changeQty(${index}, 1)" class="cart-qty-btn">+</button>
         </div>
         <button onclick="removeFromCart(${index})" class="cart-remove">
-          <i class="fas fa-trash-can">X</i>
+          <i class="fas fa-trash-can"></i>
         </button>
       </div>
     `;
@@ -127,7 +137,7 @@ function changeQty(index, delta) {
   if (cart.length === 0) {
     cartSidebar.classList.remove('open');
     cartOverlay.classList.remove('open');
-    document.body.style.overflow = '';
+    updateBodyScroll();
   }
 }
 
@@ -146,7 +156,7 @@ function addToCart(name, price, id) {
 
   cartSidebar.classList.add('open');
   cartOverlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  updateBodyScroll();
 }
 
 

@@ -41,6 +41,10 @@
     z-index: 1050;
 }
 
+.panel-sidebar.open ~ .panel-content .panel-sidebar-toggle {
+    display: none;
+}
+
 .panel-sidebar {
     width: 240px;
     flex-shrink: 0;

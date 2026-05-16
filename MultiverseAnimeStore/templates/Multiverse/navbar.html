@@ -98,12 +98,12 @@
 function toggleMobileMenu() {
   document.getElementById('mobileDrawer').classList.toggle('open');
   document.getElementById('mobileOverlay').classList.toggle('open');
-  document.body.classList.toggle('no-scroll');
+  if (typeof updateBodyScroll === 'function') updateBodyScroll();
 }
 
 function closeMobileMenu() {
   document.getElementById('mobileDrawer').classList.remove('open');
   document.getElementById('mobileOverlay').classList.remove('open');
-  document.body.classList.remove('no-scroll');
+  if (typeof updateBodyScroll === 'function') updateBodyScroll();
 }
 </script>

@@ -22,6 +22,7 @@ body {
     padding: 20px;
     max-width: 1400px;
     margin: 0 auto;
+    min-width: 0;
 }
 
 @media (max-width: 1200px) { .catalogo-container { grid-template-columns: repeat(3, 1fr); gap: 1.5rem; } }

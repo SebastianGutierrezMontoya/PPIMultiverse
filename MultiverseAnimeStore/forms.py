@@ -97,8 +97,7 @@ class PedidosForm(forms.ModelForm):
         self.fields['usu'].queryset = Usuarios.objects.all()
         self.fields['usu'].label_from_instance = lambda obj: f"{obj.nombre} {obj.primer_apellido}"
         self.fields['usu'].required = True
-        self.fields['ped_id'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['ped_id'].widget = forms.HiddenInput()
         self.fields['ped_id'].initial = next_int_id(Pedidos, 'ped_id')
         self.fields['ped_total'].widget.attrs['readonly'] = True
         self.fields['ped_total'].initial = 0.00
@@ -194,7 +193,7 @@ class UsuariosForm(forms.ModelForm):
         self.fields['usuario_id_sexo'].label_from_instance = lambda obj: obj.nombre_sexo
         self.fields['usuario_id_perfil'].queryset = Perfiles.objects.all()
         self.fields['usuario_id_perfil'].label_from_instance = lambda obj: obj.nombre
-        self.fields['id_usuario'].widget.attrs['readonly'] = True
+        self.fields['id_usuario'].widget = forms.HiddenInput()
         self.fields['id_usuario'].initial = "USR-" + str(get_next_char_id(Usuarios, 'id_usuario', 'USR-'))
         self.fields['activo'].widget.attrs.update({'min': 0, 'max': 1, 'step': '1'})
         # Forzar required en campos obligatorios del usuario
@@ -222,7 +221,7 @@ class CategoriaForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['cat_id'].widget.attrs['readonly'] = True
+        self.fields['cat_id'].widget = forms.HiddenInput()
         self.fields['cat_id'].initial = "CAT-" + str(get_next_char_id(Categoria, 'cat_id', 'CAT-'))
         self.fields['cat_nombre'].required = True
         self.fields['cat_descripcion'].required = False
@@ -243,7 +242,7 @@ class ProductosForm(forms.ModelForm):
         self.fields['cat'].queryset = Categoria.objects.all()
         self.fields['cat'].label_from_instance = lambda obj: obj.cat_nombre
         self.fields['cat'].required = True
-        self.fields['prod_id'].widget.attrs['readonly'] = True
+        self.fields['prod_id'].widget = forms.HiddenInput()
         self.fields['prod_id'].initial = "PROD-" + str(get_next_char_id(Productos, 'prod_id', 'PROD-'))
         # Forzar required en campos que deben tener valor
         self.fields['prod_nombre'].required = True
@@ -277,8 +276,7 @@ class RolesForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['id_rol'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['id_rol'].widget = forms.HiddenInput()
         self.fields['id_rol'].initial = next_int_id(Roles, 'id_rol')
         self.fields['nombre'].required = True
         for field in self.fields.values():
@@ -298,8 +296,7 @@ class PerfilesForm(forms.ModelForm):
         # roles = Roles.objects.values('id_rol', 'nombre')
         self.fields['rol_id'].queryset = Roles.objects.all()
         self.fields['rol_id'].label_from_instance = lambda obj: obj.nombre
-        self.fields['id_perfil'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['id_perfil'].widget = forms.HiddenInput()
         self.fields['id_perfil'].initial = next_int_id(Perfiles, 'id_perfil')
         self.fields['nombre'].required = True
         for field in self.fields.values():
@@ -315,9 +312,7 @@ class EstadoPedidosForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['est_id'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
-        # self.fields['est_id'].initial = next_int_id(EstadoPedidos, 'est_id') # cambio aca
+        self.fields['est_id'].widget = forms.HiddenInput()
         self.fields['est_id'].initial = next_consecutive_id(EstadoPedidos, 'est_id')
         self.fields['est_id'].widget.attrs.update({'title': 'La id del estado de Entregado debe ser la mayor de todas' })
         self.fields['est_nombre'].required = True
@@ -335,7 +330,7 @@ class SexosForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['id_sexo'].widget.attrs['readonly'] = True
+        self.fields['id_sexo'].widget = forms.HiddenInput()
         self.fields['nombre_sexo'].required = True
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
@@ -353,8 +348,7 @@ class ConsultasDinamicasForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['cons_id'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['cons_id'].widget = forms.HiddenInput()
         self.fields['cons_id'].initial = next_int_id(Consultas_Dinamicas, 'cons_id')
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})

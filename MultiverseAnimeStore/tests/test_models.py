@@ -14,7 +14,7 @@ class ProductosConstraintsTest(TestCase):
         """ck_precio_positivo: prod_precio_venta > 0"""
         with self.assertRaises(IntegrityError):
             Productos.objects.create(
-                prod_id="PROD-TST1", cat=self.cat, prod_precio_venta=0
+                prod_id="PROD-TST1", cat=self.cat, prod_precio_venta=1
             )
 
     def test_stock_no_negativo(self):

@@ -166,9 +166,9 @@ def register_view(request):
                 activo=1
             )
 
-            from .forms import get_next_id_model_name
+            from .forms import next_int_id
             Contactos.objects.create(
-                id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                id_contacto=next_int_id(Contactos, 'id_contacto'),
                 dato_contacto=telefono,
                 tipo_contacto_id=1,
                 id_usuario=user,
@@ -176,7 +176,7 @@ def register_view(request):
 
             if direccion:
                 Contactos.objects.create(
-                    id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                    id_contacto=next_int_id(Contactos, 'id_contacto'),
                     dato_contacto=direccion,
                     tipo_contacto_id=3,
                     id_usuario=user,
@@ -1212,7 +1212,7 @@ def checkout_view(request):
                 messages.error(request, 'Debes ingresar tu nombre y teléfono para continuar.')
                 return redirect(request.META.get('HTTP_REFERER', '/'))
 
-            from .forms import get_next_id_model_name
+            from .forms import next_int_id, get_next_char_id
 
             with transaction.atomic():
                 # ── Fase 2: Deduplicación por teléfono ──
@@ -1229,14 +1229,14 @@ def checkout_view(request):
                         ).exists()
                         if not tiene_direccion:
                             Contactos.objects.create(
-                                id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                                id_contacto=next_int_id(Contactos, 'id_contacto'),
                                 dato_contacto=direccion_envio,
                                 tipo_contacto_id=3,
                                 id_usuario=usuario,
                             )
                 else:
                     # ── Crear nuevo usuario invitado ──
-                    next_id_num = get_next_id_model_name(Usuarios, 'id_usuario')
+                    next_id_num = get_next_char_id(Usuarios, 'id_usuario', 'USR-')
                     new_id = f"USR-{next_id_num}"
 
                     random_pass = secrets.token_hex(16)
@@ -1261,7 +1261,7 @@ def checkout_view(request):
 
                     # ── Fase 1: 2 contactos (teléfono + dirección) ──
                     Contactos.objects.create(
-                        id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                        id_contacto=next_int_id(Contactos, 'id_contacto'),
                         dato_contacto=telefono_invitado,
                         tipo_contacto_id=1,
                         id_usuario=usuario,
@@ -1269,7 +1269,7 @@ def checkout_view(request):
 
                     if direccion_envio:
                         Contactos.objects.create(
-                            id_contacto=get_next_id_model_name(Contactos, 'id_contacto'),
+                            id_contacto=next_int_id(Contactos, 'id_contacto'),
                             dato_contacto=direccion_envio,
                             tipo_contacto_id=3,
                             id_usuario=usuario,

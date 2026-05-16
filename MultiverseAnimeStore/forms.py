@@ -7,25 +7,47 @@ from django.db.models import Max
 
 def next_int_id(model, field_name):
     """
-    Devuelve max(CAST(field AS INTEGER)) + 1.
+    Devuelve MAX(field) + 1 para PKs enteras.
+    Usa SQL estándar (CAST AS INTEGER) compatible con SQLite y PostgreSQL.
     Envuelto en transacción con select_for_update para evitar race conditions en PostgreSQL.
     """
     table = model._meta.db_table
-    sql = f"""
-        SELECT MAX(
-            CASE WHEN {field_name} ~ '^[0-9]+$' THEN {field_name}::integer ELSE NULL END
-        ) FROM {table}
-    """
+    sql = f'SELECT MAX(CAST({field_name} AS INTEGER)) FROM "{table}"'
     try:
         with transaction.atomic():
             model.objects.select_for_update().first()
             with connection.cursor() as cursor:
                 cursor.execute(sql)
                 row = cursor.fetchone()
-                maxval = row[0] if row else None
-                return int(maxval or 0) + 1
+                maxval = row[0] if row and row[0] is not None else 0
+                return int(maxval) + 1
     except Exception:
         return model.objects.count() + 1
+
+
+def get_next_char_id(model, field_name, prefix):
+    """
+    Devuelve el próximo ID numérico para campos VARCHAR con formato 'PREFIX-NNN'.
+    Usa SUBSTR + CAST para extraer el sufijo numérico y obtener MAX + 1.
+    Ej: get_next_char_id(Productos, 'prod_id', 'PROD-') sobre ['PROD-1','PROD-10'] → 11
+
+    Compatible con SQLite y PostgreSQL (SUBSTR y CAST son SQL estándar).
+    Envuelto en transacción con select_for_update.
+    """
+    table = model._meta.db_table
+    prefix_len = len(prefix)
+    sql = f"""
+        SELECT MAX(CAST(SUBSTR({field_name}, {prefix_len + 1}) AS INTEGER))
+        FROM "{table}"
+        WHERE {field_name} LIKE '{prefix}%'
+    """
+    with transaction.atomic():
+        model.objects.select_for_update().first()
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            row = cursor.fetchone()
+            maxval = row[0] if row and row[0] is not None else 0
+            return maxval + 1
 
 
 def next_consecutive_id(model, field):
@@ -173,8 +195,7 @@ class UsuariosForm(forms.ModelForm):
         self.fields['usuario_id_perfil'].queryset = Perfiles.objects.all()
         self.fields['usuario_id_perfil'].label_from_instance = lambda obj: obj.nombre
         self.fields['id_usuario'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
-        self.fields['id_usuario'].initial = "USR-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
+        self.fields['id_usuario'].initial = "USR-" + str(get_next_char_id(Usuarios, 'id_usuario', 'USR-'))
         self.fields['activo'].widget.attrs.update({'min': 0, 'max': 1, 'step': '1'})
         # Forzar required en campos obligatorios del usuario
         self.fields['nombre'].required = True
@@ -202,8 +223,7 @@ class CategoriaForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['cat_id'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id (cat_id es char; la función maneja solo valores numéricos)...
-        self.fields['cat_id'].initial = "CAT-" + str(get_next_id_model_name(Categoria, 'cat_id'))
+        self.fields['cat_id'].initial = "CAT-" + str(get_next_char_id(Categoria, 'cat_id', 'CAT-'))
         self.fields['cat_nombre'].required = True
         self.fields['cat_descripcion'].required = False
         for field in self.fields.values():
@@ -224,10 +244,7 @@ class ProductosForm(forms.ModelForm):
         self.fields['cat'].label_from_instance = lambda obj: obj.cat_nombre
         self.fields['cat'].required = True
         self.fields['prod_id'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
-        "usr-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
-
-        self.fields['prod_id'].initial = "PROD-" + str(get_next_id_model_name(Productos, 'prod_id'))
+        self.fields['prod_id'].initial = "PROD-" + str(get_next_char_id(Productos, 'prod_id', 'PROD-'))
         # Forzar required en campos que deben tener valor
         self.fields['prod_nombre'].required = True
         self.fields['prod_precio_venta'].required = False

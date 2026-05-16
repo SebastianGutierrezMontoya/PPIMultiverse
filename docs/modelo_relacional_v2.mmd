@@ -1,0 +1,121 @@
+erDiagram
+    MODULOS {
+        int id_mod PK
+        string(100) nombre_mod 
+        string(200) url_mod 
+        int padre_mod FK
+        string(200) descripcion 
+    }
+    ROLES {
+        int id_rol PK
+        string(50) nombre 
+        string(255) descripcion 
+    }
+    PERFILES {
+        int id_perfil PK
+        string(100) nombre 
+        int rol_id FK
+        string(255) descripcion 
+    }
+    SEXOS {
+        int id_sexo PK
+        string(20) nombre_sexo 
+    }
+    ESTADOPEDIDOS {
+        int est_id PK
+        string(50) est_nombre 
+    }
+    CONFIG_CONTACTO {
+        int id_regla PK
+        string(50) nombre_contacto 
+        string(100) descripcion 
+        string(200) regex_val 
+        DOUBLE min_length 
+        DOUBLE max_length 
+        string(200) mensaje_error 
+    }
+    CATEGORIA {
+        string(10) cat_id PK
+        string(50) cat_nombre 
+        string(200) cat_descripcion 
+    }
+    USUARIOS {
+        string(50) id_usuario PK
+        string(300) nombre 
+        string(50) primer_apellido 
+        string(50) segundo_apellido 
+        date fecha_nacimiento 
+        string(255) password_hash 
+        int usuario_id_sexo FK
+        int usuario_id_perfil FK
+        DOUBLE activo 
+    }
+    PRODUCTOS {
+        string(10) prod_id PK
+        string(10) cat_id FK
+        string(100) prod_nombre 
+        string(400) prod_descripcion 
+        decimal(10,2) prod_precio_venta 
+        int prod_stock 
+        string(500) prod_imagen_url 
+        decimal(4,2) prod_descuento 
+    }
+    CONTACTOS {
+        int id_contacto PK
+        string(50) id_usuario FK
+        int tipo_contacto FK
+        string(100) dato_contacto 
+    }
+    PEDIDOS {
+        int ped_id PK
+        string(50) usu_id FK
+        date ped_fecha_pedido 
+        decimal(10,2) ped_total 
+        int ped_estado FK
+        string(200) ped_direccion_envio 
+        string(200) ped_notas 
+    }
+    PERFILPERMISOS {
+        int perfil_id FK
+        int mod_id FK
+        string(1) can_create 
+        string(1) can_read 
+        string(1) can_update 
+        string(1) can_delete 
+    }
+    PEDIDOS_PRODUCTOS {
+        int ped_id FK
+        string(10) prod_id FK
+        int pped_cantidad 
+        date pped_fecha_entrega 
+        decimal(10,2) pped_precio_unitario 
+        decimal(4,2) pped_descuento 
+        decimal(10,2) pped_total 
+        int pped_estado FK
+    }
+    PRODUCTOS_AUDITORIA {
+        int dummy_id PK
+        date creation_date 
+        int au_type 
+        string(500) auditoria 
+    }
+    CONSULTAS_DINAMICAS {
+        int cons_id PK
+        string(50) cons_nombre 
+        string(4000) cons_sql 
+        string(200) cons_descripcion 
+    }
+    MODULOS ||--o| MODULOS : "padre_mod"
+    PERFILES ||--o| ROLES : "rol_id"
+    USUARIOS ||--o| SEXOS : "usuario_id_sexo"
+    USUARIOS ||--o| PERFILES : "usuario_id_perfil"
+    PRODUCTOS ||--o| CATEGORIA : "cat_id"
+    CONTACTOS ||--o| USUARIOS : "id_usuario"
+    CONTACTOS ||--o| CONFIG_CONTACTO : "tipo_contacto"
+    PEDIDOS ||--o| USUARIOS : "usu_id"
+    PEDIDOS ||--o| ESTADOPEDIDOS : "ped_estado"
+    PERFILPERMISOS ||--o| PERFILES : "perfil_id"
+    PERFILPERMISOS ||--o| MODULOS : "mod_id"
+    PEDIDOS_PRODUCTOS ||--o| PEDIDOS : "ped_id"
+    PEDIDOS_PRODUCTOS ||--o| PRODUCTOS : "prod_id"
+    PEDIDOS_PRODUCTOS ||--o| ESTADOPEDIDOS : "pped_estado"

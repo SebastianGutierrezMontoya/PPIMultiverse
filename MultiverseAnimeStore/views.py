@@ -110,8 +110,24 @@ def admin_home(request):
 
 # contraseña hashing 
 def hash_password(password):
+    """Hash de contraseña compatible con Django (bcrypt/PBKDF2)."""
+    from django.contrib.auth.hashers import make_password
+    return make_password(password)
+
+
+def _verify_password(password, password_hash):
+    """Verifica contraseña: soporta bcrypt (nuevo) y SHA-256 (viejo).
+    Si coincide con SHA-256, retorna True pero el llamador debe re-hashear.
+    """
+    from django.contrib.auth.hashers import check_password
+    # 1. Intentar con Django (bcrypt/PBKDF2)
+    if check_password(password, password_hash):
+        return 'modern'
+    # 2. Fallback SHA-256 (contraseñas antiguas)
     import hashlib
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+    if hashlib.sha256(password.encode('utf-8')).hexdigest() == password_hash:
+        return 'legacy'
+    return False
 
 # Login
 def login_view(request):
@@ -124,10 +140,22 @@ def login_view(request):
         contraseña = request.POST.get('contraseña')
 
         try:
-            user = Usuarios.objects.get(id_usuario=usuario, password_hash=hash_password(contraseña))
+            user = Usuarios.objects.get(id_usuario=usuario)
+            result = _verify_password(contraseña, user.password_hash)
+            if not result:
+                raise Usuarios.DoesNotExist
+
+            # Si es contraseña vieja (SHA-256), migrar a bcrypt ahora
+            if result == 'legacy':
+                user.password_hash = hash_password(contraseña)
+                user.save(update_fields=['password_hash'])
+
             request.session['user_id'] = user.id_usuario
-            # Los administradores van al panel; los clientes al catálogo
-            destino = request.POST.get('next', 'catalogo')
+
+            # Validar open redirect: next debe empezar con /
+            destino = request.POST.get('next', '')
+            if not destino.startswith('/'):
+                destino = 'catalogo'
             return redirect(destino)
         except Usuarios.DoesNotExist:
             messages.error(request, 'Credenciales inválidas. Inténtalo de nuevo.')

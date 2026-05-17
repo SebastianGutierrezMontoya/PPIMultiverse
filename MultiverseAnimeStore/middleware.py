@@ -22,8 +22,9 @@ class CustomAuthMiddleware:
                 user.is_authenticated = True
                 user.is_anonymous = False
                 user.is_active = True
-                user.is_staff = True
-                user.is_superuser = True
+                # Solo admin (perfil_id=1) tiene staff/superuser en Django
+                user.is_staff = (getattr(user, 'usuario_id_perfil_id', None) == 1)
+                user.is_superuser = (getattr(user, 'usuario_id_perfil_id', None) == 1)
 
                 request.user = user
 

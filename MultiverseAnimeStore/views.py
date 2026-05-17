@@ -1441,10 +1441,19 @@ def pedido_detalle_view(request, ped_id):
     pedido.estado_texto = pedido.ped_estado.est_nombre if pedido.ped_estado else 'Pendiente'
 
     productos = PedidosProductos.objects.filter(ped=pedido).select_related('prod', 'pped_estado')
+    estados_timeline = [
+        {'id': 1, 'nombre': 'Pendiente'},
+        {'id': 2, 'nombre': 'Confirmado'},
+        {'id': 3, 'nombre': 'Preparación'},
+        {'id': 4, 'nombre': 'Enviado'},
+        {'id': 5, 'nombre': 'Entregado'},
+        {'id': 6, 'nombre': 'Cancelado'},
+    ]
 
     return render(request, 'Multiverse/pedido_detalle.html', {
         'pedido': pedido,
         'productos': productos,
+        'estados_timeline': estados_timeline,
         'sidebar': 0,
     })
 
@@ -1870,11 +1879,38 @@ def panel_pedidos_list(request):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')
         return redirect('home')
-    pedidos = Pedidos.objects.select_related('usu', 'ped_estado').all().order_by('-ped_fecha_pedido')[:20]
+
+    estados = EstadoPedidos.objects.all().order_by('pk')
+    pedidos = Pedidos.objects.select_related('usu', 'ped_estado').all().order_by('-ped_fecha_pedido')
+
+    estado_filtro = request.GET.get('estado', '')
+    q = request.GET.get('q', '')
+    fecha_desde = request.GET.get('fecha_desde', '')
+    fecha_hasta = request.GET.get('fecha_hasta', '')
+
+    if estado_filtro:
+        pedidos = pedidos.filter(ped_estado_id=estado_filtro)
+    if q:
+        pedidos = pedidos.filter(
+            Q(ped_id__icontains=q) | Q(usu__nombre__icontains=q) | Q(usu__id_usuario__icontains=q)
+        )
+    if fecha_desde:
+        pedidos = pedidos.filter(ped_fecha_pedido__gte=fecha_desde)
+    if fecha_hasta:
+        pedidos = pedidos.filter(ped_fecha_pedido__lte=fecha_hasta)
+
+    pedidos = pedidos[:30]
     for p in pedidos:
         p.estado_texto = p.ped_estado.est_nombre if p.ped_estado else 'Pendiente'
+
     return render(request, 'Admin/panel_pedidos.html', {
         'pedidos': pedidos,
+        'estados': estados,
+        'estado_filtro': estado_filtro,
+        'q': q,
+        'fecha_desde': fecha_desde,
+        'fecha_hasta': fecha_hasta,
+        'result_count': len(pedidos),
         'section': 'pedidos',
         'sidebar': 0,
     })

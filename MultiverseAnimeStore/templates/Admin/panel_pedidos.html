@@ -1,11 +1,26 @@
 {% extends "Admin/panel_base.html" %}
 {% block panel_content %}
 <div class="panel-content-header">
-    <div><h2>Pedidos</h2><p>Últimos 20 pedidos registrados.</p></div>
+    <div><h2>Pedidos</h2><p>{% if result_count %}{{ result_count }} pedido{{ result_count|pluralize:"s" }}{% else %}Todos los pedidos{% endif %}</p></div>
     <div class="panel-actions">
         <a href="{% url 'admin_home' %}" class="panel-btn panel-btn-secondary">↩️ Admin Clásico</a>
     </div>
 </div>
+
+<form method="get" class="panel-search">
+    <select name="estado" style="flex:0 0 auto; min-width:150px; padding:10px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:#18181b; color:#f1f5f9; font-size:13px;">
+        <option value="">Todos los estados</option>
+        {% for e in estados %}
+        <option value="{{ e.pk }}" {% if estado_filtro == e.pk|stringformat:"s" %}selected{% endif %}>{{ e.est_nombre }}</option>
+        {% endfor %}
+    </select>
+    <input type="text" name="q" placeholder="Buscar por ID o usuario..." value="{{ q }}" class="panel-search-input" style="flex:1; min-width:180px;">
+    <input type="date" name="fecha_desde" value="{{ fecha_desde }}" class="panel-search-input" style="flex:0 0 auto; min-width:140px;" title="Desde">
+    <input type="date" name="fecha_hasta" value="{{ fecha_hasta }}" class="panel-search-input" style="flex:0 0 auto; min-width:140px;" title="Hasta">
+    <button type="submit" class="panel-btn panel-btn-primary panel-btn-sm">Filtrar</button>
+    <a href="{% url 'panel_pedidos' %}" class="panel-search-clear">Limpiar</a>
+</form>
+
 {% if pedidos %}
 <div class="panel-table-wrapper">
     <table class="panel-table">
@@ -17,12 +32,23 @@
                 <td>{{ p.usu.nombre|default:p.usu.id_usuario }}</td>
                 <td>{{ p.ped_fecha_pedido|date:"d/m/Y" }}</td>
                 <td style="font-weight:600;">${{ p.ped_total|floatformat:2 }}</td>
-                <td><span style="color:#94a3b8;">{{ p.estado_texto }}</span></td>
+                <td>
+                    <span style="display:inline-block; padding:2px 10px; border-radius:12px; font-size:11px; font-weight:700;
+                        {% if p.ped_estado_id == 1 %}background:rgba(148,163,184,0.12); color:#94a3b8;
+                        {% elif p.ped_estado_id == 2 %}background:rgba(96,165,250,0.12); color:#60a5fa;
+                        {% elif p.ped_estado_id == 3 %}background:rgba(251,191,36,0.12); color:#fbbf24;
+                        {% elif p.ped_estado_id == 4 %}background:rgba(168,85,247,0.12); color:#a855f7;
+                        {% elif p.ped_estado_id == 5 %}background:rgba(74,222,128,0.12); color:#4ade80;
+                        {% elif p.ped_estado_id == 6 %}background:rgba(239,68,68,0.12); color:#ef4444;
+                        {% endif %}">{{ p.estado_texto }}</span>
+                </td>
                 <td><a href="{% url 'panel_pedidos_detalle' p.pk %}" class="panel-btn panel-btn-secondary panel-btn-sm">Ver</a></td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-{% else %}<div class="panel-alert panel-alert-info">No hay pedidos.</div>{% endif %}
+{% else %}
+<div class="panel-alert panel-alert-info">No se encontraron pedidos con esos filtros.</div>
+{% endif %}
 {% endblock %}

@@ -1,91 +1,147 @@
 {% extends "Multiverse/base.html" %}
 {% load static %}
 
-{% block content %}
-<div style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
-    <a href="{% url 'mis_pedidos' %}" style="color: #94a3b8; text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 20px;">
-        ← Volver a Mis Pedidos
-    </a>
+{% block extra_head %}
+<style>
+.pd-page { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+.pd-back { color: #94a3b8; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 4px; margin-bottom: 20px; transition: color 0.2s; }
+.pd-back:hover { color: var(--accent); }
 
-    <!-- Header del pedido -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 32px;">
+.pd-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 32px; }
+.pd-header h1 { font-size: 32px; font-weight: 900; text-transform: uppercase; font-style: italic; margin: 0 0 4px; }
+.pd-header p { color: #94a3b8; font-size: 14px; margin: 0; }
+
+.pd-badge { display: inline-block; padding: 8px 20px; border-radius: 20px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+
+/* Timeline */
+.pd-timeline { display: flex; align-items: flex-start; gap: 4px; margin-bottom: 32px; overflow-x: auto; padding: 4px 0; }
+.pd-tl-step { display: flex; flex-direction: column; align-items: center; min-width: 80px; flex: 1; position: relative; }
+.pd-tl-dot { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.04); color: #64748b; margin-bottom: 6px; position: relative; z-index: 1; }
+.pd-tl-line { position: absolute; top: 14px; left: 50%; width: 100%; height: 2px; background: rgba(255,255,255,0.06); z-index: 0; }
+.pd-tl-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; color: #64748b; text-align: center; white-space: nowrap; }
+
+.pd-tl-step.done .pd-tl-dot { background: #22c55e; border-color: #22c55e; color: #000; }
+.pd-tl-step.done .pd-tl-label { color: #22c55e; }
+.pd-tl-step.current .pd-tl-dot { border-color: var(--accent); background: rgba(243,125,21,0.15); color: var(--accent); box-shadow: 0 0 12px rgba(243,125,21,0.3); }
+.pd-tl-step.current .pd-tl-label { color: var(--accent); }
+.pd-tl-step.cancelled .pd-tl-dot { border-color: #ef4444; background: rgba(239,68,68,0.15); color: #ef4444; }
+.pd-tl-step.cancelled .pd-tl-label { color: #ef4444; }
+.pd-tl-step.done .pd-tl-line, .pd-tl-step.current .pd-tl-line { background: #22c55e; }
+
+.pd-card { background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+.pd-card-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8; margin: 0 0 10px; }
+.pd-card-text { margin: 0; font-size: 15px; color: #e2e8f0; }
+
+.pd-prod { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
+.pd-prod:last-child { border-bottom: none; }
+.pd-prod-left { display: flex; align-items: center; gap: 14px; }
+.pd-prod-icon { width: 44px; height: 44px; border-radius: 10px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; overflow: hidden; }
+.pd-prod-icon img { width: 100%; height: 100%; object-fit: cover; }
+.pd-prod-name { font-size: 15px; font-weight: 700; color: #f1f5f9; margin: 0 0 2px; }
+.pd-prod-detail { font-size: 13px; color: #64748b; margin: 0; }
+.pd-prod-total { font-size: 18px; font-weight: 700; color: #f1f5f9; }
+
+.pd-total { display: flex; justify-content: flex-end; padding: 16px 0 0; margin-top: 8px; }
+.pd-total-inner { text-align: right; }
+.pd-total-label { color: #94a3b8; font-size: 13px; margin: 0 0 4px; }
+.pd-total-value { font-size: 30px; font-weight: 900; color: var(--accent); }
+
+@media (max-width: 600px) {
+    .pd-header { flex-direction: column; align-items: flex-start; }
+    .pd-timeline { gap: 2px; }
+    .pd-tl-step { min-width: 60px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pd-page">
+    <a href="{% url 'mis_pedidos' %}" class="pd-back">← Volver a Mis Pedidos</a>
+
+    <div class="pd-header">
         <div>
-            <h1 style="font-size: 32px; font-weight: 900; text-transform: uppercase; font-style: italic; margin: 0 0 4px 0;">
-                Pedido #{{ pedido.ped_id }}
-            </h1>
-            <p style="color: #94a3b8; font-size: 14px; margin: 0;">
-                Realizado el {{ pedido.ped_fecha_pedido|date:"l, d F Y" }}
-            </p>
+            <h1>Pedido #{{ pedido.ped_id }}</h1>
+            <p>{{ pedido.ped_fecha_pedido|date:"l, d F Y" }}</p>
         </div>
-        <div style="text-align: right;">
-            {% if pedido.ped_estado_id == 1 %}
-                <span style="display: inline-block; padding: 8px 20px; border-radius: 20px; 
-                             font-size: 14px; font-weight: 700; background: rgba(234,179,8,0.15); color: #eab308;">
-                    ⏳ {{ pedido.estado_texto }}
-                </span>
-            {% elif pedido.ped_estado_id == 5 %}
-                <span style="display: inline-block; padding: 8px 20px; border-radius: 20px; 
-                             font-size: 14px; font-weight: 700; background: rgba(34,197,94,0.15); color: #22c55e;">
-                    ✅ {{ pedido.estado_texto }}
-                </span>
-            {% elif pedido.ped_estado_id == 6 %}
-                <span style="display: inline-block; padding: 8px 20px; border-radius: 20px; 
-                             font-size: 14px; font-weight: 700; background: rgba(239,68,68,0.15); color: #ef4444;">
-                    ❌ {{ pedido.estado_texto }}
-                </span>
-            {% else %}
-                <span style="display: inline-block; padding: 8px 20px; border-radius: 20px; 
-                             font-size: 14px; font-weight: 700; background: rgba(59,130,246,0.15); color: #3b82f6;">
-                    {{ pedido.estado_texto }}
-                </span>
-            {% endif %}
-        </div>
+        {% if pedido.ped_estado_id == 1 %}
+            <span class="pd-badge" style="background:rgba(148,163,184,0.12); color:#94a3b8;">⏳ {{ pedido.estado_texto }}</span>
+        {% elif pedido.ped_estado_id == 2 %}
+            <span class="pd-badge" style="background:rgba(96,165,250,0.12); color:#60a5fa;">🔵 {{ pedido.estado_texto }}</span>
+        {% elif pedido.ped_estado_id == 3 %}
+            <span class="pd-badge" style="background:rgba(251,191,36,0.12); color:#fbbf24;">🟡 {{ pedido.estado_texto }}</span>
+        {% elif pedido.ped_estado_id == 4 %}
+            <span class="pd-badge" style="background:rgba(168,85,247,0.12); color:#a855f7;">🟣 {{ pedido.estado_texto }}</span>
+        {% elif pedido.ped_estado_id == 5 %}
+            <span class="pd-badge" style="background:rgba(74,222,128,0.12); color:#4ade80;">✅ {{ pedido.estado_texto }}</span>
+        {% elif pedido.ped_estado_id == 6 %}
+            <span class="pd-badge" style="background:rgba(239,68,68,0.12); color:#ef4444;">❌ {{ pedido.estado_texto }}</span>
+        {% endif %}
     </div>
 
-    <!-- Datos de envío -->
+    <!-- Timeline -->
+    <div class="pd-timeline">
+        {% for s in estados_timeline %}
+        <div class="pd-tl-step
+            {% if s.id == pedido.ped_estado_id %}current
+            {% elif pedido.ped_estado_id == 6 and s.id < 5 %}done
+            {% elif s.id < pedido.ped_estado_id %}done
+            {% elif pedido.ped_estado_id == 6 and s.id == 6 %}cancelled
+            {% endif %}">
+            <div class="pd-tl-line" style="left:-50%; width:100%;"></div>
+            <div class="pd-tl-dot">
+                {% if s.id == 6 and pedido.ped_estado_id == 6 %}✕
+                {% elif s.id == 6 %}5
+                {% else %}{{ s.id }}{% endif %}
+            </div>
+            <div class="pd-tl-label">{{ s.nombre }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Dirección -->
     {% if pedido.ped_direccion_envio %}
-    <div style="background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); 
-                border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; margin-bottom: 24px;">
-        <h3 style="margin: 0 0 12px 0; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #94a3b8;">
-            📍 Dirección de envío
-        </h3>
-        <p style="margin: 0; font-size: 15px;">{{ pedido.ped_direccion_envio }}</p>
+    <div class="pd-card">
+        <h3 class="pd-card-title">📍 Dirección de envío</h3>
+        <p class="pd-card-text">{{ pedido.ped_direccion_envio }}</p>
         {% if pedido.ped_notas %}
-        <p style="margin: 8px 0 0 0; color: #94a3b8; font-size: 13px;">📝 {{ pedido.ped_notas }}</p>
+        <p style="margin:8px 0 0; color:#94a3b8; font-size:13px;">📝 {{ pedido.ped_notas }}</p>
         {% endif %}
     </div>
     {% endif %}
 
-    <!-- Productos del pedido -->
-    <h2 style="font-size: 20px; font-weight: 700; margin-bottom: 16px;">Productos</h2>
-
-    {% for item in productos %}
-    <div style="display: flex; justify-content: space-between; align-items: center; 
-                padding: 16px 0; border-bottom: 1px solid rgba(255,255,255,0.06);">
-        <div style="display: flex; align-items: center; gap: 16px;">
-            <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.05); 
-                        display: flex; align-items: center; justify-content: center; font-size: 20px;">
-                📦
-            </div>
-            <div>
-                <h4 style="margin: 0 0 2px 0; font-size: 15px;">{{ item.prod.prod_nombre }}</h4>
-                <p style="margin: 0; color: #94a3b8; font-size: 13px;">
-                    {{ item.pped_cantidad }} x ${{ item.pped_precio_unitario|floatformat:0 }}
-                    {% if item.pped_descuento > 0 %}
-                        · <span style="color: #22c55e;">-{{ item.pped_descuento }}% desc.</span>
+    <!-- Productos -->
+    <h2 style="font-size:20px; font-weight:700; margin:0 0 14px;">Productos</h2>
+    <div class="pd-card" style="padding:0 20px;">
+        {% for item in productos %}
+        <div class="pd-prod">
+            <div class="pd-prod-left">
+                <div class="pd-prod-icon">
+                    {% if item.prod.prod_imagen_url %}
+                    <img src="{{ item.prod.prod_imagen_url }}" alt="{{ item.prod.prod_nombre }}">
+                    {% else %}
+                    📦
                     {% endif %}
-                </p>
+                </div>
+                <div>
+                    <p class="pd-prod-name">{{ item.prod.prod_nombre }}</p>
+                    <p class="pd-prod-detail">
+                        {{ item.pped_cantidad }} x ${{ item.pped_precio_unitario|floatformat:0 }}
+                        {% if item.pped_descuento > 0 %}
+                        · <span style="color:#22c55e;">-{{ item.pped_descuento }}%</span>
+                        {% endif %}
+                    </p>
+                </div>
             </div>
+            <span class="pd-prod-total">${{ item.pped_total|floatformat:0 }}</span>
         </div>
-        <span style="font-size: 18px; font-weight: 700;">${{ item.pped_total|floatformat:0 }}</span>
+        {% endfor %}
     </div>
-    {% endfor %}
 
     <!-- Total -->
-    <div style="display: flex; justify-content: flex-end; padding: 20px 0; margin-top: 8px;">
-        <div style="text-align: right;">
-            <p style="color: #94a3b8; font-size: 13px; margin: 0 0 4px 0;">Total del pedido</p>
-            <span style="font-size: 32px; font-weight: 900;">${{ pedido.ped_total|floatformat:0 }}</span>
+    <div class="pd-total">
+        <div class="pd-total-inner">
+            <p class="pd-total-label">Total del pedido</p>
+            <span class="pd-total-value">${{ pedido.ped_total|floatformat:0 }}</span>
         </div>
     </div>
 </div>

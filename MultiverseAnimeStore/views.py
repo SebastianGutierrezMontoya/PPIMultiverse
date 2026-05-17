@@ -1765,6 +1765,38 @@ def panel_usuarios_detail(request, pk):
 
 
 @Login_requerido()
+def panel_productos_detail(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    producto = get_object_or_404(Productos, pk=pk)
+    return render(request, 'Admin/panel_productos_detail.html', {
+        'producto': producto,
+        'section': 'productos',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_pedidos_detail(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    pedido = get_object_or_404(Pedidos, pk=pk)
+    productos = PedidosProductos.objects.filter(ped=pedido).select_related('prod')
+    contactos = Contactos.objects.filter(id_usuario=pedido.usu)
+    estados = EstadoPedidos.objects.all()
+    return render(request, 'Admin/panel_pedidos_detail.html', {
+        'pedido': pedido,
+        'productos': productos,
+        'contactos': contactos,
+        'estados': estados,
+        'section': 'pedidos',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
 def panel_pedidos_list(request):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')

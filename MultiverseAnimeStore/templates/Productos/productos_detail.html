@@ -1,36 +1,121 @@
-{% extends "base.html" %}
+{% extends "Multiverse/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    .pd-container { max-width: 960px; margin: 40px auto; padding: 0 20px; }
+    .pd-back { display: inline-flex; align-items: center; gap: 6px; color: #64748b; font-size: 14px; font-weight: 600; text-decoration: none; margin-bottom: 24px; transition: color 0.2s; }
+    .pd-back:hover { color: #f37d15; }
+    .pd-card { background: #fff; border-radius: 20px; border: 1px solid #eef2f6; box-shadow: 0 10px 25px rgba(0,0,0,0.03); overflow: hidden; }
+    .pd-grid { display: flex; flex-wrap: wrap; }
+    .pd-image-wrap { flex: 0 0 45%; min-height: 360px; background: #f8fafc; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    .pd-image-wrap img { width: 100%; height: 100%; object-fit: contain; max-height: 400px; }
+    .pd-info { flex: 1; padding: 40px; min-width: 280px; }
+    .pd-badge { display: inline-block; background: rgba(243,125,21,0.1); color: #f37d15; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+    .pd-title { font-size: 28px; font-weight: 900; color: #0f172a; margin: 0 0 8px; line-height: 1.2; }
+    .pd-price { font-size: 36px; font-weight: 900; color: #0f172a; margin: 16px 0; }
+    .pd-price small { font-size: 14px; font-weight: 600; color: #94a3b8; text-decoration: line-through; margin-left: 10px; }
+    .pd-stock { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; margin-bottom: 16px; }
+    .pd-stock-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .pd-desc { color: #475569; font-size: 15px; line-height: 1.7; margin: 16px 0 24px; }
+    .pd-meta { font-size: 12px; color: #94a3b8; font-family: monospace; margin-bottom: 24px; padding-top: 16px; border-top: 1px solid #f1f5f9; }
+    .pd-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .pd-btn { padding: 10px 24px; border-radius: 12px; font-size: 13px; font-weight: 800; text-transform: uppercase; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: all 0.2s; }
+    .pd-btn-primary { background: #0f172a; color: #fff; }
+    .pd-btn-primary:hover { background: #1e293b; color: #fff; }
+    .pd-btn-secondary { background: #f1f5f9; color: #475569; }
+    .pd-btn-secondary:hover { background: #e2e8f0; color: #0f172a; }
+    .pd-btn-danger { background: #fef2f2; color: #ef4444; }
+    .pd-btn-danger:hover { background: #fee2e2; color: #dc2626; }
+
+    @media (max-width: 768px) {
+        .pd-image-wrap { flex: 0 0 100%; min-height: 240px; }
+        .pd-info { padding: 24px; }
+        .pd-title { font-size: 22px; }
+        .pd-price { font-size: 28px; }
+    }
+
+    /* Delete modal tweaks */
+    .pd-modal { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+    .pd-modal-content { background: #fff; padding: 32px; border-radius: 20px; max-width: 420px; width: 90%; box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
+    .pd-modal-content h3 { font-size: 18px; font-weight: 800; color: #0f172a; margin: 0 0 8px; }
+    .pd-modal-content p { color: #64748b; font-size: 14px; margin: 0 0 20px; }
+    .pd-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container">
-<h2>{{ object.prod_nombre }}</h2>
-<p>{{ object.prod_descripcion }}</p>
-<p>Precio: {{ object.prod_precio_venta }}</p>
-<p>Stock: {{ object.prod_stock }}</p>
-<div class="form-linear">
-    <a class="btn-link" href="{% url 'productos_update' object.pk %}">Editar</a>
-    <a class="btn-link" href="#" onclick="showDeleteModal('{{ object.pk }}', '{{ object.prod_nombre }}'); return false;">Eliminar</a>
-    <a class="btn-link" href="{% url 'productos_list' %}">Volver al listado</a>
+<div class="pd-container">
+    <a href="{% url 'panel_productos' %}" class="pd-back">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        Volver al listado
+    </a>
+
+    <div class="pd-card">
+        <div class="pd-grid">
+            <div class="pd-image-wrap">
+                {% if object.prod_imagen_url %}
+                    <img src="{{ object.prod_imagen_url }}" alt="{{ object.prod_nombre }}" loading="lazy">
+                {% else %}
+                    <img src="{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}" alt="Multiverse" style="max-width: 70%;">
+                {% endif %}
+            </div>
+
+            <div class="pd-info">
+                <span class="pd-badge">{{ object.cat.cat_nombre|default:"—" }}</span>
+                <h1 class="pd-title">{{ object.prod_nombre }}</h1>
+
+                <div class="pd-price">
+                    ${{ object.prod_precio_venta|floatformat:0|default:"0" }}
+                    {% if object.prod_descuento and object.prod_descuento > 0 %}
+                        <small>${{ object.prod_precio_venta|floatformat:0 }}</small>
+                        <span style="font-size: 12px; background: #fef2f2; color: #ef4444; padding: 2px 8px; border-radius: 6px; font-weight: 800; margin-left: 8px; vertical-align: middle;">-{{ object.prod_descuento }}%</span>
+                    {% endif %}
+                </div>
+
+                <div class="pd-stock">
+                    {% if object.prod_stock is not None %}
+                        <span class="pd-stock-dot" style="background: {% if object.prod_stock <= 5 %}#ef4444{% elif object.prod_stock <= 20 %}#f59e0b{% else %}#22c55e{% endif %};"></span>
+                        {{ object.prod_stock }} en stock
+                    {% else %}
+                        <span class="pd-stock-dot" style="background: #94a3b8;"></span>
+                        Sin stock
+                    {% endif %}
+                </div>
+
+                {% if object.prod_descripcion %}
+                    <p class="pd-desc">{{ object.prod_descripcion }}</p>
+                {% endif %}
+
+                <div class="pd-meta">ID: {{ object.prod_id }}</div>
+
+                <div class="pd-actions">
+                    <a href="{% url 'panel_productos_editar' object.pk %}" class="pd-btn pd-btn-primary">✏️ Editar</a>
+                    <a href="#" class="pd-btn pd-btn-danger" onclick="showDeleteModal('{{ object.pk }}', '{{ object.prod_nombre|escapejs }}'); return false;">🗑️ Eliminar</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<!-- Modal de confirmación de borrado -->
-<div id="deleteModal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.4); z-index:2000;">
-    <div style="background:#fff; padding:30px; max-width:400px; margin:100px auto; border-radius:8px; position:relative;">
+
+<div id="deleteModal" class="pd-modal" style="display:none;">
+    <div class="pd-modal-content">
         <h3>Eliminar Producto</h3>
         <p id="deleteMessage"></p>
-        <form id="deleteForm" method="post" style="display:inline;">
+        <form id="deleteForm" method="post" action="{% url 'productos_delete' object.pk %}">
             {% csrf_token %}
-            <div class="form-linear form-center">
-                <button type="submit">Sí, eliminar</button>
-                <button type="button" onclick="hideDeleteModal()">Cancelar</button>
+            <div class="pd-modal-actions">
+                <button type="button" class="pd-btn pd-btn-secondary" onclick="hideDeleteModal()">Cancelar</button>
+                <button type="submit" class="pd-btn pd-btn-danger" style="border:none; cursor:pointer;">Sí, eliminar</button>
             </div>
         </form>
     </div>
 </div>
-</div>
+
 <script>
     function showDeleteModal(pk, nombre) {
         document.getElementById('deleteMessage').textContent = '¿Estás seguro de que deseas eliminar "' + nombre + '"?';
-        var form = document.getElementById('deleteForm');
-        form.action = '/productos/' + pk + '/eliminar/';
-        document.getElementById('deleteModal').style.display = 'block';
+        document.getElementById('deleteModal').style.display = 'flex';
     }
     function hideDeleteModal() {
         document.getElementById('deleteModal').style.display = 'none';

@@ -199,6 +199,16 @@
   max-width: 150px;
 }
 
+.cart-stock-info {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+
 .cart-remove:hover {
   color: #f87171;
 }

@@ -68,6 +68,7 @@ from .views import (
     panel_productos_list,
     panel_productos_crear,
     panel_productos_editar,
+    toggle_producto_hidden,
     panel_usuarios_list,
     panel_usuarios_crear,
     panel_usuarios_editar,
@@ -111,7 +112,8 @@ urlpatterns = [
     path('productos/crear/', ProductosCreateView, name='productos_create'),
     path('productos/<str:pk>/editar/', ProductosUpdateView, name='productos_update'),
     path('productos/<str:pk>/eliminar/', ProductosDeleteView.as_view(), name='productos_delete'),
-    
+    path('productos/<str:pk>/toggle-oculto/', toggle_producto_hidden, name='productos_toggle_hidden'),
+
     path('productos_auditoria/', ProductosAuditoriaView, name='productos_auditoria'),
 
     path('usuarios/', UsuariosListView.as_view(), name='usuarios_list'),
@@ -168,6 +170,7 @@ urlpatterns = [
     path('panel/productos/', panel_productos_list, name='panel_productos'),
     path('panel/productos/crear/', panel_productos_crear, name='panel_productos_crear'),
     path('panel/productos/<str:pk>/editar/', panel_productos_editar, name='panel_productos_editar'),
+    path('panel/productos/<str:pk>/toggle-oculto/', toggle_producto_hidden, name='panel_productos_toggle_hidden'),
     path('panel/usuarios/', panel_usuarios_list, name='panel_usuarios'),
     path('panel/usuarios/crear/', panel_usuarios_crear, name='panel_usuarios_crear'),
     path('panel/usuarios/<str:pk>/editar/', panel_usuarios_editar, name='panel_usuarios_editar'),

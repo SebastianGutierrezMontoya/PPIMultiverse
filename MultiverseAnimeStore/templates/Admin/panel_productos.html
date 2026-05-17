@@ -12,10 +12,17 @@
     </div>
 </div>
 
-<form method="get" class="panel-search">
+<form method="get" class="panel-search" id="productos-filter">
     <input type="text" name="q" class="panel-search-input" value="{{ query|default:'' }}" placeholder="Buscar por nombre de producto...">
+    <select name="cat" onchange="document.getElementById('productos-filter').submit()"
+            style="background: #0f0f0f; color: #e2e8f0; border: 1px solid #334155; border-radius: 8px; padding: 6px 12px; font-size: 13px; cursor: pointer; min-width: 140px;">
+        <option value="">Todas las categorías</option>
+        {% for c in categorias %}
+            <option value="{{ c.cat_id }}" {% if cat_id == c.cat_id %}selected{% endif %}>{{ c.cat_nombre }}</option>
+        {% endfor %}
+    </select>
     <button type="submit" class="panel-btn panel-btn-secondary panel-btn-sm">Buscar</button>
-    {% if query %}
+    {% if query or cat_id %}
         <a href="{% url 'panel_productos' %}" class="panel-search-clear">✕ Limpiar</a>
     {% endif %}
 </form>
@@ -31,6 +38,7 @@
                 <th>Precio</th>
                 <th>Stock</th>
                 <th>Desc.</th>
+                <th>Estado</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -48,6 +56,13 @@
                 {% else %}—{% endif %}</td>
                 <td>{{ p.prod_descuento|default:"0" }}%</td>
                 <td>
+                    {% if p.prod_id in hidden_ids %}
+                    <span style="display:inline-block; background:rgba(248,113,113,0.15); color:#f87171; padding:2px 10px; border-radius:6px; font-size:11px; font-weight:700;">Oculto</span>
+                    {% else %}
+                    <span style="display:inline-block; background:rgba(74,222,128,0.12); color:#4ade80; padding:2px 10px; border-radius:6px; font-size:11px; font-weight:700;">Visible</span>
+                    {% endif %}
+                </td>
+                <td>
                     <div style="display:flex; gap:8px; flex-wrap:wrap;">
                         <a href="{% url 'panel_productos_editar' p.prod_id %}" class="panel-btn panel-btn-primary panel-btn-sm">Editar</a>
                         <a href="{% url 'productos_detail' p.pk %}" class="panel-btn panel-btn-secondary panel-btn-sm">Ver</a>
@@ -62,12 +77,12 @@
         <span>Página {{ page }} de {{ total_paginas }}</span>
         <div class="panel-pagination-links">
             {% if page > 1 %}
-                <a href="?page=1{% if query %}&q={{ query }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">«</a>
-                <a href="?page={{ page|add:-1 }}{% if query %}&q={{ query }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">‹ Anterior</a>
+                <a href="?page=1{% if query %}&q={{ query }}{% endif %}{% if cat_id %}&cat={{ cat_id }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">«</a>
+                <a href="?page={{ page|add:-1 }}{% if query %}&q={{ query }}{% endif %}{% if cat_id %}&cat={{ cat_id }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">‹ Anterior</a>
             {% endif %}
             {% if page < total_paginas %}
-                <a href="?page={{ page|add:1 }}{% if query %}&q={{ query }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">Siguiente ›</a>
-                <a href="?page={{ total_paginas }}{% if query %}&q={{ query }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">»</a>
+                <a href="?page={{ page|add:1 }}{% if query %}&q={{ query }}{% endif %}{% if cat_id %}&cat={{ cat_id }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">Siguiente ›</a>
+                <a href="?page={{ total_paginas }}{% if query %}&q={{ query }}{% endif %}{% if cat_id %}&cat={{ cat_id }}{% endif %}" class="panel-btn panel-btn-secondary panel-btn-sm">»</a>
             {% endif %}
         </div>
     </div>

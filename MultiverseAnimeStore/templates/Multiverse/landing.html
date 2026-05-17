@@ -207,12 +207,19 @@ body {
                 {% if producto.prod_imagen_url %}
                     <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
                 {% else %}
-                    <img src="{% static 'imagen_defecto.png' %}" alt="Multiverse" style="object-fit: contain; padding: 20px; background: #fff;">
+                    <img src="{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}" alt="Multiverse" style="object-fit: contain; padding: 20px; background: #fff;">
                 {% endif %}
                 <div class="bento-overlay"></div>
+                {% if producto.prod_stock and producto.prod_stock > 0 %}
                 <div class="bento-action">
-                    <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}')">Agregar</button>
+                    <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre|escapejs }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}', {{ producto.prod_stock }})">Agregar</button>
                 </div>
+                {% else %}
+                <div class="bento-badge-agotado">Agotado</div>
+                <div class="bento-action">
+                    <button class="bento-btn" disabled>Agotado</button>
+                </div>
+                {% endif %}
             </div>
             <div class="bento-footer">
                 <div>

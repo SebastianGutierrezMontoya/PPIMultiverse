@@ -235,8 +235,8 @@ class CategoriaForm(forms.ModelForm):
 class ProductosForm(forms.ModelForm):
     class Meta:
         model = Productos
-        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock','prod_descuento', 'cat']
-    
+        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock', 'prod_descuento', 'cat', 'prod_imagen_url']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['cat'].queryset = Categoria.objects.all()
@@ -244,14 +244,15 @@ class ProductosForm(forms.ModelForm):
         self.fields['cat'].required = True
         self.fields['prod_id'].widget = forms.HiddenInput()
         self.fields['prod_id'].initial = "PROD-" + str(get_next_char_id(Productos, 'prod_id', 'PROD-'))
-        # Forzar required en campos que deben tener valor
         self.fields['prod_nombre'].required = True
         self.fields['prod_precio_venta'].required = False
         self.fields['prod_stock'].required = False
         self.fields['prod_descripcion'].required = False
+        self.fields['prod_imagen_url'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['prod_precio_venta'].widget.attrs.update({'step': '0.01'})
+        self.fields['prod_imagen_url'].widget.attrs.update({'placeholder': 'https://ejemplo.com/imagen.jpg'})
 
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})

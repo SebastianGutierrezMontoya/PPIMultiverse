@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Perfilpermisos, Modulos, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
@@ -6,6 +7,8 @@ from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, Categoria
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q, Max
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
+from django.core.exceptions import ValidationError
+from . import hidden_products
 from django.contrib import messages
 import re
 from functools import wraps
@@ -193,7 +196,7 @@ def register_view(request):
 def logout_view(request):
     request.session.flush()
     messages.success(request, 'Has cerrado sesión. ¡Vuelve pronto!')
-    return redirect('home')
+    return redirect(reverse('home') + '?clear_cart=1')
 
 #Categorias
 
@@ -452,12 +455,26 @@ class ProductosListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['producto_id'] = self.request.GET.get('producto_id', '')
+        context['hidden_ids'] = hidden_products.get_hidden_product_ids()
         return context
 
 @method_decorator(Permisos_Admin('Productos', 'read'), name='dispatch')
 class ProductosDetailView(DetailView):
     model = Productos
-    template_name = 'productos_detail.html'
+    template_name = 'Productos/productos_detail.html'
+
+PLACEHOLDER_IMAGES = [
+    {'name': 'Figuras de Acción', 'url': '/static/MultiverseAnimeStore/placeholders/figuras.png'},
+    {'name': 'Manga', 'url': '/static/MultiverseAnimeStore/placeholders/manga.png'},
+    {'name': 'Accesorios', 'url': '/static/MultiverseAnimeStore/placeholders/accesorios.png'},
+    {'name': 'Ropa', 'url': '/static/MultiverseAnimeStore/placeholders/ropa.png'},
+    {'name': 'Tarjetas TCG', 'url': '/static/MultiverseAnimeStore/placeholders/tcg.png'},
+    {'name': 'Peluches', 'url': '/static/MultiverseAnimeStore/placeholders/peluches.png'},
+    {'name': 'Pósters', 'url': '/static/MultiverseAnimeStore/placeholders/posters.png'},
+    {'name': 'Genérico (Grid)', 'url': '/static/MultiverseAnimeStore/placeholders/generic_1.png'},
+    {'name': 'Genérico (Triángulos)', 'url': '/static/MultiverseAnimeStore/placeholders/generic_2.png'},
+    {'name': 'Genérico (Ondas)', 'url': '/static/MultiverseAnimeStore/placeholders/generic_3.png'},
+]
 
 @Permisos_Admin('Productos', 'create')
 def ProductosCreateView(request):
@@ -473,7 +490,10 @@ def ProductosCreateView(request):
                 return redirect('productos_list')
     else:
         form = ProductosForm()
-    return render(request, 'Productos/productos_form.html', {'form': form})
+    return render(request, 'Productos/productos_form.html', {
+        'form': form,
+        'placeholder_images': PLACEHOLDER_IMAGES,
+    })
 
 @Permisos_Admin('Productos', 'update')
 def ProductosUpdateView(request, pk):
@@ -490,7 +510,12 @@ def ProductosUpdateView(request, pk):
                 return redirect('productos_list')
     else:
         form = ProductosForm(instance=producto)
-    return render(request, 'Productos/productos_form.html', {'form': form, 'object': producto})
+    return render(request, 'Productos/productos_form.html', {
+        'form': form,
+        'object': producto,
+        'placeholder_images': PLACEHOLDER_IMAGES,
+        'producto_oculto': hidden_products.is_product_hidden(pk),
+    })
 
 @method_decorator(Permisos_Admin('Productos', 'delete'), name='dispatch')
 class ProductosDeleteView(DeleteView):
@@ -499,6 +524,22 @@ class ProductosDeleteView(DeleteView):
     success_url = reverse_lazy('productos_list')
 
 
+@Login_requerido()
+def toggle_producto_hidden(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta acción.')
+        return redirect('home')
+    action = hidden_products.toggle_product_hidden(pk)
+    producto = Productos.objects.filter(pk=pk).first()
+    nombre = producto.prod_nombre if producto else pk
+    if action == 'hidden':
+        messages.success(request, f'Producto "{nombre}" oculto del catálogo público.')
+    else:
+        messages.success(request, f'Producto "{nombre}" visible en el catálogo público.')
+    referer = request.META.get('HTTP_REFERER', '')
+    if referer:
+        return redirect(referer)
+    return redirect('panel_productos')
 
 
 #productos auditoria
@@ -1160,6 +1201,8 @@ def home_view(request):
     """Landing page: hero, categorías destacadas, últimos productos, redes sociales."""
     categorias = Categoria.objects.all()
 
+    hidden_ids = hidden_products.get_hidden_product_ids()
+
     # Contar productos por categoría (para mostrar el badge)
     from django.db.models import Count
     categorias_conteo = Categoria.objects.annotate(
@@ -1170,7 +1213,7 @@ def home_view(request):
     hero_categories = categorias_conteo.order_by('-productos_count')[:4]
 
     # Últimos 8 productos agregados
-    ultimos_productos = Productos.objects.select_related('cat').order_by('-prod_id')[:8]
+    ultimos_productos = Productos.objects.select_related('cat').exclude(prod_id__in=hidden_ids).order_by('-prod_id')[:8]
 
     return render(request, 'Multiverse/landing.html', {
         'categorias': categorias_conteo,
@@ -1319,7 +1362,7 @@ def checkout_view(request):
                 print(f"DEBUG: Pedido creado con ID {pedido.ped_id} para usuario {usuario.id_usuario} con total {total_calculado}")
                 PedidosProductosCreateView(productos_seleccionados, pedido.ped_id)
 
-        except DatabaseError as e:
+        except (DatabaseError, ValidationError) as e:
             print(f"Error al crear pedido: {e}")
             messages.error(request, _extract_db_message(e))
             return redirect(request.META.get('HTTP_REFERER', '/'))
@@ -1333,7 +1376,8 @@ def checkout_view(request):
 
 def catalogo_view(request):
     """Catálogo público con búsqueda por texto y filtro por categoría."""
-    productos = Productos.objects.select_related('cat').all().order_by('prod_id')
+    hidden_ids = hidden_products.get_hidden_product_ids()
+    productos = Productos.objects.select_related('cat').exclude(prod_id__in=hidden_ids).order_by('prod_id')
     paginate_by = 40
     prod_nombre = request.GET.get('prod_nombre', '')
     cat_id = request.GET.get('cat', '')
@@ -1438,11 +1482,14 @@ def panel_productos_list(request):
         return redirect('home')
     page = int(request.GET.get('page', 1))
     query = request.GET.get('q', '')
+    cat_id = request.GET.get('cat', '')
     paginate_by = 10
 
     queryset = Productos.objects.select_related('cat').all().order_by('prod_id')
     if query:
         queryset = queryset.filter(prod_nombre__icontains=query)
+    if cat_id:
+        queryset = queryset.filter(cat_id=cat_id)
 
     paginator = Paginator(queryset, paginate_by)
     productos_page = paginator.get_page(page)
@@ -1452,8 +1499,11 @@ def panel_productos_list(request):
         'page': page,
         'total_paginas': paginator.num_pages,
         'query': query,
+        'cat_id': cat_id,
+        'categorias': Categoria.objects.all(),
         'section': 'productos',
         'sidebar': 0,
+        'hidden_ids': hidden_products.get_hidden_product_ids(),
     })
 
 
@@ -1480,6 +1530,7 @@ def panel_productos_crear(request):
         'form': form,
         'section': 'productos',
         'sidebar': 0,
+        'placeholder_images': PLACEHOLDER_IMAGES,
     })
 
 
@@ -1508,6 +1559,8 @@ def panel_productos_editar(request, pk):
         'producto': producto,
         'section': 'productos',
         'sidebar': 0,
+        'producto_oculto': hidden_products.is_product_hidden(pk),
+        'placeholder_images': PLACEHOLDER_IMAGES,
     })
 
 

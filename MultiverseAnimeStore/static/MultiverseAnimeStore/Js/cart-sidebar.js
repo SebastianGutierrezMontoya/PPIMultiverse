@@ -87,11 +87,14 @@ function renderCart() {
   cart.forEach((item, index) => {
     total += item.price * item.qty;
 
+    const stockInfo = item.stock ? '<span class="cart-stock-info">Stock: ' + item.stock + '</span>' : '';
+
     const itemHTML = `
       <div class="cart-item">
         <div class="cart-item-info">
           <span class="cart-price">$${formatPrice(item.price * item.qty)}</span>
           <span class="cart-name">${item.name}</span>
+          ${stockInfo}
         </div>
         <div class="cart-qty-controls">
           <button onclick="changeQty(${index}, -1)" class="cart-qty-btn">-</button>
@@ -128,6 +131,14 @@ function formatPrice(value) {
 }
 
 function changeQty(index, delta) {
+  const item = cart[index];
+  const newQty = item.qty + delta;
+
+  if (delta > 0 && item.stock && newQty > item.stock) {
+    alert('Stock máximo alcanzado. Solo hay ' + item.stock + ' disponible(s).');
+    return;
+  }
+
   cart[index].qty += delta;
   if (cart[index].qty <= 0) {
     cart.splice(index, 1);
@@ -141,14 +152,25 @@ function changeQty(index, delta) {
   }
 }
 
-function addToCart(name, price, id) {
+function addToCart(name, price, id, stock) {
+  const stockNum = parseInt(stock) || 0;
+
+  if (stockNum <= 0) {
+    alert('Producto agotado. No se puede agregar al carrito.');
+    return;
+  }
+
   const unitPrice = parseFloat(price) || 0;
   const existing = cart.find(item => item.id === id);
 
   if (existing) {
+    if (existing.qty + 1 > stockNum) {
+      alert('Stock máximo alcanzado. Solo hay ' + stockNum + ' disponible(s).');
+      return;
+    }
     existing.qty = (existing.qty || 1) + 1;
   } else {
-    cart.push({ id, name, price: unitPrice, qty: 1 });
+    cart.push({ id, name, price: unitPrice, qty: 1, stock: stockNum });
   }
 
   renderCart();
@@ -248,6 +270,14 @@ function clearInputError(input) {
 }
 
 function initCart() {
+  if (window.location.search.includes('clear_cart=1')) {
+    clearCartCache();
+    cart = [];
+    renderCart();
+    window.history.replaceState({}, '', window.location.pathname);
+    return;
+  }
+
   cart = loadCartFromCache();
   renderCart();
 

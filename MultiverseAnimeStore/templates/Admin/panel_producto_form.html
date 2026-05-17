@@ -1,4 +1,5 @@
 {% extends "Admin/panel_base.html" %}
+{% load static %}
 
 {% block panel_content %}
 <div class="panel-content-header">
@@ -9,8 +10,34 @@
 </div>
 
 <div class="panel-form-card">
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
+        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+        {% if producto %}
+        {# ── VISIBILIDAD ── #}
+        <div style="margin: 0 0 24px 0; padding: 20px; border: 2px solid {% if producto_oculto %}#dc2626{% else %}#22c55e{% endif %}; border-radius: 12px; background: {% if producto_oculto %}rgba(220,38,38,0.08){% else %}rgba(34,197,94,0.08){% endif %};">
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <div style="font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.05em; color: #e2e8f0; margin-bottom: 4px;">
+                        Visibilidad en catálogo
+                    </div>
+                    <div style="font-size: 13px; color: #94a3b8;">
+                        {% if producto_oculto %}
+                        <span style="color: #f87171;">🔴 Producto oculto</span> — no aparece en catálogo público ni landing
+                        {% else %}
+                        <span style="color: #4ade80;">🟢 Producto visible</span> — cualquier cliente puede verlo y comprarlo
+                        {% endif %}
+                    </div>
+                </div>
+                <a href="{% url 'panel_productos_toggle_hidden' producto.pk %}"
+                   class="panel-btn"
+                   style="background: {% if producto_oculto %}#22c55e{% else %}#dc2626{% endif %}; color: #fff; border: none; font-weight: 800; font-size: 12px; padding: 12px 24px; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 10px; text-decoration: none; white-space: nowrap;">
+                    {% if producto_oculto %}Mostrar en catálogo{% else %}Ocultar de catálogo{% endif %}
+                </a>
+            </div>
+        </div>
+        {% endif %}
 
         {% if form.non_field_errors %}
         <div class="panel-alert panel-alert-error">
@@ -18,17 +45,57 @@
         </div>
         {% endif %}
 
-        {% for field in form %}
-        <div class="panel-form-group">
-            <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
-                {{ field.label }}
-            </label>
-            {{ field }}
-            {% if field.errors %}
-            <p style="font-size:11px; color:#f87171; margin-top:4px;">{{ field.errors.0 }}</p>
+        {% for field in form.visible_fields %}
+            {% if field.name != 'prod_imagen_url' %}
+            <div class="panel-form-group">
+                <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
+                    {{ field.label }}
+                </label>
+                {{ field }}
+                {% if field.errors %}
+                <p style="font-size:11px; color:#f87171; margin-top:4px;">{{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
             {% endif %}
-        </div>
         {% endfor %}
+
+        {# ── IMAGEN DEL PRODUCTO ── #}
+        <div style="margin: 20px 0; padding: 20px; border: 1px solid #334155; border-radius: 12px; background: #1e293b;">
+            <label style="font-weight: 700; font-size: 14px; text-transform: uppercase; color: #e2e8f0; display: block; margin-bottom: 12px;">
+                Imagen del producto
+            </label>
+
+            <div class="panel-form-group">
+                <label for="{{ form.prod_imagen_url.id_for_label }}">URL de imagen (externa o predefinida)</label>
+                {{ form.prod_imagen_url }}
+                {% if form.prod_imagen_url.errors %}
+                <p style="font-size:11px; color:#f87171; margin-top:4px;">{{ form.prod_imagen_url.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <p style="font-size: 12px; color: #94a3b8; margin: 4px 0 16px 0;">Pega una URL de imagen o selecciona uno de los diseños predefinidos abajo.</p>
+
+            <label style="font-weight: 600; font-size: 13px; color: #cbd5e1; display: block; margin-bottom: 10px;">Diseños predefinidos:</label>
+            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 16px;">
+                {% for placeholder in placeholder_images %}
+                    <div class="ph-item"
+                         data-url="{{ placeholder.url }}"
+                         onclick="selectPlaceholder(this)"
+                         style="cursor: pointer; border-radius: 10px; overflow: hidden; border: 3px solid transparent; transition: border-color 0.2s; position: relative;"
+                         title="{{ placeholder.name }}">
+                        <img src="{{ placeholder.url }}" alt="{{ placeholder.name }}"
+                             style="width: 100%; aspect-ratio: 1; object-fit: cover; display: block;">
+                        <span style="display: block; text-align: center; font-size: 10px; color: #94a3b8; padding: 4px 0; background: #0f172a;">{{ placeholder.name }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div id="image-preview"
+                 style="width: 180px; aspect-ratio: 1; border-radius: 12px; overflow: hidden; border: 2px solid #334155; background: #0f172a; display: flex; align-items: center; justify-content: center;">
+                <span id="preview-placeholder" style="color: #64748b; font-size: 12px; text-align: center;">Vista previa</span>
+                <img id="preview-img" src="" alt="Preview" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+            </div>
+        </div>
 
         <div class="panel-form-actions">
             <button type="submit" class="panel-btn panel-btn-primary">💾 Guardar</button>
@@ -36,4 +103,49 @@
         </div>
     </form>
 </div>
+
+<script>
+    const imageUrlField = document.getElementById('{{ form.prod_imagen_url.id_for_label }}');
+    const previewImg = document.getElementById('preview-img');
+    const previewPlaceholder = document.getElementById('preview-placeholder');
+
+    function selectPlaceholder(el) {
+        const url = el.getAttribute('data-url');
+        imageUrlField.value = url;
+        updatePreview(url);
+        document.querySelectorAll('.ph-item').forEach(function(item) {
+            item.style.borderColor = 'transparent';
+        });
+        el.style.borderColor = '#38bdf8';
+    }
+
+    function updatePreview(url) {
+        if (url) {
+            previewImg.src = url;
+            previewImg.style.display = 'block';
+            previewPlaceholder.style.display = 'none';
+        } else {
+            previewImg.style.display = 'none';
+            previewPlaceholder.style.display = 'block';
+        }
+    }
+
+    imageUrlField.addEventListener('input', function () {
+        updatePreview(this.value.trim());
+        document.querySelectorAll('.ph-item').forEach(function(item) {
+            item.style.borderColor = 'transparent';
+        });
+        var match = document.querySelector('.ph-item[data-url="' + this.value.trim() + '"]');
+        if (match) match.style.borderColor = '#38bdf8';
+    });
+
+    (function () {
+        var currentUrl = imageUrlField.value.trim();
+        if (currentUrl) {
+            updatePreview(currentUrl);
+            var match = document.querySelector('.ph-item[data-url="' + currentUrl + '"]');
+            if (match) match.style.borderColor = '#38bdf8';
+        }
+    })();
+</script>
 {% endblock %}

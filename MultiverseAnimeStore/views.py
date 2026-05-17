@@ -3,7 +3,7 @@ from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Perfilpermisos, Modulos, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
-from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm, SexosForm
+from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm, SexosForm, PerfilForm, next_int_id
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q, Max, Count
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
@@ -1449,6 +1449,80 @@ def pedido_detalle_view(request, ped_id):
     })
 
 
+# ---------------------------------------------------------------------------
+# PERFIL DEL CLIENTE - Mi Perfil (datos personales + contactos)
+# ---------------------------------------------------------------------------
+@Login_requerido()
+def mi_perfil_view(request):
+    usuario = request.user
+    contactos_usuario = Contactos.objects.filter(id_usuario=usuario).select_related('tipo_contacto')
+    tipos_contacto = Config_Contacto.objects.all()
+
+    contactos_por_tipo = {}
+    for c in contactos_usuario:
+        if c.tipo_contacto:
+            contactos_por_tipo[c.tipo_contacto.pk] = c
+
+    if request.method == 'POST':
+        form = PerfilForm(request.POST, instance=usuario)
+
+        contactos_ok = True
+        contactos_errors = []
+
+        for tipo in tipos_contacto:
+            dato = request.POST.get(f'contacto_dato_{tipo.id_regla}', '').strip()
+            contacto_existente = contactos_por_tipo.get(tipo.id_regla)
+
+            if not dato:
+                if contacto_existente:
+                    contacto_existente.delete()
+                continue
+
+            min_len = int(tipo.min_length) if tipo.min_length else 0
+            max_len = int(tipo.max_length) if tipo.max_length else 999
+
+            if len(dato) < min_len or len(dato) > max_len:
+                contactos_errors.append(tipo.mensaje_error or f'{tipo.nombre_contacto}: longitud inválida')
+                contactos_ok = False
+                continue
+
+            try:
+                if contacto_existente:
+                    if contacto_existente.dato_contacto != dato:
+                        contacto_existente.dato_contacto = dato
+                        contacto_existente.save()
+                else:
+                    Contactos.objects.create(
+                        id_contacto=next_int_id(Contactos, 'id_contacto'),
+                        tipo_contacto=tipo,
+                        dato_contacto=dato,
+                        id_usuario=usuario,
+                    )
+            except DatabaseError as e:
+                contactos_errors.append(_extract_db_message(e))
+                contactos_ok = False
+
+        if form.is_valid() and contactos_ok:
+            form.save()
+            messages.success(request, 'Perfil actualizado correctamente.')
+            return redirect('mi_perfil')
+
+        if contactos_errors:
+            for err in contactos_errors:
+                messages.error(request, err)
+
+    else:
+        form = PerfilForm(instance=usuario)
+
+    tipos_con_contacto = [(t, contactos_por_tipo.get(t.id_regla)) for t in tipos_contacto]
+
+    return render(request, 'Sesion/mi_perfil.html', {
+        'form': form,
+        'tipos_con_contacto': tipos_con_contacto,
+        'sidebar': 0,
+    })
+
+
 # ─── Panel de Control (visor dark, capa aparte) ───
 
 @Login_requerido()
@@ -1670,6 +1744,21 @@ def panel_usuarios_editar(request, pk):
         'usuario': usuario,
         'contactos': contactos,
         'Tipo_Contacto': Tipo_Contacto,
+        'section': 'usuarios',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_usuarios_detail(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    usuario = get_object_or_404(Usuarios, pk=pk)
+    contactos = Contactos.objects.filter(id_usuario=usuario)
+    return render(request, 'Admin/panel_usuarios_detail.html', {
+        'usuario': usuario,
+        'contactos': contactos,
         'section': 'usuarios',
         'sidebar': 0,
     })

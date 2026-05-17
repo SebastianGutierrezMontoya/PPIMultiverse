@@ -41,3 +41,19 @@ def validar_datos_pedido_producto(sender, instance, **kwargs):
         raise ValidationError('La cantidad debe ser mayor a 0')
     if instance.pped_precio_unitario is not None and instance.pped_precio_unitario < 0:
         raise ValidationError('El precio unitario no puede ser negativo')
+
+
+@receiver(pre_save, sender=Pedidos)
+def restaurar_stock_si_cancelado(sender, instance, **kwargs):
+    if instance.pk is None:
+        return
+    try:
+        anterior = Pedidos.objects.only('ped_estado_id').get(pk=instance.pk)
+    except Pedidos.DoesNotExist:
+        return
+    if instance.ped_estado_id == 6 and anterior.ped_estado_id != 6:
+        productos_pedido = PedidosProductos.objects.filter(ped=instance)
+        for pp in productos_pedido:
+            Productos.objects.filter(pk=pp.prod_id).update(
+                prod_stock=F('prod_stock') + pp.pped_cantidad
+            )

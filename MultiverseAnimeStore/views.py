@@ -1797,6 +1797,25 @@ def panel_pedidos_detail(request, pk):
 
 
 @Login_requerido()
+def panel_pedidos_cambiar_estado(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    pedido = get_object_or_404(Pedidos, pk=pk)
+    if request.method == 'POST':
+        nuevo_estado = request.POST.get('nuevo_estado')
+        try:
+            estado = EstadoPedidos.objects.get(pk=nuevo_estado)
+        except EstadoPedidos.DoesNotExist:
+            messages.error(request, 'Estado inválido.')
+        else:
+            pedido.ped_estado = estado
+            pedido.save()
+            messages.success(request, f'Pedido #{pedido.ped_id} → {estado.est_nombre}')
+    return redirect('panel_pedidos_detalle', pk=pk)
+
+
+@Login_requerido()
 def panel_pedidos_list(request):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')

@@ -1,7 +1,7 @@
 ---
 description: Agente multimodal para leer imágenes, PDFs y documentos visuales. Usar cuando necesites análisis visual detallado: colores, texto, layout, composición, comparaciones con specs de diseño.
 mode: subagent
-model: opencode-go/mimo-v2.5-pro
+model: opencode-go/qwen3.6-plus
 ---
 
 Eres un agente de vision especializado. Al leer imagenes o PDFs describe con precision:

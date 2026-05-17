@@ -1470,8 +1470,23 @@ def mi_perfil_view(request):
         contactos_errors = []
 
         for tipo in tipos_contacto:
-            dato = request.POST.get(f'contacto_dato_{tipo.id_regla}', '').strip()
             contacto_existente = contactos_por_tipo.get(tipo.id_regla)
+
+            if tipo.id_regla == 3:
+                calle = request.POST.get('contacto_calle_3', '').strip()
+                ciudad = request.POST.get('contacto_ciudad_3', '').strip()
+                barrio = request.POST.get('contacto_barrio_3', '').strip()
+
+                if not calle or not ciudad:
+                    if contacto_existente:
+                        contacto_existente.delete()
+                    continue
+                parts = [calle, ciudad]
+                if barrio:
+                    parts.append(barrio)
+                dato = ' | '.join(parts)
+            else:
+                dato = request.POST.get(f'contacto_dato_{tipo.id_regla}', '').strip()
 
             if not dato:
                 if contacto_existente:
@@ -1514,7 +1529,22 @@ def mi_perfil_view(request):
     else:
         form = PerfilForm(instance=usuario)
 
-    tipos_con_contacto = [(t, contactos_por_tipo.get(t.id_regla)) for t in tipos_contacto]
+    tipos_con_contacto = []
+    for t in tipos_contacto:
+        c = contactos_por_tipo.get(t.id_regla)
+        if t.id_regla == 3 and c and c.dato_contacto:
+            partes = c.dato_contacto.split(' | ')
+            if len(partes) == 4:
+                addr_parts = {'calle': partes[0], 'ciudad': partes[1], 'barrio': partes[3]}
+            elif len(partes) >= 2:
+                addr_parts = {'calle': partes[0], 'ciudad': partes[1], 'barrio': partes[2] if len(partes) > 2 else ''}
+            else:
+                addr_parts = {'calle': c.dato_contacto, 'ciudad': '', 'barrio': ''}
+        elif t.id_regla == 3:
+            addr_parts = {'calle': '', 'ciudad': '', 'barrio': ''}
+        else:
+            addr_parts = None
+        tipos_con_contacto.append((t, c, addr_parts))
 
     return render(request, 'Sesion/mi_perfil.html', {
         'form': form,

@@ -228,7 +228,7 @@ main {
 .search-input { 
   padding: 10px;
   border-radius: 10px 0px 0px 10px;
-  width: 400px;
+  max-width: 100%;
 }
 
 .search-container {

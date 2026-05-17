@@ -103,7 +103,7 @@ WSGI_APPLICATION = 'PPIMultiverse.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'ppimultiverse_db',
+        'NAME': 'ppimultiverse_db', 'OPTIONS': {'client_encoding': 'UTF8'},
         'USER': 'ppimultiverse',
         'PASSWORD': 'qwer1234',
         'HOST': 'localhost',

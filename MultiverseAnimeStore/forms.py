@@ -195,7 +195,13 @@ class UsuariosForm(forms.ModelForm):
         self.fields['usuario_id_perfil'].label_from_instance = lambda obj: obj.nombre
         self.fields['id_usuario'].widget = forms.HiddenInput()
         self.fields['id_usuario'].initial = "USR-" + str(get_next_char_id(Usuarios, 'id_usuario', 'USR-'))
-        self.fields['activo'].widget.attrs.update({'min': 0, 'max': 1, 'step': '1'})
+        self.fields['activo'] = forms.TypedChoiceField(
+            coerce=int,
+            choices=[(1, 'Sí'), (0, 'No')],
+            widget=forms.Select,
+            required=False,
+            initial=1,
+        )
         # Forzar required en campos obligatorios del usuario
         self.fields['nombre'].required = True
         self.fields['primer_apellido'].required = True
@@ -361,6 +367,29 @@ class ConsultasDinamicasForm(forms.ModelForm):
 
     def clean_sql_consulta(self):
         sql = self.cleaned_data['cons_sql']
-        # Aquí podrías agregar validaciones adicionales para la consulta SQL si es necesario
         return sql
-    
+
+
+class PerfilForm(forms.ModelForm):
+    class Meta:
+        model = Usuarios
+        fields = ['nombre', 'primer_apellido', 'segundo_apellido', 'fecha_nacimiento', 'usuario_id_sexo']
+        widgets = {
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['usuario_id_sexo'].queryset = Sexos.objects.all()
+        self.fields['usuario_id_sexo'].label_from_instance = lambda obj: obj.nombre_sexo
+        self.fields['nombre'].required = True
+        self.fields['primer_apellido'].required = True
+        self.fields['usuario_id_sexo'].required = True
+        self.fields['segundo_apellido'].required = False
+        self.fields['fecha_nacimiento'].required = False
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+        self.fields['fecha_nacimiento'].widget.attrs.update({'class': 'form-control datepicker'})
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})

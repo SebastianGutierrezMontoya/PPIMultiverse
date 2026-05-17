@@ -4,24 +4,24 @@
 {% block extra_head %}
 <style>
 .mp-page { max-width: 800px; margin: 40px auto; padding: 0 20px; }
-.mp-header h1 { font-size: 32px; font-weight: 900; text-transform: uppercase; font-style: italic; margin: 0 0 4px; }
-.mp-header p { color: #94a3b8; font-size: 14px; margin: 0 0 32px; }
+.mp-header h1 { font-size: 32px; font-weight: 900; text-transform: uppercase; font-style: italic; margin: 0 0 4px; color: #0f172a; }
+.mp-header p { color: #64748b; font-size: 14px; margin: 0 0 32px; }
 
 .mp-card { display: block; text-decoration: none; color: inherit; margin-bottom: 14px; }
-.mp-card-inner { background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 22px 24px; transition: all 0.2s ease; }
-.mp-card-inner:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+.mp-card-inner { background: #fff; border: 1px solid #eef2f6; border-radius: 16px; padding: 22px 24px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+.mp-card-inner:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
 .mp-card-body { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-.mp-card-info h3 { margin: 0 0 2px; font-size: 17px; font-weight: 700; color: #f1f5f9; }
+.mp-card-info h3 { margin: 0 0 2px; font-size: 17px; font-weight: 700; color: #0f172a; }
 .mp-card-meta { margin: 0; color: #64748b; font-size: 13px; }
 .mp-card-right { text-align: right; }
-.mp-card-price { font-size: 22px; font-weight: 900; color: #f1f5f9; }
+.mp-card-price { font-size: 22px; font-weight: 900; color: #0f172a; }
 
 .mp-badge { display: inline-block; margin-top: 6px; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
 
 .mp-empty { text-align: center; padding: 80px 20px; }
 .mp-empty-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.3; }
-.mp-empty h2 { font-size: 24px; font-weight: 700; margin: 0 0 8px; }
-.mp-empty p { color: #94a3b8; margin: 0 0 24px; }
+.mp-empty h2 { font-size: 24px; font-weight: 700; margin: 0 0 8px; color: #0f172a; }
+.mp-empty p { color: #64748b; margin: 0 0 24px; }
 .mp-empty-btn { display: inline-block; padding: 14px 32px; border-radius: 12px; background: var(--accent); color: #020617; font-weight: 900; text-decoration: none; font-size: 14px; }
 .mp-empty-btn:hover { opacity: 0.9; }
 

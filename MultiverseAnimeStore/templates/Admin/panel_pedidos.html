@@ -15,8 +15,10 @@
         {% endfor %}
     </select>
     <input type="text" name="q" placeholder="Buscar por ID o usuario..." value="{{ q }}" class="panel-search-input" style="flex:1; min-width:180px;">
-    <input type="date" name="fecha_desde" value="{{ fecha_desde }}" class="panel-search-input" style="flex:0 0 auto; min-width:140px;" title="Desde">
-    <input type="date" name="fecha_hasta" value="{{ fecha_hasta }}" class="panel-search-input" style="flex:0 0 auto; min-width:140px;" title="Hasta">
+    <span style="font-size:12px; color:#64748b; font-weight:600; white-space:nowrap;">Desde:</span>
+    <input type="date" name="fecha_desde" value="{{ fecha_desde }}" class="panel-search-input" style="flex:0 0 auto; min-width:130px;" title="Fecha inicial">
+    <span style="font-size:12px; color:#64748b; font-weight:600; white-space:nowrap;">Hasta:</span>
+    <input type="date" name="fecha_hasta" value="{{ fecha_hasta }}" class="panel-search-input" style="flex:0 0 auto; min-width:130px;" title="Fecha final">
     <button type="submit" class="panel-btn panel-btn-primary panel-btn-sm">Filtrar</button>
     <a href="{% url 'panel_pedidos' %}" class="panel-search-clear">Limpiar</a>
 </form>

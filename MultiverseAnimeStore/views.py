@@ -1831,9 +1831,29 @@ def panel_pedidos_cambiar_estado(request, pk):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')
         return redirect('home')
+
+    TRANSICIONES = {
+        1: [2, 6],
+        2: [3, 6],
+        3: [4, 6],
+        4: [5],
+        5: [],
+        6: [],
+    }
+
     pedido = get_object_or_404(Pedidos, pk=pk)
     if request.method == 'POST':
-        nuevo_estado = request.POST.get('nuevo_estado')
+        try:
+            nuevo_estado = int(request.POST.get('nuevo_estado', 0))
+        except (TypeError, ValueError):
+            messages.error(request, 'Estado inválido.')
+            return redirect('panel_pedidos_detalle', pk=pk)
+
+        permitidos = TRANSICIONES.get(pedido.ped_estado_id, [])
+        if nuevo_estado not in permitidos:
+            messages.error(request, 'Transición no permitida.')
+            return redirect('panel_pedidos_detalle', pk=pk)
+
         try:
             estado = EstadoPedidos.objects.get(pk=nuevo_estado)
         except EstadoPedidos.DoesNotExist:

@@ -18,8 +18,6 @@
     .ord-field-value { font-size: 15px; font-weight: 600; color: #e2e8f0; }
 
     .ord-estado-bar { display: flex; align-items: center; gap: 14px; padding: 16px 20px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; margin-bottom: 28px; flex-wrap: wrap; }
-    .ord-estado-select { padding: 10px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.1); background: #18181b; color: #f1f5f9; font-size: 13px; font-weight: 600; min-width: 180px; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
-    .ord-estado-select:focus { outline: none; border-color: #f37d15; }
     .ord-estado-bar-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #64748b; white-space: nowrap; }
 
     .ord-table { width: 100%; border-collapse: collapse; margin-bottom: 28px; }
@@ -42,7 +40,6 @@
         .ord-grid { grid-template-columns: 1fr; }
         .ord-header { flex-direction: column; text-align: center; }
         .ord-estado-bar { flex-direction: column; align-items: flex-start; }
-        .ord-estado-select { width: 100%; }
     }
 </style>
 {% endblock %}
@@ -97,26 +94,60 @@
         </div>
 
         <div class="ord-section-title">Gestionar Estado</div>
-        <form method="post" action="{% url 'panel_pedidos_cambiar_estado' pedido.pk %}">
-            {% csrf_token %}
-            <div class="ord-estado-bar">
-                <span class="ord-estado-bar-label">Estado actual:</span>
-                <span class="ord-badge" style="
-                    {% if pedido.ped_estado_id == 1 %}background:rgba(148,163,184,0.12); color:#94a3b8;
-                    {% elif pedido.ped_estado_id == 2 %}background:rgba(96,165,250,0.12); color:#60a5fa;
-                    {% elif pedido.ped_estado_id == 3 %}background:rgba(251,191,36,0.12); color:#fbbf24;
-                    {% elif pedido.ped_estado_id == 4 %}background:rgba(168,85,247,0.12); color:#a855f7;
-                    {% elif pedido.ped_estado_id == 5 %}background:rgba(74,222,128,0.12); color:#4ade80;
-                    {% elif pedido.ped_estado_id == 6 %}background:rgba(239,68,68,0.12); color:#ef4444;
-                    {% endif %}">{{ pedido.ped_estado.est_nombre|default:"Pendiente" }}</span>
-                <select name="nuevo_estado" class="ord-estado-select">
-                    {% for e in estados %}
-                    <option value="{{ e.pk }}" {% if e.pk == pedido.ped_estado_id %}selected{% endif %}>{{ e.est_nombre }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit" class="panel-btn panel-btn-primary panel-btn-sm">💾 Guardar estado</button>
-            </div>
-        </form>
+        <div class="ord-estado-bar">
+            <span class="ord-estado-bar-label">Estado actual:</span>
+            <span class="ord-badge" style="
+                {% if pedido.ped_estado_id == 1 %}background:rgba(148,163,184,0.12); color:#94a3b8;
+                {% elif pedido.ped_estado_id == 2 %}background:rgba(96,165,250,0.12); color:#60a5fa;
+                {% elif pedido.ped_estado_id == 3 %}background:rgba(251,191,36,0.12); color:#fbbf24;
+                {% elif pedido.ped_estado_id == 4 %}background:rgba(168,85,247,0.12); color:#a855f7;
+                {% elif pedido.ped_estado_id == 5 %}background:rgba(74,222,128,0.12); color:#4ade80;
+                {% elif pedido.ped_estado_id == 6 %}background:rgba(239,68,68,0.12); color:#ef4444;
+                {% endif %}">{{ pedido.ped_estado.est_nombre|default:"Pendiente" }}</span>
+
+            {% if pedido.ped_estado_id == 1 %}
+            <form method="post" action="{% url 'panel_pedidos_cambiar_estado' pedido.pk %}" style="display:inline;">
+                {% csrf_token %}<input type="hidden" name="nuevo_estado" value="2">
+                <button type="submit" class="panel-btn panel-btn-primary panel-btn-sm">✅ Confirmar</button>
+            </form>
+            <form method="post" action="{% url 'panel_pedidos_cambiar_estado' pedido.pk %}" style="display:inline;">
+                {% csrf_token %}<input type="hidden" name="nuevo_estado" value="6">
+                <button type="submit" class="panel-btn panel-btn-danger panel-btn-sm">❌ Cancelar</button>
+            </form>
+
+            {% elif pedido.ped_estado_id == 2 %}
+            <form method="post" action="{% url 'panel_pedidos_cambiar_estado' pedido.pk %}" style="display:inline;">
+                {% csrf_token %}<input type="hidden" name="nuevo_estado" value="3">
+                <button type="submit" class="panel-btn panel-btn-primary panel-btn-sm">📦 En preparación</button>
+            </form>
+            <form method="post" action="{% url 'panel_pedidos_cambiar_estado' pedido.pk %}" style="display:inline;">
+                {% csrf_token %}<input type="hidden" name="nuevo_estado" value="6">
+                <button type="submit" class="panel-btn panel-btn-danger panel-btn-sm">❌ Cancelar</button>
+            </form>
+
+            {% elif pedido.ped_estado_id == 3 %}
+            <form method="post" action="{% url 'panel_pedidos_cambiar_estado' pedido.pk %}" style="display:inline;">
+                {% csrf_token %}<input type="hidden" name="nuevo_estado" value="4">
+                <button type="submit" class="panel-btn panel-btn-primary panel-btn-sm">🚚 Enviar</button>
+            </form>
+            <form method="post" action="{% url 'panel_pedidos_cambiar_estado' pedido.pk %}" style="display:inline;">
+                {% csrf_token %}<input type="hidden" name="nuevo_estado" value="6">
+                <button type="submit" class="panel-btn panel-btn-danger panel-btn-sm">❌ Cancelar</button>
+            </form>
+
+            {% elif pedido.ped_estado_id == 4 %}
+            <form method="post" action="{% url 'panel_pedidos_cambiar_estado' pedido.pk %}" style="display:inline;">
+                {% csrf_token %}<input type="hidden" name="nuevo_estado" value="5">
+                <button type="submit" class="panel-btn panel-btn-primary panel-btn-sm">📬 Marcar entregado</button>
+            </form>
+
+            {% elif pedido.ped_estado_id == 5 %}
+            <span style="color:#4ade80; font-size:13px; font-weight:600;">✓ Pedido completado</span>
+
+            {% elif pedido.ped_estado_id == 6 %}
+            <span style="color:#ef4444; font-size:13px; font-weight:600;">✗ Pedido cancelado</span>
+            {% endif %}
+        </div>
 
         <div class="ord-section-title">Productos</div>
         {% if productos %}

@@ -225,21 +225,19 @@ function submitCheckoutForm() {
 
   const calleVal = calleInput ? calleInput.value.trim() : '';
   const ciudadVal = ciudadInput ? ciudadInput.value.trim() : '';
-  const paisVal = paisInput ? paisInput.value.trim() : '';
   const barrioVal = barrioInput ? barrioInput.value.trim() : '';
 
-  if (!calleVal || !ciudadVal || !paisVal) {
+  if (!calleVal || !ciudadVal) {
     if (error) {
-      error.textContent = 'Completa la dirección: calle, ciudad y país son obligatorios.';
+      error.textContent = 'Completa la dirección: calle y ciudad son obligatorios.';
       error.classList.remove('hidden');
     }
     if (calleInput && !calleVal) calleInput.classList.add('error');
     if (ciudadInput && !ciudadVal) ciudadInput.classList.add('error');
-    if (paisInput && !paisVal) paisInput.classList.add('error');
     return;
   }
 
-  const parts = [calleVal, ciudadVal, paisVal];
+  const parts = [calleVal, ciudadVal, 'Colombia'];
   if (barrioVal) parts.push(barrioVal);
   addressHidden.value = parts.join(' | ');
 

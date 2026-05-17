@@ -3,23 +3,84 @@
 <div class="panel-content-header">
     <div><h2>Categorías</h2><p>Gestión de categorías de productos.</p></div>
     <div class="panel-actions">
+        <a href="{% url 'panel_categorias_crear' %}" class="panel-btn panel-btn-primary">+ Nueva Categoría</a>
         <a href="{% url 'admin_home' %}" class="panel-btn panel-btn-secondary">↩️ Admin Clásico</a>
     </div>
 </div>
 {% if categorias %}
 <div class="panel-table-wrapper">
     <table class="panel-table">
-        <thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th></tr></thead>
+        <thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Acciones</th></tr></thead>
         <tbody>
             {% for c in categorias %}
             <tr>
                 <td style="color:#64748b; font-family:monospace;">{{ c.cat_id }}</td>
                 <td style="color:#ffffff; font-weight:600;">{{ c.cat_nombre }}</td>
                 <td>{{ c.cat_descripcion|default:"—" }}</td>
+                <td>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <a href="{% url 'panel_categorias_editar' c.pk %}" class="panel-btn panel-btn-primary panel-btn-sm">Editar</a>
+                        {% if c.productos_count > 0 %}
+                        <span style="font-size:11px; color:#94a3b8; font-weight:600;">{{ c.productos_count }} producto{{ c.productos_count|pluralize:'s' }}</span>
+                        {% else %}
+                        <a href="#" class="panel-btn panel-btn-danger panel-btn-sm" onclick="showCatDeleteModal('{{ c.pk }}', '{{ c.cat_nombre|escapejs }}'); return false;">Eliminar</a>
+                        {% endif %}
+                    </div>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 {% else %}<div class="panel-alert panel-alert-info">No hay categorías.</div>{% endif %}
+
+{# Delete modal #}
+<div id="catDeleteModal" class="panel-modal" style="display:none;">
+    <div class="panel-modal-content" style="max-width:420px;">
+        <h3>Eliminar Categoría</h3>
+        <p id="catDeleteMessage"></p>
+        <form id="catDeleteForm" method="post">
+            {% csrf_token %}
+            <div class="panel-form-actions" style="justify-content:flex-end;">
+                <button type="button" class="panel-btn panel-btn-secondary" onclick="hideCatDeleteModal()">Cancelar</button>
+                <button type="submit" class="panel-btn panel-btn-danger" style="border:none;">Sí, eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function showCatDeleteModal(pk, nombre) {
+    document.getElementById('catDeleteMessage').textContent = '¿Estás seguro de eliminar "' + nombre + '"?';
+    var form = document.getElementById('catDeleteForm');
+    form.action = '/AdminMultiverse/categorias/' + pk + '/eliminar/';
+    document.getElementById('catDeleteModal').style.display = 'flex';
+}
+function hideCatDeleteModal() {
+    document.getElementById('catDeleteModal').style.display = 'none';
+}
+</script>
+
+<style>
+.panel-modal {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.6); z-index: 2000;
+    align-items: center; justify-content: center;
+}
+.panel-modal-content {
+    background: #1e293b; border-radius: 16px; padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4); width: 90%;
+}
+.panel-modal-content h3 { color: #f87171; font-size: 18px; font-weight: 800; margin: 0 0 8px; }
+.panel-modal-content p { color: #94a3b8; font-size: 14px; margin: 0 0 20px; }
+.panel-btn-danger {
+    background: #dc2626; color: #fff; border: none;
+    font-weight: 800; font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.05em; padding: 10px 18px; border-radius: 10px;
+    cursor: pointer; text-decoration: none; display: inline-block;
+    transition: background 0.2s;
+}
+.panel-btn-danger:hover { background: #b91c1c; }
+.panel-btn-sm { padding: 8px 14px; font-size: 11px; }
+</style>
 {% endblock %}

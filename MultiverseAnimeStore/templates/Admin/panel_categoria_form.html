@@ -1,0 +1,41 @@
+{% extends "Admin/panel_base.html" %}
+{% load static %}
+
+{% block panel_content %}
+<div class="panel-content-header">
+    <div>
+        <h2>{% if object %}Editar{% else %}Crear{% endif %} Categoría</h2>
+        <p>{% if object %}Modificando: {{ object.cat_nombre }}{% else %}Nueva categoría de productos.{% endif %}</p>
+    </div>
+</div>
+
+<div class="panel-form-card">
+    <form method="post">
+        {% csrf_token %}
+        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+
+        {% if form.non_field_errors %}
+        <div class="panel-alert panel-alert-error">
+            {% for err in form.non_field_errors %}{{ err }}{% endfor %}
+        </div>
+        {% endif %}
+
+        {% for field in form.visible_fields %}
+        <div class="panel-form-group">
+            <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
+                {{ field.label }}
+            </label>
+            {{ field }}
+            {% if field.errors %}
+            <p style="font-size:11px; color:#f87171; margin-top:4px;">{{ field.errors.0 }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <div class="panel-form-actions">
+            <button type="submit" class="panel-btn panel-btn-primary">💾 Guardar</button>
+            <a href="{% url 'panel_categorias' %}" class="panel-btn panel-btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

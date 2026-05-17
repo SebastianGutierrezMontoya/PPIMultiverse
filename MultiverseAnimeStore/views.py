@@ -4,7 +4,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Perfilpermisos, Modulos, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
 from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm, SexosForm
-from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q, Max
+from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q, Max, Count
 from django.http import HttpResponseRedirect
 from django.db import DatabaseError, transaction, connection
 from django.core.exceptions import ValidationError
@@ -215,6 +215,13 @@ class CategoriaDeleteView(DeleteView):
     model = Categoria
     template_name = 'Categoria/categoria_confirm_delete.html'
     success_url = reverse_lazy('categoria_list')
+
+    def delete(self, request, *args, **kwargs):
+        categoria = self.get_object()
+        if Productos.objects.filter(cat=categoria).exists():
+            messages.error(request, f'No se puede eliminar "{categoria.cat_nombre}" porque tiene productos asociados.')
+            return redirect('categoria_list')
+        return super().delete(request, *args, **kwargs)
 
 @Permisos_Admin('Categoria', 'create')
 def CategoriaCreateView(request):
@@ -1688,9 +1695,63 @@ def panel_categorias_list(request):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')
         return redirect('home')
-    categorias = Categoria.objects.all().order_by('cat_id')
+    categorias = Categoria.objects.annotate(productos_count=Count('productos')).order_by('cat_id')
     return render(request, 'Admin/panel_categorias.html', {
         'categorias': categorias,
+        'section': 'categorias',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_categorias_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Categoría creada exitosamente.')
+                return redirect('panel_categorias')
+    else:
+        form = CategoriaForm()
+
+    return render(request, 'Admin/panel_categoria_form.html', {
+        'form': form,
+        'section': 'categorias',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_categorias_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    categoria = get_object_or_404(Categoria, pk=pk)
+    if request.method == 'POST':
+        form = CategoriaForm(request.POST, instance=categoria)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Categoría actualizada exitosamente.')
+                return redirect('panel_categorias')
+    else:
+        form = CategoriaForm(instance=categoria)
+
+    return render(request, 'Admin/panel_categoria_form.html', {
+        'form': form,
+        'object': categoria,
         'section': 'categorias',
         'sidebar': 0,
     })

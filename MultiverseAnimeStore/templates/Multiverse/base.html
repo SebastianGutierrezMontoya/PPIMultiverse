@@ -21,6 +21,16 @@
 
     <main>
 
+        {% if messages %}
+        <div style="max-width: 960px; margin: 0 auto; padding: 20px 20px 0;">
+            {% for message in messages %}
+            <div style="padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-bottom: 12px; {% if message.level_tag == 'success' %}background: rgba(34,197,94,0.1); color: #16a34a; border: 1px solid rgba(34,197,94,0.2);{% elif message.level_tag == 'error' %}background: rgba(239,68,68,0.1); color: #dc2626; border: 1px solid rgba(239,68,68,0.2);{% else %}background: rgba(243,125,21,0.1); color: #f37d15; border: 1px solid rgba(243,125,21,0.2);{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% block content %}
 
         

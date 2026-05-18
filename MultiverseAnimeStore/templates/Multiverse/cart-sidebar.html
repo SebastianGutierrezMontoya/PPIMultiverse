@@ -38,9 +38,19 @@
         <input type="hidden" name="telefono_invitado" id="telefono_invitado_input">
       </div>
 
+      {% if user.is_authenticated or guest_checkout_enabled %}
       <button type="button" class="checkout-btn" onclick="openCheckoutModal()">
         Confirmar Pedido
       </button>
+      {% else %}
+      <div style="text-align:center; padding:14px 10px; border-radius:12px; border:1px solid rgba(243,125,21,0.2); background:rgba(243,125,21,0.06); margin-bottom:12px;">
+        <p style="font-size:13px; color:#f37d15; font-weight:600; margin:0 0 10px 0;">Para realizar un pedido necesitás una cuenta.</p>
+        <div style="display:flex; gap:8px; justify-content:center;">
+          <a href="{% url 'login' %}" class="checkout-btn" style="text-decoration:none; font-size:13px; padding:10px 16px;">Iniciar Sesión</a>
+          <a href="{% url 'register' %}" class="checkout-btn-secondary" style="text-decoration:none; font-size:13px; padding:10px 16px; border:1px solid #334155; color:#e2e8f0;">Crear Cuenta</a>
+        </div>
+      </div>
+      {% endif %}
     </form>
   </div>
 </div>

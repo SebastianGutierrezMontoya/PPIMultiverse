@@ -55,8 +55,22 @@
         </label>
 
         <div class="form-floating">
+            {{ form.prod_imagen }}
+            <label for="{{ form.prod_imagen.id_for_label }}">Subir imagen (máx. 2 MB)</label>
+            {% if form.prod_imagen.errors %}
+            <p style="font-size:11px; color:#dc2626; margin-top:4px;">{{ form.prod_imagen.errors.0 }}</p>
+            {% endif %}
+        </div>
+        {% if object and object.prod_imagen %}
+        <div style="margin:8px 0 12px;">
+            <img src="{{ object.prod_imagen.url }}" alt="Imagen actual" style="max-width:180px; border-radius:8px; border:1px solid #e2e8f0;">
+            <p style="font-size:11px; color:#64748b; margin-top:4px;">Imagen actual. Sube una nueva para reemplazarla.</p>
+        </div>
+        {% endif %}
+
+        <div class="form-floating">
             {{ form.prod_imagen_url }}
-            <label for="{{ form.prod_imagen_url.id_for_label }}">URL de imagen (externa o predefinida)</label>
+            <label for="{{ form.prod_imagen_url.id_for_label }}">O URL de imagen (externa o predefinida)</label>
         </div>
 
         <p style="font-size: 12px; color: #64748b; margin: 8px 0 16px 0;">Pega una URL de imagen o selecciona uno de los diseños predefinidos abajo.</p>

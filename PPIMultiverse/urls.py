@@ -20,8 +20,11 @@ from django.contrib import admin
 from django.urls import path, include
 from MultiverseAnimeStore.views import home_view, catalogo_view, login_view, logout_view, register_view, checkout_view, mis_pedidos_view, pedido_detalle_view, mi_perfil_view, mis_contactos_json_view
 
+from django.conf import settings
+from django.conf.urls.static import static
+
 urlpatterns = [
-    path('admindjango/', admin.site.urls),
+    # path('admindjango/', admin.site.urls),  # Comentado — ocultar admin de Django para clientes
     path('AdminMultiverse/', include('MultiverseAnimeStore.urls')),
 
     path('', home_view, name='home'),
@@ -38,3 +41,6 @@ urlpatterns = [
     path('mi-perfil/', mi_perfil_view, name='mi_perfil'),
     path('api/mis-contactos/', mis_contactos_json_view, name='mis_contactos_json'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

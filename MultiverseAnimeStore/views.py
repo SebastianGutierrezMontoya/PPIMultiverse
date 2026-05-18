@@ -105,6 +105,7 @@ def _extract_db_message(exc):
     # Último recurso
     return text.strip() or 'Error de base de datos.'
 
+@Login_requerido()
 def admin_home(request):
     return render(request, 'admin_home.html')
 
@@ -584,11 +585,14 @@ def ProductosAuditoriaView(request):
 
     productos_auditoria_raw = Productos_Auditoria.objects.raw("""
     SELECT 
-        ROW_NUMBER() OVER (ORDER BY creation_date DESC) AS id,
+        dummy_id,
+        model_name,
+        object_id,
         creation_date,
         au_type,
         auditoria
     FROM productos_auditoria
+    ORDER BY creation_date DESC
     """)
 
 
@@ -1646,7 +1650,12 @@ def panel_dashboard(request):
     total_perfiles = Perfiles.objects.count()
 
     pedidos_pendientes = Pedidos.objects.filter(ped_estado_id=1).count()
-    pedidos_recientes = Pedidos.objects.select_related('usu', 'ped_estado').order_by('-ped_fecha_pedido')[:5]
+    pedidos_confirmados = Pedidos.objects.filter(ped_estado_id=2).count()
+    pedidos_preparacion = Pedidos.objects.filter(ped_estado_id=3).count()
+    pedidos_enviados = Pedidos.objects.filter(ped_estado_id=4).count()
+    pedidos_entregados = Pedidos.objects.filter(ped_estado_id=5).count()
+    pedidos_cancelados = Pedidos.objects.filter(ped_estado_id=6).count()
+    pedidos_recientes = Pedidos.objects.select_related('usu', 'ped_estado').order_by('-ped_id')[:5]
     for p in pedidos_recientes:
         p.estado_texto = p.ped_estado.est_nombre if p.ped_estado else 'Pendiente'
 
@@ -1657,6 +1666,11 @@ def panel_dashboard(request):
         'total_categorias': total_categorias,
         'total_perfiles': total_perfiles,
         'pedidos_pendientes': pedidos_pendientes,
+        'pedidos_confirmados': pedidos_confirmados,
+        'pedidos_preparacion': pedidos_preparacion,
+        'pedidos_enviados': pedidos_enviados,
+        'pedidos_entregados': pedidos_entregados,
+        'pedidos_cancelados': pedidos_cancelados,
         'pedidos_recientes': pedidos_recientes,
         'section': 'dashboard',
         'sidebar': 0,
@@ -1950,7 +1964,7 @@ def panel_pedidos_list(request):
         return redirect('home')
 
     estados = EstadoPedidos.objects.all().order_by('pk')
-    pedidos = Pedidos.objects.select_related('usu', 'ped_estado').all().order_by('-ped_fecha_pedido')
+    pedidos = Pedidos.objects.select_related('usu', 'ped_estado').all().order_by('-ped_id')
 
     estado_filtro = request.GET.get('estado', '')
     q = request.GET.get('q', '')

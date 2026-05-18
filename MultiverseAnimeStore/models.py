@@ -141,6 +141,7 @@ class Productos(models.Model):
     prod_descripcion = models.CharField(max_length=400, blank=True, null=True, verbose_name="Descripción")
     prod_precio_venta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Precio de venta")
     prod_stock = models.IntegerField(blank=True, null=True, verbose_name="Stock")
+    prod_imagen = models.ImageField(upload_to='productos/', blank=True, null=True, verbose_name="Imagen del producto")
     prod_imagen_url = models.CharField(max_length=500, blank=True, null=True, verbose_name="URL de imagen")
     prod_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0, verbose_name="Descuento")
 
@@ -159,9 +160,11 @@ class Productos(models.Model):
 
 class Productos_Auditoria(models.Model):
     dummy_id = models.AutoField(primary_key=True, verbose_name="ID")
-    creation_date = models.DateField(blank=True, null=True, verbose_name="Fecha de creación")
-    au_type = models.IntegerField(blank=True, null=True, verbose_name="Tipo")
-    auditoria = models.CharField(max_length=500, blank=True, null=True, verbose_name="Auditoría")
+    model_name = models.CharField(max_length=100, default='Productos', verbose_name="Modelo")
+    object_id = models.CharField(max_length=50, blank=True, null=True, verbose_name="ID del registro")
+    creation_date = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    au_type = models.IntegerField(default=1, verbose_name="Tipo")
+    auditoria = models.TextField(blank=True, null=True, verbose_name="Auditoría")
 
     class Meta:
         managed = True

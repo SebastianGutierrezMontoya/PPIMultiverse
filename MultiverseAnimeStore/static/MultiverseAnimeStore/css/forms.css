@@ -272,12 +272,4 @@ form button[type="submit"] {
     transform: translateY(-1px);
 }
 
-.btn-link {
-    color: var(--primary-color, #f37d15);
-    text-decoration: none;
-    font-size: 0.9rem;
-}
-
-.btn-link:hover {
-    text-decoration: underline;
-}
+/* .btn-link styles removed to prevent conflict with app.css */

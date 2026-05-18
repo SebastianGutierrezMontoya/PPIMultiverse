@@ -241,7 +241,7 @@ class CategoriaForm(forms.ModelForm):
 class ProductosForm(forms.ModelForm):
     class Meta:
         model = Productos
-        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock', 'prod_descuento', 'cat', 'prod_imagen_url']
+        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock', 'prod_descuento', 'cat', 'prod_imagen', 'prod_imagen_url']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -254,6 +254,7 @@ class ProductosForm(forms.ModelForm):
         self.fields['prod_precio_venta'].required = False
         self.fields['prod_stock'].required = False
         self.fields['prod_descripcion'].required = False
+        self.fields['prod_imagen'].required = False
         self.fields['prod_imagen_url'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
@@ -262,6 +263,13 @@ class ProductosForm(forms.ModelForm):
 
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})
+
+    def clean_prod_imagen(self):
+        imagen = self.cleaned_data.get('prod_imagen')
+        if imagen:
+            if imagen.size > 2 * 1024 * 1024:
+                raise forms.ValidationError('La imagen no puede superar los 2 MB.')
+        return imagen
 
     def clean_prod_precio_venta(self):
         valor = self.cleaned_data.get('prod_precio_venta')

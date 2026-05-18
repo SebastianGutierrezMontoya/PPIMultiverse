@@ -30,7 +30,7 @@
         <tbody>
             {% for p in pedidos %}
             <tr>
-                <td style="color:#f37d15;">#{{ p.ped_id }}</td>
+                <td><a href="{% url 'panel_pedidos_detalle' p.pk %}" style="color:#f37d15; text-decoration:none; font-weight:600;">#{{ p.ped_id }}</a></td>
                 <td>{{ p.usu.nombre|default:p.usu.id_usuario }}</td>
                 <td>{{ p.ped_fecha_pedido|date:"d/m/Y" }}</td>
                 <td style="font-weight:600;">${{ p.ped_total|floatformat:2 }}</td>

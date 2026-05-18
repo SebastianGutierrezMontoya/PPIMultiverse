@@ -63,11 +63,11 @@
         </div>
         {% if object and object.prod_imagen %}
         <div style="margin:8px 0 12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <img src="{{ object.prod_imagen.url }}" alt="Imagen actual" style="max-width:180px; border-radius:8px; border:1px solid #e2e8f0;">
-            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:#dc2626;">
-                <input type="checkbox" name="prod_imagen-clear" id="prod_imagen-clear_id" style="cursor:pointer;">
-                Borrar imagen actual
-            </label>
+            <img src="{{ object.prod_imagen.url }}" alt="Imagen actual" id="current-img" style="max-width:180px; border-radius:8px; border:1px solid #e2e8f0; transition:all .3s;">
+            <input type="checkbox" name="prod_imagen-clear" id="prod_imagen-clear_id" style="display:none;">
+            <button type="button" id="btn-clear-imagen" style="padding:6px 14px; border-radius:6px; border:1px solid #dc2626; background:transparent; color:#dc2626; cursor:pointer; font-size:12px; font-weight:600; transition:all .2s;">
+                🗑 Borrar imagen
+            </button>
         </div>
         {% endif %}
 
@@ -173,8 +173,39 @@
                     previewPlaceholder.style.display = 'none';
                 };
                 reader.readAsDataURL(this.files[0]);
-                const clearCb = document.getElementById('prod_imagen-clear_id');
-                if (clearCb) clearCb.checked = false;
+                resetClearButton();
+            }
+        });
+    }
+
+    // Botón borrar imagen
+    const btnClear = document.getElementById('btn-clear-imagen');
+    const clearCb = document.getElementById('prod_imagen-clear_id');
+    const currentImg = document.getElementById('current-img');
+    function resetClearButton() {
+        if (!clearCb) return;
+        clearCb.checked = false;
+        if (btnClear) {
+            btnClear.textContent = '🗑 Borrar imagen';
+            btnClear.style.borderColor = '#dc2626';
+            btnClear.style.color = '#dc2626';
+        }
+        if (currentImg) {
+            currentImg.style.opacity = '1';
+            currentImg.style.filter = 'none';
+        }
+    }
+    if (btnClear && clearCb) {
+        btnClear.addEventListener('click', function () {
+            clearCb.checked = !clearCb.checked;
+            if (clearCb.checked) {
+                currentImg.style.opacity = '0.3';
+                currentImg.style.filter = 'grayscale(1)';
+                btnClear.textContent = '↩ Deshacer';
+                btnClear.style.borderColor = '#0ea5e9';
+                btnClear.style.color = '#0ea5e9';
+            } else {
+                resetClearButton();
             }
         });
     }

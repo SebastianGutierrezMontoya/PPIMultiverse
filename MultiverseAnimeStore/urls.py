@@ -85,6 +85,7 @@ from .views import (
     panel_sexos_list,
     panel_estados_list,
     panel_consultas_list,
+    panel_toggle_guest_checkout,
 )
 
 urlpatterns = [
@@ -193,4 +194,5 @@ urlpatterns = [
     path('panel/sexos/', panel_sexos_list, name='panel_sexos'),
     path('panel/estados/', panel_estados_list, name='panel_estados'),
     path('panel/consultas/', panel_consultas_list, name='panel_consultas'),
+    path('panel/toggle-guest-checkout/', panel_toggle_guest_checkout, name='panel_toggle_guest_checkout'),
 ]

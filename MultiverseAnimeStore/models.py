@@ -144,6 +144,7 @@ class Productos(models.Model):
     prod_imagen = models.ImageField(upload_to='productos/', blank=True, null=True, verbose_name="Imagen del producto")
     prod_imagen_url = models.CharField(max_length=500, blank=True, null=True, verbose_name="URL de imagen")
     prod_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0, verbose_name="Descuento")
+    prod_destacado = models.BooleanField(default=False, verbose_name="Destacado en inicio")
 
     class Meta:
         managed = True
@@ -156,6 +157,19 @@ class Productos(models.Model):
 
     def __str__(self):
         return self.prod_nombre or str(self.prod_id)
+
+
+
+class Configuracion(models.Model):
+    clave = models.CharField(max_length=50, primary_key=True, verbose_name="Clave")
+    valor = models.CharField(max_length=255, verbose_name="Valor")
+
+    class Meta:
+        managed = True
+        db_table = 'configuracion'
+
+    def __str__(self):
+        return self.clave
 
 
 class Productos_Auditoria(models.Model):

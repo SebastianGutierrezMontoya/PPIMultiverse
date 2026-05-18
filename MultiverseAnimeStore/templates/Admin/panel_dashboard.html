@@ -9,18 +9,18 @@
 </div>
 
 <div class="panel-grid">
-    <div class="panel-card">
+    <a href="{% url 'panel_productos' %}" class="panel-card" style="text-decoration:none;">
         <div class="panel-card-icon">📦</div>
         <div class="panel-card-label">Productos</div>
         <div class="panel-card-value">{{ total_productos }}</div>
         <div class="panel-card-sub">en catálogo</div>
-    </div>
-    <div class="panel-card">
+    </a>
+    <a href="{% url 'panel_usuarios' %}" class="panel-card" style="text-decoration:none;">
         <div class="panel-card-icon">👥</div>
         <div class="panel-card-label">Usuarios</div>
         <div class="panel-card-value">{{ total_usuarios }}</div>
         <div class="panel-card-sub">registrados</div>
-    </div>
+    </a>
     <a href="{% url 'panel_pedidos' %}" class="panel-card" style="text-decoration:none;">
         <div class="panel-card-icon">📋</div>
         <div class="panel-card-label">Pedidos</div>
@@ -54,6 +54,13 @@
     <a href="{% url 'panel_pedidos' %}?estado=4" class="panel-btn panel-btn-sm" style="background:rgba(168,85,247,0.12); color:#a855f7; border:none;">Enviados ({{ pedidos_enviados }})</a>
     <a href="{% url 'panel_pedidos' %}?estado=5" class="panel-btn panel-btn-sm" style="background:rgba(74,222,128,0.12); color:#4ade80; border:none;">Entregados ({{ pedidos_entregados }})</a>
     <a href="{% url 'panel_pedidos' %}?estado=6" class="panel-btn panel-btn-sm" style="background:rgba(239,68,68,0.12); color:#ef4444; border:none;">Cancelados ({{ pedidos_cancelados }})</a>
+</div>
+
+<div style="display:flex; flex-wrap:wrap; gap:8px; margin: 20px 0; align-items:center;">
+    <span style="font-size:12px; color:#94a3b8; font-weight:600; text-transform:uppercase;">Configuración:</span>
+    <a href="{% url 'panel_toggle_guest_checkout' %}" class="panel-btn panel-btn-sm" style="background:rgba(148,163,184,0.12); color:#94a3b8; border:none;">
+        {% if guest_checkout_enabled %}🟢{% else %}🔴{% endif %} Guest checkout: {% if guest_checkout_enabled %}ON{% else %}OFF{% endif %}
+    </a>
 </div>
 
 {% if pedidos_recientes %}

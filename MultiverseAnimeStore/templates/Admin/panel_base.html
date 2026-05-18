@@ -36,16 +36,6 @@
             </a>
         </div>
 
-        <div class="panel-nav-section">
-            <div class="panel-nav-section-title">Configuración</div>
-            <a href="{% url 'panel_roles' %}" class="panel-nav-link {% if section == 'roles' %}active{% endif %}">
-                <span class="nav-icon">🔐</span> Roles
-            </a>
-            <a href="{% url 'panel_perfiles' %}" class="panel-nav-link {% if section == 'perfiles' %}active{% endif %}">
-                <span class="nav-icon">👤</span> Perfiles
-            </a>
-        </div>
-
         <div class="panel-nav-section" style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px; margin-top: 8px;">
             <a href="{% url 'admin_home' %}" class="panel-nav-link">
                 <span class="nav-icon">↩️</span> Admin Clásico

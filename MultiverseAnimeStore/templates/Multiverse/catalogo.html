@@ -133,7 +133,7 @@
             <!-- GRID DE PRODUCTOS -->
             <div class="catalogo-container">
                 {% for producto in productos %}
-                <div class="bento-card">
+                <div class="bento-card" onclick="openProductModal('{{ producto.prod_id|escapejs }}', '{{ producto.prod_nombre|escapejs }}', '{{ producto.prod_descripcion|default:''|escapejs }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_stock|default:0 }}', '{{ producto.cat.cat_nombre|escapejs }}', '{% if producto.prod_imagen_url %}{{ producto.prod_imagen_url }}{% else %}{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}{% endif %}')">
                     <div class="bento-media">
                         {% if producto.prod_imagen_url %}
                             <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
@@ -141,14 +141,14 @@
                             <img src="{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}" alt="Multiverse" style="padding: 20px;">
                         {% endif %}
                         {% if producto.prod_stock and producto.prod_stock > 0 %}
-                        <div class="bento-action">
+                        <div class="bento-action" onclick="event.stopPropagation();">
                             <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre|escapejs }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}', {{ producto.prod_stock }})">
                                 + Agregar al Pedido
                             </button>
                         </div>
                         {% else %}
                         <div class="bento-badge-agotado">Agotado</div>
-                        <div class="bento-action">
+                        <div class="bento-action" onclick="event.stopPropagation();">
                             <button class="bento-btn" disabled>
                                 Agotado
                             </button>
@@ -187,4 +187,62 @@
 
     </div>
 </div>
+
+<!-- Modal de detalle de producto -->
+<div id="productModal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.7); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#fff; border-radius:20px; max-width:480px; width:100%; max-height:90vh; overflow:auto; position:relative;">
+        <button onclick="closeProductModal()" style="position:absolute; top:12px; right:12px; background:none; border:none; font-size:24px; cursor:pointer; z-index:10;">×</button>
+        <img id="modalImg" src="" alt="" style="width:100%; aspect-ratio:1; object-fit:cover; border-radius:20px 20px 0 0;">
+        <div style="padding:24px;">
+            <span id="modalCat" style="font-size:12px; text-transform:uppercase; font-weight:700; color:#64748b; letter-spacing:0.05em;"></span>
+            <h2 id="modalTitle" style="font-size:22px; font-weight:800; margin:8px 0 12px; color:#1e293b;"></h2>
+            <p id="modalDesc" style="font-size:14px; color:#64748b; line-height:1.5; margin-bottom:16px;"></p>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <span id="modalPrice" style="font-size:24px; font-weight:800; color:#f37d15;"></span>
+                <span id="modalStock" style="font-size:13px; font-weight:600;"></span>
+            </div>
+            <button id="modalAddBtn" class="bento-btn" style="width:100%; margin-top:20px; padding:14px; font-size:14px;">+ Agregar al Pedido</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function openProductModal(id, name, desc, price, stock, cat, img) {
+    document.getElementById('modalImg').src = img;
+    document.getElementById('modalTitle').textContent = name;
+    document.getElementById('modalDesc').textContent = desc || 'Sin descripción.';
+    document.getElementById('modalPrice').textContent = '$' + parseFloat(price).toLocaleString('es-CO');
+    document.getElementById('modalCat').textContent = cat;
+    var stockNum = parseInt(stock) || 0;
+    var stockEl = document.getElementById('modalStock');
+    if (stockNum > 0) {
+        stockEl.textContent = '✅ ' + stockNum + ' disponible(s)';
+        stockEl.style.color = '#16a34a';
+        document.getElementById('modalAddBtn').disabled = false;
+        document.getElementById('modalAddBtn').textContent = '+ Agregar al Pedido';
+        document.getElementById('modalAddBtn').onclick = function() {
+            addToCart(name, price, id, stockNum);
+            closeProductModal();
+        };
+    } else {
+        stockEl.textContent = '❌ Agotado';
+        stockEl.style.color = '#dc2626';
+        document.getElementById('modalAddBtn').disabled = true;
+        document.getElementById('modalAddBtn').textContent = 'Agotado';
+        document.getElementById('modalAddBtn').onclick = null;
+    }
+    document.getElementById('productModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closeProductModal() {
+    document.getElementById('productModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+document.getElementById('productModal').addEventListener('click', function(e) {
+    if (e.target === this) closeProductModal();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeProductModal();
+});
+</script>
 {% endblock %}

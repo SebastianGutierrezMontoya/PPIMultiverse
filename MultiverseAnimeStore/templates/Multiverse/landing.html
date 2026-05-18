@@ -195,7 +195,47 @@ body {
     </div>
 </section>
 
-<!-- 3. PRODUCTOS -->
+<!-- 3. DESTACADOS -->
+{% if destacados %}
+<section class="container mt-4 mb-5">
+    <div class="section-header-v4">
+        <h2>⭐ Destacados</h2>
+    </div>
+    <div class="lp-grid">
+        {% for producto in destacados %}
+        <div class="bento-card">
+            <div class="bento-media">
+                {% if producto.prod_imagen_url %}
+                    <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
+                {% else %}
+                    <img src="{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}" alt="Multiverse" style="object-fit: contain; padding: 20px; background: #fff;">
+                {% endif %}
+                <div class="bento-overlay"></div>
+                {% if producto.prod_stock and producto.prod_stock > 0 %}
+                <div class="bento-action">
+                    <button class="bento-btn" onclick="addToCart('{{ producto.prod_nombre|escapejs }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_id }}', {{ producto.prod_stock }})">Agregar</button>
+                </div>
+                {% else %}
+                <div class="bento-badge-agotado">Agotado</div>
+                <div class="bento-action">
+                    <button class="bento-btn" disabled>Agotado</button>
+                </div>
+                {% endif %}
+            </div>
+            <div class="bento-footer">
+                <div>
+                    <h3 class="bento-title">{{ producto.prod_nombre }}</h3>
+                    <p class="bento-subtitle">{{ producto.cat.cat_nombre }}</p>
+                </div>
+                <span class="bento-price">${{ producto.prod_precio_venta|floatformat:0 }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- 4. PRODUCTOS -->
 <section class="container mt-4 mb-5">
     <div class="section-header-v4">
         <h2>Recién Llegados</h2>

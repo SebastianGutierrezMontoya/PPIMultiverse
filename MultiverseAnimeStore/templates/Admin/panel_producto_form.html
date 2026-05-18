@@ -46,7 +46,7 @@
         {% endif %}
 
         {% for field in form.visible_fields %}
-            {% if field.name != 'prod_imagen_url' %}
+            {% if field.name != 'prod_imagen_url' and field.name != 'prod_imagen' %}
             <div class="panel-form-group">
                 <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
                     {{ field.label }}
@@ -72,9 +72,12 @@
                 <p style="font-size:11px; color:#f87171; margin-top:4px;">{{ form.prod_imagen.errors.0 }}</p>
                 {% endif %}
                 {% if producto and producto.prod_imagen %}
-                <div style="margin-top:8px;">
+                <div style="margin-top:8px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                     <img src="{{ producto.prod_imagen.url }}" alt="Imagen actual" style="max-width:180px; border-radius:8px; border:1px solid #334155;">
-                    <p style="font-size:11px; color:#94a3b8; margin-top:4px;">Imagen actual. Sube una nueva para reemplazarla.</p>
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:#f87171;">
+                        <input type="checkbox" name="prod_imagen-clear" id="prod_imagen-clear_id" style="cursor:pointer;">
+                        Borrar imagen actual
+                    </label>
                 </div>
                 {% endif %}
             </div>
@@ -109,6 +112,13 @@
                 <span id="preview-placeholder" style="color: #64748b; font-size: 12px; text-align: center;">Vista previa</span>
                 <img id="preview-img" src="" alt="Preview" style="display: none; width: 100%; height: 100%; object-fit: cover;">
             </div>
+        </div>
+
+        <div class="panel-form-group" style="display:flex; align-items:center; gap:10px; margin-top:16px;">
+            <label for="{{ form.prod_destacado.id_for_label }}" style="margin:0; cursor:pointer; display:flex; align-items:center; gap:8px; font-weight:600;">
+                {{ form.prod_destacado }}
+                Destacar en la página de inicio
+            </label>
         </div>
 
         <div class="panel-form-actions">
@@ -152,6 +162,46 @@
         var match = document.querySelector('.ph-item[data-url="' + this.value.trim() + '"]');
         if (match) match.style.borderColor = '#38bdf8';
     });
+
+    // Separador de miles en precio
+    const priceInput = document.getElementById('{{ form.prod_precio_venta.id_for_label }}');
+    if (priceInput) {
+        priceInput.addEventListener('input', function () {
+            let raw = this.value.replace(/\./g, '').replace(/[^0-9]/g, '');
+            if (raw) {
+                this.value = parseInt(raw).toLocaleString('es-CO');
+            }
+        });
+        priceInput.addEventListener('blur', function () {
+            let raw = this.value.replace(/\./g, '').replace(/[^0-9]/g, '');
+            if (raw) {
+                this.value = parseInt(raw).toLocaleString('es-CO');
+            }
+        });
+        // Limpiar formato antes de submit
+        priceInput.form.addEventListener('submit', function () {
+            priceInput.value = priceInput.value.replace(/\./g, '');
+        });
+    }
+
+    // Preview de archivo subido
+    const fileInput = document.getElementById('{{ form.prod_imagen.id_for_label }}');
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    previewPlaceholder.style.display = 'none';
+                };
+                reader.readAsDataURL(this.files[0]);
+                // Desmarcar checkboxes de borrar
+                var clearCb = document.getElementById('prod_imagen-clear_id');
+                if (clearCb) clearCb.checked = false;
+            }
+        });
+    }
 
     (function () {
         var currentUrl = imageUrlField.value.trim();

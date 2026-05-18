@@ -241,7 +241,7 @@ class CategoriaForm(forms.ModelForm):
 class ProductosForm(forms.ModelForm):
     class Meta:
         model = Productos
-        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock', 'prod_descuento', 'cat', 'prod_imagen', 'prod_imagen_url']
+        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock', 'prod_descuento', 'cat', 'prod_imagen', 'prod_imagen_url', 'prod_destacado']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -256,6 +256,7 @@ class ProductosForm(forms.ModelForm):
         self.fields['prod_descripcion'].required = False
         self.fields['prod_imagen'].required = False
         self.fields['prod_imagen_url'].required = False
+        self.fields['prod_destacado'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
         self.fields['prod_precio_venta'].widget.attrs.update({'step': '0.01'})

@@ -1,7 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container" style="width: auto !important;">
-    <h2>Auditoría de Productos</h2>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+        <h2>Auditoría de Productos</h2>
+        <a href="?format=csv" class="btn btn-primary" style="border-radius:10px; padding:10px 20px; font-weight:700; text-decoration:none;">⬇️ Descargar CSV</a>
+    </div>
 
     <table class="table-auditoria">
         <thead>

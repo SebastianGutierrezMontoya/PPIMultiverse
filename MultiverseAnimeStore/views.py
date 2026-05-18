@@ -648,6 +648,27 @@ def ProductosAuditoriaView(request):
 
        productos_auditoria.append(p)
 
+    if request.GET.get('format') == 'csv':
+        import csv
+        from django.http import HttpResponse
+        response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+        response['Content-Disposition'] = 'attachment; filename="auditoria_productos.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Fecha', 'Tipo', 'Modelo', 'ID Objeto', 'Producto', 'Cambios'])
+        for p in productos_auditoria:
+            cambios = ''
+            if p.au_type == 2 and getattr(p, 'differences', None):
+                cambios = ' | '.join([f"{d['field']}: {d['old']} → {d['new']}" for d in p.differences])
+            writer.writerow([
+                p.creation_date.strftime('%Y-%m-%d %H:%M:%S') if p.creation_date else '',
+                p.au_type_text,
+                p.model_name,
+                p.object_id,
+                getattr(p, 'product_name', ''),
+                cambios,
+            ])
+        return response
+
     return render(request, 'Productos/productos_auditoria.html', {'productos_auditoria': productos_auditoria})
 
 #Usuarios
@@ -1263,15 +1284,24 @@ def home_view(request):
     # Top 4 categorías para hero cards (las que más productos tienen)
     hero_categories = categorias_conteo.order_by('-productos_count')[:4]
 
-    # Últimos 8 productos agregados
-    ultimos_productos = Productos.objects.select_related('cat').exclude(prod_id__in=hidden_ids).order_by('-prod_id')[:8]
+    # Productos destacados primero, luego los 8 más nuevos
+    destacados = Productos.objects.select_related('cat').filter(prod_destacado=True).exclude(prod_id__in=hidden_ids).order_by('-prod_id')[:4]
+    ultimos_productos = Productos.objects.select_related('cat').exclude(prod_id__in=hidden_ids).exclude(prod_id__in=[p.prod_id for p in destacados]).order_by('-prod_id')[:8]
 
     return render(request, 'Multiverse/landing.html', {
         'categorias': categorias_conteo,
         'hero_categories': hero_categories,
+        'destacados': destacados,
         'ultimos_productos': ultimos_productos,
     })
 
+
+def _guest_checkout_enabled():
+    from .models import Configuracion
+    try:
+        return Configuracion.objects.get(clave='guest_checkout').valor != '0'
+    except Exception:
+        return True
 
 def checkout_view(request):
     if request.method == 'POST':
@@ -1288,12 +1318,15 @@ def checkout_view(request):
 
         # ── DETERMINAR USUARIO ──────────────────────────────────────
         # Si está autenticado, usamos su usuario.
-        # Si NO está autenticado (invitado), creamos un usuario temporal
-        # para cumplir con la FK de Pedidos, sin tocar el esquema de la BD.
+        # Si NO está autenticado (invitado), verificar si guest checkout está activo.
         # ─────────────────────────────────────────────────────────────
         if request.user.is_authenticated:
             usuario = request.user
         else:
+            if not _guest_checkout_enabled():
+                messages.error(request, 'Debes iniciar sesión para realizar un pedido.')
+                return redirect('login')
+
             nombre_invitado = request.POST.get('nombre_invitado', '').strip()
             telefono_invitado = request.POST.get('telefono_invitado', '').strip()
             direccion_envio = request.POST.get('ped_direccion_envio', '').strip()
@@ -1672,6 +1705,7 @@ def panel_dashboard(request):
         'pedidos_entregados': pedidos_entregados,
         'pedidos_cancelados': pedidos_cancelados,
         'pedidos_recientes': pedidos_recientes,
+        'guest_checkout_enabled': _guest_checkout_enabled(),
         'section': 'dashboard',
         'sidebar': 0,
     }
@@ -2129,3 +2163,17 @@ def panel_consultas_list(request):
         'section': 'consultas',
         'sidebar': 0,
     })
+
+
+@Login_requerido()
+def panel_toggle_guest_checkout(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso.')
+        return redirect('home')
+    from .models import Configuracion
+    config, _ = Configuracion.objects.get_or_create(clave='guest_checkout', defaults={'valor': '1'})
+    config.valor = '0' if config.valor == '1' else '1'
+    config.save()
+    estado = 'activado' if config.valor == '1' else 'desactivado'
+    messages.success(request, f'Checkout de invitados {estado}.')
+    return redirect('panel_dashboard')

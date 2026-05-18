@@ -40,7 +40,7 @@
     {% endif %}
 
     {% for field in form.visible_fields %}
-        {% if field.name != 'prod_imagen_url' %}
+        {% if field.name != 'prod_imagen_url' and field.name != 'prod_imagen' %}
             <div class="form-floating">
                 {{ field }}
                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -62,9 +62,12 @@
             {% endif %}
         </div>
         {% if object and object.prod_imagen %}
-        <div style="margin:8px 0 12px;">
+        <div style="margin:8px 0 12px; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
             <img src="{{ object.prod_imagen.url }}" alt="Imagen actual" style="max-width:180px; border-radius:8px; border:1px solid #e2e8f0;">
-            <p style="font-size:11px; color:#64748b; margin-top:4px;">Imagen actual. Sube una nueva para reemplazarla.</p>
+            <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:12px; color:#dc2626;">
+                <input type="checkbox" name="prod_imagen-clear" id="prod_imagen-clear_id" style="cursor:pointer;">
+                Borrar imagen actual
+            </label>
         </div>
         {% endif %}
 
@@ -137,6 +140,44 @@
         const match = document.querySelector('.placeholder-item[data-url="' + this.value.trim() + '"]');
         if (match) match.style.borderColor = '#0ea5e9';
     });
+
+    // Separador de miles en precio
+    const priceInput = document.getElementById('{{ form.prod_precio_venta.id_for_label }}');
+    if (priceInput) {
+        priceInput.addEventListener('input', function () {
+            let raw = this.value.replace(/\./g, '').replace(/[^0-9]/g, '');
+            if (raw) {
+                this.value = parseInt(raw).toLocaleString('es-CO');
+            }
+        });
+        priceInput.addEventListener('blur', function () {
+            let raw = this.value.replace(/\./g, '').replace(/[^0-9]/g, '');
+            if (raw) {
+                this.value = parseInt(raw).toLocaleString('es-CO');
+            }
+        });
+        priceInput.form.addEventListener('submit', function () {
+            priceInput.value = priceInput.value.replace(/\./g, '');
+        });
+    }
+
+    // Preview de archivo subido
+    const fileInput = document.getElementById('{{ form.prod_imagen.id_for_label }}');
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    previewPlaceholder.style.display = 'none';
+                };
+                reader.readAsDataURL(this.files[0]);
+                const clearCb = document.getElementById('prod_imagen-clear_id');
+                if (clearCb) clearCb.checked = false;
+            }
+        });
+    }
 
     // Init: mark selected placeholder if URL matches
     (function () {

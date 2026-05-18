@@ -394,8 +394,7 @@ main {
     display: none;
   }
 
-  .navbar-user-badge,
-  .navbar-logout,
+  .navbar-user-dropdown,
   .navbar-login-link {
     display: none;
   }
@@ -425,13 +424,38 @@ main {
 }
 
 /* =========================
-   USER BADGE REFINEMENT
+   USER DROPDOWN
 ========================= */
+.navbar-user-dropdown {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Puente invisible para mantener hover al cruzar del badge al menú */
+.navbar-user-dropdown::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: transparent;
+  z-index: 199;
+}
+
 .navbar-user-badge {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-right: 12px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.navbar-user-dropdown:hover .navbar-user-badge {
+  background: rgba(255,255,255,0.06);
 }
 
 .navbar-user-name {
@@ -440,8 +464,65 @@ main {
   color: var(--color-text-muted);
 }
 
-.navbar-logout {
-  font-size: 12px;
+.dropdown-arrow {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  transition: transform 0.2s;
+}
+
+.navbar-user-dropdown:hover .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.user-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  min-width: 190px;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  z-index: 200;
+}
+
+.navbar-user-dropdown:hover .user-dropdown-menu,
+.navbar-user-dropdown:focus-within .user-dropdown-menu {
+  display: block;
+}
+
+.user-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  border-radius: 10px;
+  transition: background 0.15s;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+}
+
+.user-dropdown-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: var(--accent);
+}
+
+.user-dropdown-logout {
+  color: #f87171;
+}
+
+.user-dropdown-logout:hover {
+  background: rgba(248,113,113,0.1);
+  color: #f87171;
 }
 
 .navbar-login-link {

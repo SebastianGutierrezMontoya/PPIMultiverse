@@ -370,6 +370,35 @@ class ConsultasDinamicasForm(forms.ModelForm):
         return sql
 
 
+class CambiarContrasenaForm(forms.Form):
+    contrasena_actual = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña actual'}),
+        label='Contraseña actual',
+        required=True,
+        min_length=6,
+    )
+    contrasena_nueva = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Nueva contraseña'}),
+        label='Nueva contraseña',
+        required=True,
+        min_length=6,
+    )
+    contrasena_confirmar = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar nueva contraseña'}),
+        label='Confirmar contraseña',
+        required=True,
+        min_length=6,
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        nueva = cleaned.get('contrasena_nueva')
+        confirmar = cleaned.get('contrasena_confirmar')
+        if nueva and confirmar and nueva != confirmar:
+            raise forms.ValidationError('Las contraseñas no coinciden.')
+        return cleaned
+
+
 class PerfilForm(forms.ModelForm):
     class Meta:
         model = Usuarios

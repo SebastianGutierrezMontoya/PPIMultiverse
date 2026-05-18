@@ -287,6 +287,22 @@ function initCart() {
   if (window.isAuthenticated) {
     if (nameGroup) nameGroup.style.display = 'none';
     if (phoneGroup) phoneGroup.style.display = 'none';
+
+    fetch('/api/mis-contactos/')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.calle) {
+          var calleInput = document.getElementById('checkout_calle');
+          var ciudadInput = document.getElementById('checkout_ciudad');
+          var barrioInput = document.getElementById('checkout_barrio');
+          if (calleInput) calleInput.value = data.calle;
+          if (ciudadInput) ciudadInput.value = data.ciudad;
+          if (barrioInput && data.barrio) barrioInput.value = data.barrio;
+          var badge = document.getElementById('checkout-address-badge');
+          if (badge) badge.style.display = 'flex';
+        }
+      })
+      .catch(function(err) { console.warn('Error cargando contactos:', err); });
   } else {
     if (nameInput) nameInput.addEventListener('input', function() { clearInputError(this); });
     if (phoneInput) phoneInput.addEventListener('input', function() { clearInputError(this); });

@@ -3,14 +3,15 @@ from django.urls import reverse
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, DetailView
 from django.urls import reverse_lazy
 from .models import Categoria, Contactos, Pedidos, PedidosProductos, Productos, Roles, Perfiles, Perfilpermisos, Modulos, Usuarios, Sexos, EstadoPedidos, Config_Contacto, Productos_Auditoria, Consultas_Dinamicas
-from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm, SexosForm, PerfilForm, next_int_id
+from .forms import PedidosForm, UsuariosForm, RolesForm, PerfilesForm, CategoriaForm, ProductosForm, PedidoProductoUpdateForm, ConsultasDinamicasForm, EstadoPedidosForm, SexosForm, PerfilForm, CambiarContrasenaForm, next_int_id
 from django.db.models import F, ExpressionWrapper, DecimalField, Sum, Q, Max, Count
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, JsonResponse
 from django.db import DatabaseError, transaction, connection
 from django.core.exceptions import ValidationError
 from . import hidden_products
 from django.contrib import messages
 import re
+import logging
 from functools import wraps
 from django.forms import modelform_factory
 # import psycopg2
@@ -170,7 +171,7 @@ def register_view(request):
         nombre = request.POST.get('nombre')
         primer_apellido = request.POST.get('primer_apellido')
         segundo_apellido = request.POST.get('segundo_apellido')
-        fecha_nacimiento = request.POST.get('fecha_nacimiento')
+        fecha_nacimiento = request.POST.get('fecha_nacimiento') or None
         sexo_id = request.POST.get('sexo')
         telefono = request.POST.get('telefono', '').strip()
         direccion = request.POST.get('direccion', '').strip()
@@ -276,14 +277,10 @@ def CategoriaUpdateView(request, pk):
 
 
 def desactivar_trigger():
-    # with connection.cursor() as cursor:
-    #     cursor.execute("SET LOCAL disable_auditoria_producto = true")
-    print("DEBUG: Trigger de auditoría desactivado para esta sesión.")
+    pass
 
 def activar_trigger():
-    # with connection.cursor() as cursor:
-    #     cursor.execute("SET LOCAL disable_auditoria_producto = false")
-    print("DEBUG: Trigger de auditoría activado para esta sesión.")
+    pass
 
 
 #PedidosProductos
@@ -827,11 +824,8 @@ def ContactosUpdateView(contactos_actualizar):
             tipo_contacto_id = contacto_data['tipo_contacto']
             dato_contacto = contacto_data['dato_contacto']
             
-            print(f"DEBUG ContactosUpdateView: id={id_contacto}, tipo_id={tipo_contacto_id}, dato={dato_contacto}")
-            
             # Verificar que el contacto existe
             contacto = get_object_or_404(Contactos, pk=id_contacto)
-            print(f"DEBUG: Contacto encontrado: {contacto.id_contacto}")
             
             # Intentar deshabilitar auditorías/triggers a nivel de sesión
             try:
@@ -850,8 +844,6 @@ def ContactosUpdateView(contactos_actualizar):
                     cursor.execute("SET LOCAL disable_auditoria_contactos = false")
                     cursor.execute("SET LOCAL disable_auditoria = false")
 
-            print(f"DEBUG: Registros actualizados: {resultado}")
-            
         except DatabaseError as e:
             errors.append(_extract_db_message(e))
         except Exception as e:
@@ -1194,19 +1186,39 @@ class ConsultasDinamicasDeleteView(DeleteView):
 
 #         return resultados
 
+def _sanitize_sql(sql):
+    no_comments = re.sub(r'/\*.*?\*/', '', sql, flags=re.DOTALL)
+    no_comments = re.sub(r'--[^\n]*', '', no_comments)
+    no_strings = re.sub(r"'[^']*'", "''", no_comments)
+    no_strings = re.sub(r'"[^"]*"', '""', no_strings)
+    return no_strings
+
+
 @Permisos_Admin('Consultas', 'read')
 def ejecutar_reporte(id_reporte):
     """
-    Ejecuta una consulta dinámica guardada en Consultas_Dinamicas.
+    Ejecuta una consulta dinamica guardada en Consultas_Dinamicas.
     Reemplazo de fn_ejecutar_reporte de Oracle.
     """
     try:
         consulta = Consultas_Dinamicas.objects.get(cons_id=id_reporte)
-        sql = consulta.cons_sql
+        sql = consulta.cons_sql.strip()
 
-        # Validar que solo sea SELECT
-        if not sql.strip().upper().startswith('SELECT'):
+        sql_clean = _sanitize_sql(sql)
+
+        if not re.match(r'^\s*SELECT\s', sql_clean, re.IGNORECASE):
             raise Exception('Solo se permiten consultas SELECT')
+
+        if ';' in sql_clean:
+            raise Exception('No se permiten multiples sentencias SQL')
+
+        dangerous = re.findall(
+            r'\b(DROP|DELETE|UPDATE|INSERT|ALTER|CREATE|TRUNCATE|EXEC)\b',
+            sql_clean,
+            re.IGNORECASE
+        )
+        if dangerous:
+            raise Exception(f'Comandos no permitidos: {", ".join(dangerous)}')
 
         with connection.cursor() as cursor:
             cursor.execute(sql)
@@ -1218,7 +1230,7 @@ def ejecutar_reporte(id_reporte):
     except Consultas_Dinamicas.DoesNotExist:
         return []
     except Exception as e:
-        print(f"Error ejecutando reporte {id_reporte}: {e}")
+        logging.error(f"Error ejecutando reporte {id_reporte}: {e}")
         return []
 
 @Permisos_Admin('Consultas', 'read')
@@ -1258,19 +1270,15 @@ def home_view(request):
 
 
 def checkout_view(request):
-    print("DEBUG: checkout_view called with method:", request.method)
     if request.method == 'POST':
         cart_items_json = request.POST.get('cart_items_json', '[]')
 
         try:
-            print("DEBUG: cart_items_json received:", cart_items_json)
             cart_items = json.loads(cart_items_json)
         except json.JSONDecodeError:
-            print("DEBUG: Error al decodificar cart_items_json, usando lista vacía.")
             cart_items = []
 
         if not cart_items:
-            print("DEBUG: No hay productos en el carrito.")
             messages.error(request, 'El carrito está vacío. No se creó ningún pedido.')
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -1394,11 +1402,10 @@ def checkout_view(request):
                     ped_direccion_envio=request.POST.get('ped_direccion_envio', ''),
                     ped_notas=request.POST.get('ped_notas', 'Pedido creado desde carrito público'),
                 )
-                print(f"DEBUG: Pedido creado con ID {pedido.ped_id} para usuario {usuario.id_usuario} con total {total_calculado}")
                 PedidosProductosCreateView(productos_seleccionados, pedido.ped_id)
 
         except (DatabaseError, ValidationError) as e:
-            print(f"Error al crear pedido: {e}")
+            logging.error(f"Error al crear pedido: {e}")
             messages.error(request, _extract_db_message(e))
             return redirect(request.META.get('HTTP_REFERER', '/'))
 
@@ -1486,6 +1493,23 @@ def pedido_detalle_view(request, ped_id):
     })
 
 
+@Login_requerido()
+def mis_contactos_json_view(request):
+    """Devuelve JSON con los contactos del usuario autenticado para pre-llenar el checkout."""
+    usuario = request.user
+    contactos = Contactos.objects.filter(id_usuario=usuario).select_related('tipo_contacto')
+    data = {}
+    for c in contactos:
+        if c.tipo_contacto_id == 1:
+            data['telefono'] = c.dato_contacto
+        elif c.tipo_contacto_id == 3:
+            partes = c.dato_contacto.split(' | ')
+            data['calle'] = partes[0] if len(partes) > 0 else ''
+            data['ciudad'] = partes[1] if len(partes) > 1 else ''
+            data['barrio'] = partes[3] if len(partes) > 3 else (partes[2] if len(partes) == 3 else '')
+    return JsonResponse(data)
+
+
 # ---------------------------------------------------------------------------
 # PERFIL DEL CLIENTE - Mi Perfil (datos personales + contactos)
 # ---------------------------------------------------------------------------
@@ -1499,6 +1523,23 @@ def mi_perfil_view(request):
     for c in contactos_usuario:
         if c.tipo_contacto:
             contactos_por_tipo[c.tipo_contacto.pk] = c
+
+    if request.method == 'POST' and 'cambiar_contrasena' in request.POST:
+        pass_form = CambiarContrasenaForm(request.POST)
+        if pass_form.is_valid():
+            actual = pass_form.cleaned_data['contrasena_actual']
+            verificacion = _verify_password(actual, usuario.password_hash)
+            if not verificacion:
+                messages.error(request, 'La contraseña actual es incorrecta.')
+            else:
+                usuario.password_hash = hash_password(pass_form.cleaned_data['contrasena_nueva'])
+                usuario.save(update_fields=['password_hash'])
+                messages.success(request, 'Contraseña actualizada correctamente.')
+        else:
+            for err in pass_form.errors.values():
+                for e in err:
+                    messages.error(request, e)
+        return redirect('mi_perfil')
 
     if request.method == 'POST':
         form = PerfilForm(request.POST, instance=usuario)

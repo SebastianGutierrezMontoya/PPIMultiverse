@@ -72,6 +72,11 @@
         <input id="checkout_phone" type="tel" placeholder="Ej. 3001234567" class="checkout-input" />
       </div>
 
+      <div id="checkout-address-badge" style="display:none; align-items:center; gap:8px; margin-bottom:12px; padding:10px 14px; background:rgba(243,125,21,0.08); border:1px solid rgba(243,125,21,0.2); border-radius:12px; font-size:13px; font-weight:600; color:#f37d15;">
+        <i class="fas fa-map-marker-alt" style="color:#f37d15;"></i>
+        <span>Usando tu dirección guardada</span>
+      </div>
+
       <div class="checkout-field">
         <label for="checkout_calle">Dirección — Calle</label>
         <input id="checkout_calle" type="text" placeholder="Ej. Calle 123 #45-67" class="checkout-input" />
@@ -80,7 +85,7 @@
       <div class="checkout-row-duo">
         <div class="checkout-field">
           <label for="checkout_ciudad">Ciudad</label>
-          <input id="checkout_ciudad" type="text" placeholder="Ej. Bogotá" class="checkout-input" />
+          <input id="checkout_ciudad" type="text" placeholder="Ej. Bogotá" class="checkout-input" list="ciudades-colombia" />
         </div>
         <div class="checkout-field" style="opacity:0.5; pointer-events:none;">
           <label for="checkout_pais">País</label>
@@ -98,6 +103,55 @@
         <textarea id="checkout_notes" placeholder="Opcional" rows="3" class="checkout-input"></textarea>
       </div>
     </div>
+
+    <datalist id="ciudades-colombia">
+      <option value="Armenia"></option>
+      <option value="Barranquilla"></option>
+      <option value="Bello"></option>
+      <option value="Bogotá"></option>
+      <option value="Bucaramanga"></option>
+      <option value="Buenaventura"></option>
+      <option value="Buga"></option>
+      <option value="Cali"></option>
+      <option value="Cartagena"></option>
+      <option value="Cartago"></option>
+      <option value="Chía"></option>
+      <option value="Cúcuta"></option>
+      <option value="Dosquebradas"></option>
+      <option value="Envigado"></option>
+      <option value="Facatativá"></option>
+      <option value="Florencia"></option>
+      <option value="Floridablanca"></option>
+      <option value="Fusagasugá"></option>
+      <option value="Girardot"></option>
+      <option value="Ibagué"></option>
+      <option value="Itagüí"></option>
+      <option value="Leticia"></option>
+      <option value="Manizales"></option>
+      <option value="Medellín"></option>
+      <option value="Mitú"></option>
+      <option value="Mocoa"></option>
+      <option value="Montería"></option>
+      <option value="Neiva"></option>
+      <option value="Palmira"></option>
+      <option value="Pasto"></option>
+      <option value="Pereira"></option>
+      <option value="Popayán"></option>
+      <option value="Puerto Carreño"></option>
+      <option value="Puerto Inírida"></option>
+      <option value="Quibdó"></option>
+      <option value="Riohacha"></option>
+      <option value="San Andrés"></option>
+      <option value="Santa Marta"></option>
+      <option value="Sincelejo"></option>
+      <option value="Soacha"></option>
+      <option value="Tuluá"></option>
+      <option value="Tunja"></option>
+      <option value="Valledupar"></option>
+      <option value="Villavicencio"></option>
+      <option value="Yopal"></option>
+      <option value="Zipaquirá"></option>
+    </datalist>
 
     <div class="checkout-modal-actions">
       <button type="button" onclick="closeCheckoutModal()" class="checkout-btn-secondary">Cancelar</button>

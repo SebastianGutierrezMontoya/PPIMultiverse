@@ -39,7 +39,9 @@
 <div class="pd-card">
     <div class="pd-flex">
         <div class="pd-image">
-            {% if producto.prod_imagen_url %}
+            {% if producto.prod_imagen %}
+            <img src="{{ producto.prod_imagen.url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
+            {% elif producto.prod_imagen_url %}
             <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
             {% else %}
             <img src="{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}" alt="Multiverse" style="max-width:70%;">

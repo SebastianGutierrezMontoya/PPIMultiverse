@@ -133,9 +133,11 @@
             <!-- GRID DE PRODUCTOS -->
             <div class="catalogo-container">
                 {% for producto in productos %}
-                <div class="bento-card" onclick="openProductModal('{{ producto.prod_id|escapejs }}', '{{ producto.prod_nombre|escapejs }}', '{{ producto.prod_descripcion|default:''|escapejs }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_stock|default:0 }}', '{{ producto.cat.cat_nombre|escapejs }}', '{% if producto.prod_imagen_url %}{{ producto.prod_imagen_url }}{% else %}{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}{% endif %}')">
+                <div class="bento-card" onclick="openProductModal('{{ producto.prod_id|escapejs }}', '{{ producto.prod_nombre|escapejs }}', '{{ producto.prod_descripcion|default:''|escapejs }}', '{{ producto.prod_precio_venta }}', '{{ producto.prod_stock|default:0 }}', '{{ producto.cat.cat_nombre|escapejs }}', '{% if producto.prod_imagen %}{{ producto.prod_imagen.url }}{% elif producto.prod_imagen_url %}{{ producto.prod_imagen_url }}{% else %}{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}{% endif %}')">
                     <div class="bento-media">
-                        {% if producto.prod_imagen_url %}
+                        {% if producto.prod_imagen %}
+                            <img src="{{ producto.prod_imagen.url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
+                        {% elif producto.prod_imagen_url %}
                             <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
                         {% else %}
                             <img src="{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}" alt="Multiverse" style="padding: 20px;">

@@ -205,7 +205,9 @@ body {
         {% for producto in destacados %}
         <div class="bento-card">
             <div class="bento-media">
-                {% if producto.prod_imagen_url %}
+                {% if producto.prod_imagen %}
+                    <img src="{{ producto.prod_imagen.url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
+                {% elif producto.prod_imagen_url %}
                     <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
                 {% else %}
                     <img src="{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}" alt="Multiverse" style="object-fit: contain; padding: 20px; background: #fff;">
@@ -244,7 +246,9 @@ body {
         {% for producto in ultimos_productos %}
         <div class="bento-card">
             <div class="bento-media">
-                {% if producto.prod_imagen_url %}
+                {% if producto.prod_imagen %}
+                    <img src="{{ producto.prod_imagen.url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
+                {% elif producto.prod_imagen_url %}
                     <img src="{{ producto.prod_imagen_url }}" alt="{{ producto.prod_nombre }}" loading="lazy">
                 {% else %}
                     <img src="{% static 'MultiverseAnimeStore/placeholders/generic_1.png' %}" alt="Multiverse" style="object-fit: contain; padding: 20px; background: #fff;">

@@ -116,7 +116,9 @@
         <div class="pd-prod">
             <div class="pd-prod-left">
                 <div class="pd-prod-icon">
-                    {% if item.prod.prod_imagen_url %}
+                    {% if item.prod.prod_imagen %}
+                    <img src="{{ item.prod.prod_imagen.url }}" alt="{{ item.prod.prod_nombre }}">
+                    {% elif item.prod.prod_imagen_url %}
                     <img src="{{ item.prod.prod_imagen_url }}" alt="{{ item.prod.prod_nombre }}">
                     {% else %}
                     📦

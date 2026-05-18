@@ -671,6 +671,89 @@ def ProductosAuditoriaView(request):
 
     return render(request, 'Productos/productos_auditoria.html', {'productos_auditoria': productos_auditoria})
 
+
+@Login_requerido()
+def panel_auditoria(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+
+    # Reutilizar misma query
+    productos_auditoria_raw = Productos_Auditoria.objects.raw("""
+    SELECT
+        dummy_id,
+        model_name,
+        object_id,
+        creation_date,
+        au_type,
+        auditoria
+    FROM productos_auditoria
+    ORDER BY creation_date DESC
+    """)
+
+    productos_auditoria = []
+    for p in productos_auditoria_raw:
+        if p.au_type == 1:
+            p.au_type_text = "Creación"
+        elif p.au_type == 2:
+            p.au_type_text = "Modificación"
+        elif p.au_type == 3:
+            p.au_type_text = "Eliminación"
+        else:
+            p.au_type_text = "Desconocido"
+        try:
+            parsed = json.loads(p.auditoria)
+            p.auditoria_parsed = parsed
+            producto_info = parsed.get('old') if isinstance(parsed, dict) else None
+            if isinstance(producto_info, dict):
+                p.product_name = producto_info.get('prod_nombre') or producto_info.get('nombre')
+            elif isinstance(parsed, dict):
+                p.product_name = parsed.get('prod_nombre') or parsed.get('nombre')
+            else:
+                p.product_name = None
+            if p.au_type == 2:
+                old = parsed.get('old', {})
+                new = parsed.get('new', {})
+                differences = []
+                for key in set(old.keys()) | set(new.keys()):
+                    if old.get(key) != new.get(key):
+                        differences.append({'field': key, 'old': old.get(key, 'N/A'), 'new': new.get(key, 'N/A')})
+                p.differences = differences
+            else:
+                p.differences = []
+        except json.JSONDecodeError:
+            p.auditoria_parsed = None
+            p.product_name = None
+            p.differences = []
+        productos_auditoria.append(p)
+
+    if request.GET.get('format') == 'csv':
+        import csv
+        from django.http import HttpResponse
+        response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+        response['Content-Disposition'] = 'attachment; filename="auditoria_productos.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['Fecha', 'Tipo', 'Modelo', 'ID Objeto', 'Producto', 'Cambios'])
+        for p in productos_auditoria:
+            cambios = ''
+            if p.au_type == 2 and getattr(p, 'differences', None):
+                cambios = ' | '.join([f"{d['field']}: {d['old']} → {d['new']}" for d in p.differences])
+            writer.writerow([
+                p.creation_date.strftime('%Y-%m-%d %H:%M:%S') if p.creation_date else '',
+                p.au_type_text,
+                p.model_name,
+                p.object_id,
+                getattr(p, 'product_name', ''),
+                cambios,
+            ])
+        return response
+
+    return render(request, 'Admin/panel_auditoria.html', {
+        'productos_auditoria': productos_auditoria,
+        'section': 'auditoria',
+        'sidebar': 0,
+    })
+
 #Usuarios
 @method_decorator(Permisos_Admin('Usuarios', 'read'), name='dispatch')
 class UsuariosListView(ListView):

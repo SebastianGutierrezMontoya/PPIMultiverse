@@ -166,21 +166,33 @@
     // Separador de miles en precio
     const priceInput = document.getElementById('{{ form.prod_precio_venta.id_for_label }}');
     if (priceInput) {
-        priceInput.addEventListener('input', function () {
-            let raw = this.value.replace(/\./g, '').replace(/[^0-9]/g, '');
-            if (raw) {
-                this.value = parseInt(raw).toLocaleString('es-CO');
+        function extractInteger(value) {
+            var raw = value.trim();
+            if (!raw) return '';
+            if (raw.indexOf(',') !== -1) {
+                return raw.split(',')[0].replace(/[^0-9]/g, '');
             }
-        });
+            var lastDot = raw.lastIndexOf('.');
+            if (lastDot !== -1) {
+                var afterDot = raw.substring(lastDot + 1).replace(/[^0-9]/g, '');
+                if (afterDot.length <= 2) {
+                    return raw.substring(0, lastDot).replace(/[^0-9]/g, '');
+                }
+            }
+            return raw.replace(/[^0-9]/g, '');
+        }
+        function formatThousands(n) {
+            return n.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
         priceInput.addEventListener('blur', function () {
-            let raw = this.value.replace(/\./g, '').replace(/[^0-9]/g, '');
-            if (raw) {
-                this.value = parseInt(raw).toLocaleString('es-CO');
+            var intPart = extractInteger(this.value);
+            if (intPart) {
+                this.value = formatThousands(intPart);
             }
         });
         // Limpiar formato antes de submit
         priceInput.form.addEventListener('submit', function () {
-            priceInput.value = priceInput.value.replace(/\./g, '');
+            priceInput.value = extractInteger(priceInput.value);
         });
     }
 

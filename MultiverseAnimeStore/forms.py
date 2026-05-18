@@ -259,7 +259,7 @@ class ProductosForm(forms.ModelForm):
         self.fields['prod_destacado'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
-        self.fields['prod_precio_venta'].widget.attrs.update({'step': '0.01'})
+        self.fields['prod_precio_venta'].widget = forms.TextInput(attrs={'class': 'form-control', 'inputmode': 'numeric'})
         self.fields['prod_imagen_url'].widget.attrs.update({'placeholder': 'https://ejemplo.com/imagen.jpg'})
 
         for field in self.fields.values():

@@ -16,7 +16,11 @@
       <a class="navbar-link" href="{% url 'mis_pedidos' %}">Mis Pedidos</a>
       {% endif %}
       {% if user.is_authenticated and user.usuario_id_perfil_id == 1 %}
-      <a class="navbar-link navbar-link-muted" href="{% url 'panel_dashboard' %}">Gestión</a>
+        {% if '/AdminMultiverse/' in request.path and '/panel/' not in request.path %}
+          <a class="navbar-link" href="{% url 'panel_dashboard' %}" style="color:#f37d15; font-weight:700;">🚀 Panel Dark</a>
+        {% else %}
+          <a class="navbar-link navbar-link-muted" href="{% url 'panel_dashboard' %}">Gestión</a>
+        {% endif %}
       {% endif %}
     </div>
 

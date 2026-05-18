@@ -62,6 +62,9 @@
         {% if guest_checkout_enabled %}🟢{% else %}🔴{% endif %} Guest checkout: {% if guest_checkout_enabled %}ON{% else %}OFF{% endif %}
     </a>
 </div>
+<p style="font-size:12px; color:#64748b; margin: -12px 0 20px 0; line-height:1.5;">
+    💡 <strong>Guest checkout</strong> permite que clientes sin cuenta realicen pedidos. Cuando está <strong>apagado</strong>, los visitantes deben <a href="{% url 'login' %}" style="color:#f37d15;">iniciar sesión</a> o <a href="{% url 'register' %}" style="color:#f37d15;">registrarse</a> para comprar.
+</p>
 
 {% if pedidos_recientes %}
 <div class="panel-table-wrapper">

@@ -17,8 +17,9 @@ from django.forms import modelform_factory
 # import psycopg2
 import json
 import secrets
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
+from django.db.models.functions import TruncWeek, TruncMonth
 from django.core.paginator import Paginator
 # from django.contrib.auth import authenticate, login, logout
 # from django.contrib.auth.decorators import login_required
@@ -2260,3 +2261,116 @@ def panel_toggle_guest_checkout(request):
     estado = 'activado' if config.valor == '1' else 'desactivado'
     messages.success(request, f'Checkout de invitados {estado}.')
     return redirect('panel_dashboard')
+
+
+@Login_requerido()
+def panel_reportes(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta seccion.')
+        return redirect('home')
+
+    periodo = request.GET.get('periodo', 'diario')
+    desde = request.GET.get('desde', '')
+    hasta = request.GET.get('hasta', '')
+    estado_sel = request.GET.get('estado', '')
+    categoria_sel = request.GET.get('categoria', '')
+
+    hoy = date.today()
+    if not desde and not hasta:
+        desde = hoy.replace(day=1).isoformat()
+        hasta = hoy.isoformat()
+
+    pedidos = Pedidos.objects.select_related('usu', 'ped_estado').all()
+    if desde:
+        pedidos = pedidos.filter(ped_fecha_pedido__gte=desde)
+    if hasta:
+        pedidos = pedidos.filter(ped_fecha_pedido__lte=hasta)
+    if estado_sel:
+        pedidos = pedidos.filter(ped_estado_id=int(estado_sel))
+    if categoria_sel:
+        pedidos = pedidos.filter(pedidosproductos__prod__cat_id=categoria_sel).distinct()
+
+    total_ingresos = pedidos.aggregate(total=Sum('ped_total'))['total'] or Decimal('0')
+    total_pedidos = pedidos.count()
+    promedio_pedido = (total_ingresos / total_pedidos) if total_pedidos > 0 else Decimal('0')
+
+    if periodo == 'diario':
+        chart_qs = pedidos.values('ped_fecha_pedido').annotate(
+            total=Sum('ped_total'), cantidad=Count('ped_id')
+        ).order_by('ped_fecha_pedido')
+        labels = [p['ped_fecha_pedido'].strftime('%d/%m') if p['ped_fecha_pedido'] else '' for p in chart_qs]
+    elif periodo == 'semanal':
+        chart_qs = pedidos.annotate(label=TruncWeek('ped_fecha_pedido')).values('label').annotate(
+            total=Sum('ped_total'), cantidad=Count('ped_id')
+        ).order_by('label')
+        labels = [p['label'].strftime('Sem %W') if p['label'] else '' for p in chart_qs]
+    else:
+        chart_qs = pedidos.annotate(label=TruncMonth('ped_fecha_pedido')).values('label').annotate(
+            total=Sum('ped_total'), cantidad=Count('ped_id')
+        ).order_by('label')
+        labels = [p['label'].strftime('%b %Y') if p['label'] else '' for p in chart_qs]
+
+    chart_data = {
+        'labels': labels,
+        'ingresos': [float(p['total'] or 0) for p in chart_qs],
+        'pedidos': [p['cantidad'] for p in chart_qs],
+    }
+
+    top_productos = PedidosProductos.objects.filter(
+        ped__in=pedidos
+    ).values('prod__prod_nombre').annotate(
+        total_vendido=Sum('pped_total'), cantidad=Sum('pped_cantidad')
+    ).order_by('-total_vendido')[:10]
+
+    pedidos_por_estado = pedidos.values('ped_estado__est_nombre').annotate(
+        cantidad=Count('ped_id'), total=Sum('ped_total')
+    ).order_by('-cantidad')
+
+    if request.GET.get('format') == 'csv':
+        import csv
+        response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
+        response['Content-Disposition'] = 'attachment; filename="reportes_pedidos.csv"'
+        writer = csv.writer(response)
+        writer.writerow(['ID Pedido', 'Fecha', 'Usuario', 'Total', 'Estado', 'Direccion', 'Notas'])
+        for p in pedidos.order_by('-ped_fecha_pedido'):
+            writer.writerow([
+                p.ped_id,
+                p.ped_fecha_pedido.strftime('%Y-%m-%d') if p.ped_fecha_pedido else '',
+                p.usu.nombre if p.usu else '',
+                str(p.ped_total or '0'),
+                p.ped_estado.est_nombre if p.ped_estado else '',
+                p.ped_direccion_envio or '',
+                p.ped_notas or '',
+            ])
+        return response
+
+    presets = {
+        'hoy': (hoy.isoformat(), hoy.isoformat(), 'diario'),
+        'semana': ((hoy - timedelta(days=hoy.weekday())).isoformat(), hoy.isoformat(), 'diario'),
+        'mes': (hoy.replace(day=1).isoformat(), hoy.isoformat(), 'diario'),
+        'ano': (hoy.replace(month=1, day=1).isoformat(), hoy.isoformat(), 'mensual'),
+        'todo': ('', '', 'mensual'),
+    }
+
+    estados = EstadoPedidos.objects.all().order_by('est_id')
+    categorias = Categoria.objects.all().order_by('cat_id')
+
+    return render(request, 'Admin/panel_reportes.html', {
+        'section': 'reportes',
+        'sidebar': 0,
+        'periodo': periodo,
+        'desde': desde,
+        'hasta': hasta,
+        'estado_sel': estado_sel,
+        'categoria_sel': categoria_sel,
+        'total_ingresos': total_ingresos,
+        'total_pedidos': total_pedidos,
+        'promedio_pedido': promedio_pedido,
+        'pedidos': pedidos.order_by('-ped_fecha_pedido')[:200],
+        'top_productos': top_productos,
+        'pedidos_por_estado': pedidos_por_estado,
+        'chart_data': json.dumps(chart_data),
+        'estados': estados,
+        'categorias': categorias,
+        'presets': presets,
+    })

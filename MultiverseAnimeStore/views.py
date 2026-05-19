@@ -1243,7 +1243,7 @@ def ConsultasDinamicasCreateView(request):
             return redirect('consultas_dinamicas_list')
     else:
         # form = modelform_factory(ConsultasDinamicasForm, fields='__all__')()
-        form = ConsultasDinamicasForm(request.POST)
+        form = ConsultasDinamicasForm()
     return render(request, 'ConsultasDinamicas/consultas_dinamicas_form.html', {'form': form})
 
 # def ConsultasDinamicasUpdateView(request, pk):
@@ -2241,7 +2241,7 @@ def panel_consultas_list(request):
     if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
         messages.error(request, 'No tienes permiso para acceder a esta sección.')
         return redirect('home')
-    consultas = Consultas_Dinamicas.objects.all().order_by('id_consulta')
+    consultas = Consultas_Dinamicas.objects.all().order_by('cons_id')
     return render(request, 'Admin/panel_consultas.html', {
         'consultas': consultas,
         'section': 'consultas',
@@ -2338,6 +2338,7 @@ def panel_reportes(request):
     ).order_by('-cantidad')
 
     if request.GET.get('format') == 'csv':
+        from django.http import HttpResponse
         import csv
         response = HttpResponse(content_type='text/csv; charset=utf-8-sig')
         response['Content-Disposition'] = 'attachment; filename="reportes_pedidos.csv"'

@@ -176,7 +176,7 @@ def register_view(request):
                     Contactos.objects.create(
                         id_contacto=next_consecutive_id(Contactos, 'id_contacto'),
                         dato_contacto=telefono,
-                        tipo_contacto_id=2,
+                        tipo_contacto_id=1,
                         id_usuario=user,
                     )
 

@@ -7,25 +7,47 @@ from django.db.models import Max
 
 def next_int_id(model, field_name):
     """
-    Devuelve max(CAST(field AS INTEGER)) + 1.
+    Devuelve MAX(field) + 1 para PKs enteras.
+    Usa SQL estándar (CAST AS INTEGER) compatible con SQLite y PostgreSQL.
     Envuelto en transacción con select_for_update para evitar race conditions en PostgreSQL.
     """
     table = model._meta.db_table
-    sql = f"""
-        SELECT MAX(
-            CASE WHEN {field_name} ~ '^[0-9]+$' THEN {field_name}::integer ELSE NULL END
-        ) FROM {table}
-    """
+    sql = f'SELECT MAX(CAST({field_name} AS INTEGER)) FROM "{table}"'
     try:
         with transaction.atomic():
             model.objects.select_for_update().first()
             with connection.cursor() as cursor:
                 cursor.execute(sql)
                 row = cursor.fetchone()
-                maxval = row[0] if row else None
-                return int(maxval or 0) + 1
+                maxval = row[0] if row and row[0] is not None else 0
+                return int(maxval) + 1
     except Exception:
         return model.objects.count() + 1
+
+
+def get_next_char_id(model, field_name, prefix):
+    """
+    Devuelve el próximo ID numérico para campos VARCHAR con formato 'PREFIX-NNN'.
+    Usa SUBSTR + CAST para extraer el sufijo numérico y obtener MAX + 1.
+    Ej: get_next_char_id(Productos, 'prod_id', 'PROD-') sobre ['PROD-1','PROD-10'] → 11
+
+    Compatible con SQLite y PostgreSQL (SUBSTR y CAST son SQL estándar).
+    Envuelto en transacción con select_for_update.
+    """
+    table = model._meta.db_table
+    prefix_len = len(prefix)
+    sql = f"""
+        SELECT MAX(CAST(SUBSTR({field_name}, {prefix_len + 1}) AS INTEGER))
+        FROM "{table}"
+        WHERE {field_name} LIKE '{prefix}%'
+    """
+    with transaction.atomic():
+        model.objects.select_for_update().first()
+        with connection.cursor() as cursor:
+            cursor.execute(sql)
+            row = cursor.fetchone()
+            maxval = row[0] if row and row[0] is not None else 0
+            return maxval + 1
 
 
 def next_consecutive_id(model, field):
@@ -75,8 +97,7 @@ class PedidosForm(forms.ModelForm):
         self.fields['usu'].queryset = Usuarios.objects.all()
         self.fields['usu'].label_from_instance = lambda obj: f"{obj.nombre} {obj.primer_apellido}"
         self.fields['usu'].required = True
-        self.fields['ped_id'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['ped_id'].widget = forms.HiddenInput()
         self.fields['ped_id'].initial = next_int_id(Pedidos, 'ped_id')
         self.fields['ped_total'].widget.attrs['readonly'] = True
         self.fields['ped_total'].initial = 0.00
@@ -221,10 +242,15 @@ class UsuariosForm(forms.ModelForm):
         self.fields['usuario_id_sexo'].label_from_instance = lambda obj: obj.nombre_sexo
         self.fields['usuario_id_perfil'].queryset = Perfiles.objects.all()
         self.fields['usuario_id_perfil'].label_from_instance = lambda obj: obj.nombre
-        self.fields['id_usuario'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
-        self.fields['id_usuario'].initial = "USR-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
-        self.fields['activo'].widget.attrs.update({'min': 0, 'max': 1, 'step': '1'})
+        self.fields['id_usuario'].widget = forms.HiddenInput()
+        self.fields['id_usuario'].initial = "USR-" + str(get_next_char_id(Usuarios, 'id_usuario', 'USR-'))
+        self.fields['activo'] = forms.TypedChoiceField(
+            coerce=int,
+            choices=[(1, 'Sí'), (0, 'No')],
+            widget=forms.Select,
+            required=False,
+            initial=1,
+        )
         # Forzar required en campos obligatorios del usuario
         self.fields['nombre'].required = True
         self.fields['primer_apellido'].required = True
@@ -268,9 +294,8 @@ class CategoriaForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['cat_id'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id (cat_id es char; la función maneja solo valores numéricos)...
-        self.fields['cat_id'].initial = "CAT-" + str(get_next_id_model_name(Categoria, 'cat_id'))
+        self.fields['cat_id'].widget = forms.HiddenInput()
+        self.fields['cat_id'].initial = "CAT-" + str(get_next_char_id(Categoria, 'cat_id', 'CAT-'))
         self.fields['cat_nombre'].required = True
         self.fields['cat_descripcion'].required = False
         for field in self.fields.values():
@@ -290,29 +315,36 @@ class CategoriaForm(forms.ModelForm):
 class ProductosForm(forms.ModelForm):
     class Meta:
         model = Productos
-        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock','prod_imagen_url','prod_descuento', 'cat']
-    
+        fields = ['prod_id', 'prod_nombre', 'prod_descripcion', 'prod_precio_venta', 'prod_stock', 'prod_descuento', 'cat', 'prod_imagen', 'prod_imagen_url', 'prod_destacado']
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['cat'].queryset = Categoria.objects.all()
         self.fields['cat'].label_from_instance = lambda obj: obj.cat_nombre
         self.fields['cat'].required = True
-        self.fields['prod_id'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
-        "usr-" + str(get_next_id_model_name(Usuarios, 'id_usuario'))
-
-        self.fields['prod_id'].initial = "PROD-" + str(get_next_id_model_name(Productos, 'prod_id'))
-        # Forzar required en campos que deben tener valor
+        self.fields['prod_id'].widget = forms.HiddenInput()
+        self.fields['prod_id'].initial = "PROD-" + str(get_next_char_id(Productos, 'prod_id', 'PROD-'))
         self.fields['prod_nombre'].required = True
         self.fields['prod_precio_venta'].required = False
         self.fields['prod_stock'].required = False
         self.fields['prod_descripcion'].required = False
+        self.fields['prod_imagen'].required = False
+        self.fields['prod_imagen_url'].required = False
+        self.fields['prod_destacado'].required = False
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
-        self.fields['prod_precio_venta'].widget.attrs.update({'step': '0.01'})
+        self.fields['prod_precio_venta'].widget = forms.TextInput(attrs={'class': 'form-control', 'inputmode': 'numeric'})
+        self.fields['prod_imagen_url'].widget.attrs.update({'placeholder': 'https://ejemplo.com/imagen.jpg'})
 
         for field in self.fields.values():
             field.widget.attrs.update({'placeholder': ' '})
+
+    def clean_prod_imagen(self):
+        imagen = self.cleaned_data.get('prod_imagen')
+        if imagen:
+            if imagen.size > 2 * 1024 * 1024:
+                raise forms.ValidationError('La imagen no puede superar los 2 MB.')
+        return imagen
 
         self.fields['prod_id'].label = "* ID de Producto"
         self.fields['prod_nombre'].label = "* Nombre de Producto"
@@ -349,8 +381,7 @@ class RolesForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['id_rol'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['id_rol'].widget = forms.HiddenInput()
         self.fields['id_rol'].initial = next_int_id(Roles, 'id_rol')
         self.fields['nombre'].required = True
         for field in self.fields.values():
@@ -376,8 +407,7 @@ class PerfilesForm(forms.ModelForm):
         # roles = Roles.objects.values('id_rol', 'nombre')
         self.fields['rol_id'].queryset = Roles.objects.all()
         self.fields['rol_id'].label_from_instance = lambda obj: obj.nombre
-        self.fields['id_perfil'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['id_perfil'].widget = forms.HiddenInput()
         self.fields['id_perfil'].initial = next_int_id(Perfiles, 'id_perfil')
         self.fields['nombre'].required = True
         for field in self.fields.values():
@@ -403,9 +433,7 @@ class EstadoPedidosForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['est_id'].widget.attrs['readonly'] = True
-        # ...cambiado: usar next_int_id en vez de count()+1...
-        # self.fields['est_id'].initial = next_int_id(EstadoPedidos, 'est_id') # cambio aca
+        self.fields['est_id'].widget = forms.HiddenInput()
         self.fields['est_id'].initial = next_consecutive_id(EstadoPedidos, 'est_id')
         self.fields['est_id'].widget.attrs.update({'title': 'La id del estado de Entregado debe ser la mayor de todas' })
         self.fields['est_nombre'].required = True
@@ -429,7 +457,7 @@ class SexosForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['id_sexo'].widget.attrs['readonly'] = True
+        self.fields['id_sexo'].widget = forms.HiddenInput()
         self.fields['id_sexo'].initial = next_int_id(Sexos, 'id_sexo')
         self.fields['nombre_sexo'].required = True
         for field in self.fields.values():
@@ -448,9 +476,7 @@ class ConsultasDinamicasForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.fields['cons_id'].widget.attrs['readonly'] = True
-        
-        # ...cambiado: usar next_int_id en vez de count()+1...
+        self.fields['cons_id'].widget = forms.HiddenInput()
         self.fields['cons_id'].initial = next_int_id(Consultas_Dinamicas, 'cons_id')
         for field in self.fields.values():
             field.widget.attrs.update({'class': 'form-control'})
@@ -471,8 +497,62 @@ class ConsultasDinamicasForm(forms.ModelForm):
 
     def clean_sql_consulta(self):
         sql = self.cleaned_data['cons_sql']
-        # Aquí podrías agregar validaciones adicionales para la consulta SQL si es necesario
         return sql
+
+
+class CambiarContrasenaForm(forms.Form):
+    contrasena_actual = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Contraseña actual'}),
+        label='Contraseña actual',
+        required=True,
+        min_length=6,
+    )
+    contrasena_nueva = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Nueva contraseña'}),
+        label='Nueva contraseña',
+        required=True,
+        min_length=6,
+    )
+    contrasena_confirmar = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar nueva contraseña'}),
+        label='Confirmar contraseña',
+        required=True,
+        min_length=6,
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        nueva = cleaned.get('contrasena_nueva')
+        confirmar = cleaned.get('contrasena_confirmar')
+        if nueva and confirmar and nueva != confirmar:
+            raise forms.ValidationError('Las contraseñas no coinciden.')
+        return cleaned
+
+
+class PerfilForm(forms.ModelForm):
+    class Meta:
+        model = Usuarios
+        fields = ['nombre', 'primer_apellido', 'segundo_apellido', 'fecha_nacimiento', 'usuario_id_sexo']
+        widgets = {
+            'fecha_nacimiento': forms.DateInput(attrs={'type': 'date'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['usuario_id_sexo'].queryset = Sexos.objects.all()
+        self.fields['usuario_id_sexo'].label_from_instance = lambda obj: obj.nombre_sexo
+        self.fields['nombre'].required = True
+        self.fields['primer_apellido'].required = True
+        self.fields['usuario_id_sexo'].required = True
+        self.fields['segundo_apellido'].required = False
+        self.fields['fecha_nacimiento'].required = False
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})
+        self.fields['fecha_nacimiento'].widget.attrs.update({'class': 'form-control datepicker'})
+
+        for field in self.fields.values():
+            field.widget.attrs.update({'placeholder': ' '})
+
 
 
  

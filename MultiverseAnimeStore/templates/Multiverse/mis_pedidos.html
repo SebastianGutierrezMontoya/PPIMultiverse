@@ -1,54 +1,71 @@
 {% extends "Multiverse/base.html" %}
 {% load static %}
 
+{% block extra_head %}
+<style>
+.mp-page { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+.mp-header h1 { font-size: 32px; font-weight: 900; text-transform: uppercase; font-style: italic; margin: 0 0 4px; color: #0f172a; }
+.mp-header p { color: #64748b; font-size: 14px; margin: 0 0 32px; }
+
+.mp-card { display: block; text-decoration: none; color: inherit; margin-bottom: 14px; }
+.mp-card-inner { background: #fff; border: 1px solid #eef2f6; border-radius: 16px; padding: 22px 24px; transition: all 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.03); }
+.mp-card-inner:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+.mp-card-body { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.mp-card-info h3 { margin: 0 0 2px; font-size: 17px; font-weight: 700; color: #0f172a; }
+.mp-card-meta { margin: 0; color: #64748b; font-size: 13px; }
+.mp-card-right { text-align: right; }
+.mp-card-price { font-size: 22px; font-weight: 900; color: #0f172a; }
+
+.mp-badge { display: inline-block; margin-top: 6px; padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; white-space: nowrap; }
+
+.mp-empty { text-align: center; padding: 80px 20px; }
+.mp-empty-icon { font-size: 64px; margin-bottom: 20px; opacity: 0.3; }
+.mp-empty h2 { font-size: 24px; font-weight: 700; margin: 0 0 8px; color: #0f172a; }
+.mp-empty p { color: #64748b; margin: 0 0 24px; }
+.mp-empty-btn { display: inline-block; padding: 14px 32px; border-radius: 12px; background: var(--accent); color: #020617; font-weight: 900; text-decoration: none; font-size: 14px; }
+.mp-empty-btn:hover { opacity: 0.9; }
+
+@media (max-width: 500px) {
+    .mp-card-body { flex-direction: column; align-items: flex-start; }
+    .mp-card-right { text-align: left; width: 100%; }
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div style="max-width: 900px; margin: 40px auto; padding: 0 20px;">
-    <h1 style="font-size: 32px; font-weight: 900; text-transform: uppercase; font-style: italic; margin-bottom: 8px;">Mis Pedidos</h1>
-    <p style="color: #94a3b8; font-size: 14px; margin-bottom: 40px;">
-        Historial de tus compras en Multiverse Anime Store
-    </p>
+<div class="mp-page">
+    <div class="mp-header">
+        <h1>Mis Pedidos</h1>
+        <p>Historial de tus compras en Multiverse Anime Store</p>
+    </div>
 
     {% if pedidos %}
         {% for pedido in pedidos %}
-        <a href="{% url 'pedido_detalle' ped_id=pedido.ped_id %}" 
-           style="display: block; text-decoration: none; color: inherit; margin-bottom: 16px;">
-            <div style="background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); 
-                        border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px;
-                        transition: all 0.2s ease;"
-                 onmouseover="this.style.borderColor='var(--accent)'; this.style.transform='translateY(-2px)';"
-                 onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.transform='translateY(0)';">
-
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                    <div>
-                        <h3 style="margin: 0 0 4px 0; font-size: 18px;">Pedido #{{ pedido.ped_id }}</h3>
-                        <p style="margin: 0; color: #94a3b8; font-size: 13px;">
-                            {{ pedido.ped_fecha_pedido|date:"d/m/Y" }} · 
+        <a href="{% url 'pedido_detalle' ped_id=pedido.ped_id %}" class="mp-card">
+            <div class="mp-card-inner">
+                <div class="mp-card-body">
+                    <div class="mp-card-info">
+                        <h3>Pedido #{{ pedido.ped_id }}</h3>
+                        <p class="mp-card-meta">
+                            {{ pedido.ped_fecha_pedido|date:"d/m/Y" }}
+                            &middot;
                             {{ pedido.productos_count }} producto{{ pedido.productos_count|pluralize:"s" }}
                         </p>
                     </div>
-                    <div style="text-align: right;">
-                        <span style="font-size: 20px; font-weight: 900;">${{ pedido.ped_total|floatformat:0 }}</span>
-                        <br>
+                    <div class="mp-card-right">
+                        <div class="mp-card-price">${{ pedido.ped_total|floatformat:0 }}</div>
                         {% if pedido.ped_estado_id == 1 %}
-                            <span style="display: inline-block; margin-top: 4px; padding: 4px 12px; border-radius: 20px; 
-                                         font-size: 12px; font-weight: 700; background: rgba(234,179,8,0.15); color: #eab308;">
-                                ⏳ {{ pedido.estado_texto }}
-                            </span>
+                            <span class="mp-badge" style="background:rgba(148,163,184,0.12); color:#94a3b8;">⏳ {{ pedido.estado_texto }}</span>
+                        {% elif pedido.ped_estado_id == 2 %}
+                            <span class="mp-badge" style="background:rgba(96,165,250,0.12); color:#60a5fa;">🔵 {{ pedido.estado_texto }}</span>
+                        {% elif pedido.ped_estado_id == 3 %}
+                            <span class="mp-badge" style="background:rgba(251,191,36,0.12); color:#fbbf24;">🟡 {{ pedido.estado_texto }}</span>
+                        {% elif pedido.ped_estado_id == 4 %}
+                            <span class="mp-badge" style="background:rgba(168,85,247,0.12); color:#a855f7;">🟣 {{ pedido.estado_texto }}</span>
                         {% elif pedido.ped_estado_id == 5 %}
-                            <span style="display: inline-block; margin-top: 4px; padding: 4px 12px; border-radius: 20px; 
-                                         font-size: 12px; font-weight: 700; background: rgba(34,197,94,0.15); color: #22c55e;">
-                                ✅ {{ pedido.estado_texto }}
-                            </span>
+                            <span class="mp-badge" style="background:rgba(74,222,128,0.12); color:#4ade80;">✅ {{ pedido.estado_texto }}</span>
                         {% elif pedido.ped_estado_id == 6 %}
-                            <span style="display: inline-block; margin-top: 4px; padding: 4px 12px; border-radius: 20px; 
-                                         font-size: 12px; font-weight: 700; background: rgba(239,68,68,0.15); color: #ef4444;">
-                                ❌ {{ pedido.estado_texto }}
-                            </span>
-                        {% else %}
-                            <span style="display: inline-block; margin-top: 4px; padding: 4px 12px; border-radius: 20px; 
-                                         font-size: 12px; font-weight: 700; background: rgba(59,130,246,0.15); color: #3b82f6;">
-                                {{ pedido.estado_texto }}
-                            </span>
+                            <span class="mp-badge" style="background:rgba(239,68,68,0.12); color:#ef4444;">❌ {{ pedido.estado_texto }}</span>
                         {% endif %}
                     </div>
                 </div>
@@ -56,15 +73,11 @@
         </a>
         {% endfor %}
     {% else %}
-        <div style="text-align: center; padding: 80px 20px;">
-            <div style="font-size: 64px; margin-bottom: 24px; opacity: 0.3;">📦</div>
-            <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 8px;">No tienes pedidos aún</h2>
-            <p style="color: #94a3b8; margin-bottom: 24px;">Explora nuestro catálogo y haz tu primera compra</p>
-            <a href="{% url 'catalogo' %}" 
-               style="display: inline-block; padding: 14px 32px; border-radius: 12px; 
-                      background: var(--accent); color: #020617; font-weight: 900; text-decoration: none;">
-                Ver Catálogo
-            </a>
+        <div class="mp-empty">
+            <div class="mp-empty-icon">📦</div>
+            <h2>No tienes pedidos aún</h2>
+            <p>Explora nuestro catálogo y haz tu primera compra</p>
+            <a href="{% url 'catalogo' %}" class="mp-empty-btn">Ver Catálogo</a>
         </div>
     {% endif %}
 </div>

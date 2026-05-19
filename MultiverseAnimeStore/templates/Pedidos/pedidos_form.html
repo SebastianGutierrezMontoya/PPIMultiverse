@@ -6,6 +6,7 @@
     <h2 class="form-header">{% if object %}Editar{% else %}Crear{% endif %} Pedido</h2>
     <p> Estado : {{ Estado }} </p>
     {% csrf_token %}
+    {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
 
     {# Mostrar errores no asociados (mensajes del trigger) #}
     {% if form.non_field_errors %}
@@ -18,7 +19,7 @@
     
     <!-- {{ form.as_p }} -->
 
-    {% for field in form %}
+    {% for field in form.visible_fields %}
         <div class="form-floating">
           {{ field }}
           <label for="{{ field.id_for_label }}">{{ field.label }}</label>

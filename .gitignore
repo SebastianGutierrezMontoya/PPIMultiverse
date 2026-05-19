@@ -47,3 +47,6 @@ AGENTS.md
 
 # Local settings (override para SQLite dev)
 PPIMultiverse/settings_dev.py
+
+# Hidden products file (local, sin tocar BD)
+MultiverseAnimeStore/hidden_products.json

@@ -12,10 +12,10 @@ from django.db.models import Max
 
 
 class Consultas_Dinamicas(models.Model):
-    cons_id = models.IntegerField(primary_key=True)
-    cons_nombre = models.CharField(unique=True, max_length=50, blank=False, null=False)
-    cons_sql = models.CharField(max_length=4000, blank=False, null=False)
-    cons_descripcion = models.CharField(max_length=200, blank=True, null=True)
+    cons_id = models.IntegerField(primary_key=True, verbose_name="ID")
+    cons_nombre = models.CharField(unique=True, max_length=50, blank=False, null=False, verbose_name="Nombre")
+    cons_sql = models.CharField(max_length=4000, blank=False, null=False, verbose_name="Consulta SQL")
+    cons_descripcion = models.CharField(max_length=200, blank=True, null=True, verbose_name="Descripción")
 
     class Meta:
         managed = True
@@ -25,9 +25,9 @@ class Consultas_Dinamicas(models.Model):
         return self.cons_nombre or str(self.cons_id)
 
 class Categoria(models.Model):
-    cat_id = models.CharField(primary_key=True, max_length=10)
-    cat_nombre = models.CharField(unique=True, max_length=50, blank=True, null=True)
-    cat_descripcion = models.CharField(max_length=200, blank=True, null=True)
+    cat_id = models.CharField(primary_key=True, max_length=10, verbose_name="ID")
+    cat_nombre = models.CharField(unique=True, max_length=50, blank=True, null=True, verbose_name="Nombre")
+    cat_descripcion = models.CharField(max_length=200, blank=True, null=True, verbose_name="Descripción")
 
     class Meta:
         managed = True
@@ -40,8 +40,8 @@ class Categoria(models.Model):
 
 
 class EstadoPedidos(models.Model):
-    est_id = models.IntegerField(primary_key=True)
-    est_nombre = models.CharField(max_length=50, blank=True, null=True)
+    est_id = models.IntegerField(primary_key=True, verbose_name="ID")
+    est_nombre = models.CharField(max_length=50, blank=True, null=True, verbose_name="Nombre")
 
     class Meta:
         managed = True
@@ -51,17 +51,17 @@ class EstadoPedidos(models.Model):
         return self.est_nombre or str(self.id_estado)
 
 class Pedidos(models.Model):
-    ped_id = models.IntegerField(primary_key=True)
-    usu = models.ForeignKey('Usuarios', models.DO_NOTHING)
-    ped_fecha_pedido = models.DateField(blank=True, null=True)
-    ped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
+    ped_id = models.IntegerField(primary_key=True, verbose_name="ID")
+    usu = models.ForeignKey('Usuarios', models.DO_NOTHING, verbose_name="Usuario")
+    ped_fecha_pedido = models.DateField(blank=True, null=True, verbose_name="Fecha de pedido")
+    ped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0, verbose_name="Total")
     ped_estado = models.ForeignKey(
         EstadoPedidos, models.DO_NOTHING,
         db_column='ped_estado', default=1,
-        related_name='pedidos'
+        related_name='pedidos', verbose_name="Estado"
     )
-    ped_direccion_envio = models.CharField(max_length=200, blank=True, null=True)
-    ped_notas = models.CharField(max_length=200, blank=True, null=True)
+    ped_direccion_envio = models.CharField(max_length=200, blank=True, null=True, verbose_name="Dirección de envío")
+    ped_notas = models.CharField(max_length=200, blank=True, null=True, verbose_name="Notas")
 
     class Meta:
         managed = True
@@ -76,14 +76,14 @@ class Pedidos(models.Model):
 
 class PedidosProductos(models.Model):
     pk = models.CompositePrimaryKey('ped_id', 'prod_id')
-    ped = models.ForeignKey(Pedidos, models.DO_NOTHING)
-    prod = models.ForeignKey('Productos', models.DO_NOTHING)
-    pped_fecha_entrega = models.DateField(blank=True, null=True)
-    pped_cantidad = models.IntegerField(blank=True, null=True)
-    pped_precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    pped_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=False, default=0)
-    pped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=False)
-    pped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='pped_estado')
+    ped = models.ForeignKey(Pedidos, models.DO_NOTHING, verbose_name="Pedido")
+    prod = models.ForeignKey('Productos', models.DO_NOTHING, verbose_name="Producto")
+    pped_fecha_entrega = models.DateField(blank=True, null=True, verbose_name="Fecha de entrega")
+    pped_cantidad = models.IntegerField(blank=True, null=True, verbose_name="Cantidad")
+    pped_precio_unitario = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Precio unitario")
+    pped_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=False, default=0, verbose_name="Descuento")
+    pped_total = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=False, verbose_name="Total")
+    pped_estado = models.ForeignKey(EstadoPedidos, models.DO_NOTHING, blank=True, null=True, db_column='pped_estado', verbose_name="Estado")
 
     class Meta:
         managed = True
@@ -91,10 +91,10 @@ class PedidosProductos(models.Model):
 
 
 class Perfiles(models.Model):
-    id_perfil = models.IntegerField(primary_key=True)
-    nombre = models.CharField(unique=True, max_length=100, blank=True, null=True)
-    rol_id = models.ForeignKey('Roles', models.DO_NOTHING, blank=True, null=True, db_column='rol_id')
-    descripcion = models.CharField(max_length=255, blank=True, null=True)
+    id_perfil = models.IntegerField(primary_key=True, verbose_name="ID")
+    nombre = models.CharField(unique=True, max_length=100, blank=True, null=True, verbose_name="Nombre")
+    rol_id = models.ForeignKey('Roles', models.DO_NOTHING, blank=True, null=True, db_column='rol_id', verbose_name="Rol")
+    descripcion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Descripción")
 
     class Meta:
         managed = True
@@ -105,11 +105,11 @@ class Perfiles(models.Model):
 
 
 class Modulos(models.Model):
-    id_mod = models.AutoField(primary_key=True)
-    nombre_mod = models.CharField(unique=True, max_length=100, blank=True, null=False)
-    descripcion = models.CharField(max_length=200, blank=True, null=True)
-    url_mod = models.CharField(max_length=200, blank=True, null=False)
-    padre_mod = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True, db_column='padre_mod')
+    id_mod = models.AutoField(primary_key=True, verbose_name="ID")
+    nombre_mod = models.CharField(unique=True, max_length=100, blank=True, null=False, verbose_name="Nombre")
+    descripcion = models.CharField(max_length=200, blank=True, null=True, verbose_name="Descripción")
+    url_mod = models.CharField(max_length=200, blank=True, null=False, verbose_name="URL")
+    padre_mod = models.ForeignKey('self', models.DO_NOTHING, blank=True, null=True, db_column='padre_mod', verbose_name="Módulo padre")
 
 
     class Meta:
@@ -121,13 +121,13 @@ class Modulos(models.Model):
 
 class Perfilpermisos(models.Model):
     pk = models.CompositePrimaryKey('perfil_id', 'mod_id')
-    perfil_id = models.ForeignKey(Perfiles, models.DO_NOTHING, db_column='perfil_id')
-    mod_id = models.ForeignKey('Modulos', models.DO_NOTHING, db_column='mod_id')
+    perfil_id = models.ForeignKey(Perfiles, models.DO_NOTHING, db_column='perfil_id', verbose_name="Perfil")
+    mod_id = models.ForeignKey('Modulos', models.DO_NOTHING, db_column='mod_id', verbose_name="Módulo")
 
-    can_create = models.CharField(max_length=1, blank=True, null=True, default='N')
-    can_read = models.CharField(max_length=1, blank=True, null=True, default='Y')
-    can_update = models.CharField(max_length=1, blank=True, null=True, default='N')
-    can_delete = models.CharField(max_length=1, blank=True, null=True, default='N')
+    can_create = models.CharField(max_length=1, blank=True, null=True, default='N', verbose_name="Crear")
+    can_read = models.CharField(max_length=1, blank=True, null=True, default='Y', verbose_name="Leer")
+    can_update = models.CharField(max_length=1, blank=True, null=True, default='N', verbose_name="Actualizar")
+    can_delete = models.CharField(max_length=1, blank=True, null=True, default='N', verbose_name="Eliminar")
 
     class Meta:
         managed = True
@@ -135,14 +135,16 @@ class Perfilpermisos(models.Model):
 
 
 class Productos(models.Model):
-    prod_id = models.CharField(primary_key=True, max_length=10)
-    cat = models.ForeignKey(Categoria, models.DO_NOTHING)
-    prod_nombre = models.CharField(max_length=100, blank=False, null=False, default='Sin nombre')
-    prod_descripcion = models.CharField(max_length=400, blank=True, null=True)
-    prod_precio_venta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
-    prod_stock = models.IntegerField(blank=True, null=True)
-    prod_imagen_url = models.CharField(max_length=500, blank=True, null=True)
-    prod_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0)
+    prod_id = models.CharField(primary_key=True, max_length=10, verbose_name="ID")
+    cat = models.ForeignKey(Categoria, models.DO_NOTHING, verbose_name="Categoría")
+    prod_nombre = models.CharField(max_length=100, blank=False, null=False, default='Sin nombre', verbose_name="Nombre")
+    prod_descripcion = models.CharField(max_length=400, blank=True, null=True, verbose_name="Descripción")
+    prod_precio_venta = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, verbose_name="Precio de venta")
+    prod_stock = models.IntegerField(blank=True, null=True, verbose_name="Stock")
+    prod_imagen = models.ImageField(upload_to='productos/', blank=True, null=True, verbose_name="Imagen del producto")
+    prod_imagen_url = models.CharField(max_length=500, blank=True, null=True, verbose_name="URL de imagen")
+    prod_descuento = models.DecimalField(max_digits=4, decimal_places=2, blank=True, null=True, default=0, verbose_name="Descuento")
+    prod_destacado = models.BooleanField(default=False, verbose_name="Destacado en inicio")
 
     class Meta:
         managed = True
@@ -157,11 +159,26 @@ class Productos(models.Model):
         return self.prod_nombre or str(self.prod_id)
 
 
+
+class Configuracion(models.Model):
+    clave = models.CharField(max_length=50, primary_key=True, verbose_name="Clave")
+    valor = models.CharField(max_length=255, verbose_name="Valor")
+
+    class Meta:
+        managed = True
+        db_table = 'configuracion'
+
+    def __str__(self):
+        return self.clave
+
+
 class Productos_Auditoria(models.Model):
-    dummy_id = models.AutoField(primary_key=True)
-    creation_date = models.DateField(blank=True, null=True)
-    au_type = models.IntegerField(blank=True, null=True)
-    auditoria = models.CharField(max_length=500, blank=True, null=True)
+    dummy_id = models.AutoField(primary_key=True, verbose_name="ID")
+    model_name = models.CharField(max_length=100, default='Productos', verbose_name="Modelo")
+    object_id = models.CharField(max_length=50, blank=True, null=True, verbose_name="ID del registro")
+    creation_date = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
+    au_type = models.IntegerField(default=1, verbose_name="Tipo")
+    auditoria = models.TextField(blank=True, null=True, verbose_name="Auditoría")
 
     class Meta:
         managed = True
@@ -169,9 +186,9 @@ class Productos_Auditoria(models.Model):
 
 
 class Roles(models.Model):
-    id_rol = models.IntegerField(primary_key=True)
-    nombre = models.CharField(unique=True, max_length=50, blank=True, null=True)
-    descripcion = models.CharField(max_length=255, blank=True, null=True)
+    id_rol = models.IntegerField(primary_key=True, verbose_name="ID")
+    nombre = models.CharField(unique=True, max_length=50, blank=True, null=True, verbose_name="Nombre")
+    descripcion = models.CharField(max_length=255, blank=True, null=True, verbose_name="Descripción")
 
     class Meta:
         managed = True
@@ -183,8 +200,8 @@ class Roles(models.Model):
 
 
 class Sexos(models.Model):
-    id_sexo = models.IntegerField(primary_key=True)
-    nombre_sexo = models.CharField(max_length=20, blank=True, null=True)
+    id_sexo = models.IntegerField(primary_key=True, verbose_name="ID")
+    nombre_sexo = models.CharField(max_length=20, blank=True, null=True, verbose_name="Nombre")
 
     class Meta:
         managed = True
@@ -195,15 +212,15 @@ class Sexos(models.Model):
 
 
 class Usuarios(models.Model):
-    id_usuario = models.CharField(max_length=50, primary_key=True)
-    nombre = models.CharField(max_length=300, blank=True, null=True)
-    primer_apellido = models.CharField(max_length=50, blank=True, null=True)
-    segundo_apellido = models.CharField(max_length=50, blank=True, null=True)
-    fecha_nacimiento = models.DateField(blank=True, null=True)
-    password_hash = models.CharField(max_length=255, blank=True, null=True)
-    usuario_id_sexo = models.ForeignKey(Sexos, models.DO_NOTHING, db_column='usuario_id_sexo')
-    usuario_id_perfil = models.ForeignKey(Perfiles, models.DO_NOTHING, db_column='usuario_id_perfil')
-    activo = models.FloatField(max_length=1, blank=True, null=True, default=1)
+    id_usuario = models.CharField(max_length=50, primary_key=True, verbose_name="ID")
+    nombre = models.CharField(max_length=300, blank=True, null=True, verbose_name="Nombre")
+    primer_apellido = models.CharField(max_length=50, blank=True, null=True, verbose_name="Primer apellido")
+    segundo_apellido = models.CharField(max_length=50, blank=True, null=True, verbose_name="Segundo apellido")
+    fecha_nacimiento = models.DateField(blank=True, null=True, verbose_name="Fecha de nacimiento")
+    password_hash = models.CharField(max_length=255, blank=True, null=True, verbose_name="Contraseña")
+    usuario_id_sexo = models.ForeignKey(Sexos, models.DO_NOTHING, db_column='usuario_id_sexo', verbose_name="Sexo")
+    usuario_id_perfil = models.ForeignKey(Perfiles, models.DO_NOTHING, db_column='usuario_id_perfil', verbose_name="Perfil")
+    activo = models.FloatField(max_length=1, blank=True, null=True, default=1, verbose_name="Activo")
 
     class Meta:
         managed = True
@@ -219,13 +236,13 @@ class Usuarios(models.Model):
 
 
 class Config_Contacto(models.Model):
-    id_regla = models.IntegerField(primary_key=True, )
-    nombre_contacto = models.CharField(max_length=50, blank=True, null=False)
-    descripcion = models.CharField(max_length=100, blank=True, null=True)
-    regex_val = models.CharField(max_length=200, blank=True, null=True)
-    min_length = models.FloatField(blank=True, null=True)
-    max_length = models.FloatField(blank=True, null=True)
-    mensaje_error = models.CharField(max_length=200, blank=True, null=False)
+    id_regla = models.IntegerField(primary_key=True, verbose_name="ID")
+    nombre_contacto = models.CharField(max_length=50, blank=True, null=False, verbose_name="Nombre")
+    descripcion = models.CharField(max_length=100, blank=True, null=True, verbose_name="Descripción")
+    regex_val = models.CharField(max_length=200, blank=True, null=True, verbose_name="Regex")
+    min_length = models.FloatField(blank=True, null=True, verbose_name="Longitud mínima")
+    max_length = models.FloatField(blank=True, null=True, verbose_name="Longitud máxima")
+    mensaje_error = models.CharField(max_length=200, blank=True, null=False, verbose_name="Mensaje de error")
 
     class Meta:
         managed = True
@@ -252,10 +269,10 @@ class Config_Contacto(models.Model):
                 return 1
 
 class Contactos(models.Model):
-    id_contacto = models.IntegerField(primary_key=True, )
-    tipo_contacto = models.ForeignKey(Config_Contacto, models.DO_NOTHING, db_column='tipo_contacto', blank=True, null=True)
-    dato_contacto = models.CharField(max_length=100, blank=True, null=True)
-    id_usuario = models.ForeignKey(Usuarios, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True)
+    id_contacto = models.IntegerField(primary_key=True, verbose_name="ID")
+    tipo_contacto = models.ForeignKey(Config_Contacto, models.DO_NOTHING, db_column='tipo_contacto', blank=True, null=True, verbose_name="Tipo de contacto")
+    dato_contacto = models.CharField(max_length=100, blank=True, null=True, verbose_name="Dato")
+    id_usuario = models.ForeignKey(Usuarios, models.DO_NOTHING, db_column='id_usuario', blank=True, null=True, verbose_name="Usuario")
 
     class Meta:
         managed = True

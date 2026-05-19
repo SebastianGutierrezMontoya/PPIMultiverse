@@ -5,6 +5,8 @@
 <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/admin/admin.css' %}">
 {% endblock %}
 
+{% block base_messages %}{% endblock %}
+
 {% block content %}
 <div class="panel-wrapper">
 
@@ -41,9 +43,11 @@
             <div class="panel-nav-section-title">Configuración</div>
             <a href="{% url 'panel_roles' %}" class="panel-nav-link {% if section == 'roles' %}active{% endif %}">
                 <span class="nav-icon">🔐</span> Roles
+            <a href="{% url 'panel_auditoria' %}" class="panel-nav-link {% if section == 'auditoria' %}active{% endif %}">
+                <span class="nav-icon">📜</span> Auditoría
             </a>
-            <a href="{% url 'panel_perfiles' %}" class="panel-nav-link {% if section == 'perfiles' %}active{% endif %}">
-                <span class="nav-icon">👤</span> Perfiles
+            <a href="{% url 'panel_reportes' %}" class="panel-nav-link {% if section == 'reportes' %}active{% endif %}">
+                <span class="nav-icon">📈</span> Reportes
             </a>
             <a href="{% url 'panel_config_contacto' %}" class="panel-nav-link {% if section == 'config_contacto' %}active{% endif %}">
                 <span class="nav-icon">📞</span> Config. Contacto
@@ -65,6 +69,17 @@
 
     {# ─── Content ─── #}
     <div class="panel-content">
+
+        <button class="panel-sidebar-toggle" onclick="togglePanelSidebar()" aria-label="Menú administración">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+        </button>
+
+        <div class="panel-sidebar-overlay" id="panelSidebarOverlay" onclick="togglePanelSidebar()"></div>
+
         {% for mensaje in messages %}
         <div class="panel-alert panel-alert-{{ mensaje.tags }}">{{ mensaje }}</div>
         {% endfor %}
@@ -73,4 +88,12 @@
     </div>
 
 </div>
+
+<script>
+function togglePanelSidebar() {
+    document.querySelector('.panel-sidebar').classList.toggle('open');
+    document.getElementById('panelSidebarOverlay').classList.toggle('open');
+    document.body.classList.toggle('panel-no-scroll');
+}
+</script>
 {% endblock %}

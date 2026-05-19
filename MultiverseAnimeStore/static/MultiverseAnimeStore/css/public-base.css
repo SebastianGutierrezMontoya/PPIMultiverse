@@ -1,5 +1,10 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :root {
   --accent: #f37d15;
+  --primary-color: #f37d15;
   --accent-soft: rgba(243, 125, 21, 0.1);
   --accent-hover: rgba(243, 125, 21, 0.2);
   --accent-shadow: rgba(243, 125, 21, 0.25);
@@ -16,6 +21,11 @@
   --color-text-muted: #94a3b8;
   --sidebar-bg: #0d0e0e;
   --overlay-bg: rgba(0, 0, 0, 0.5);
+}
+
+html, body {
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {

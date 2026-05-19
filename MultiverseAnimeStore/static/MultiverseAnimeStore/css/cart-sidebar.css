@@ -86,19 +86,21 @@
 
   border-radius: 999px;
 
-  background: rgba(255,255,255,0.05);
-  border: none;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .cart-close-btn:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.15);
+  color: #fff;
 }
 
 /* =========================
@@ -195,6 +197,16 @@
 
 .cart-item-info {
   max-width: 150px;
+}
+
+.cart-stock-info {
+  display: block;
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
 }
 
 .cart-remove:hover {

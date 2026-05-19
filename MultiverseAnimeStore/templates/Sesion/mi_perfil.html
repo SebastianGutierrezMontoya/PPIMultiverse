@@ -1,0 +1,314 @@
+{% extends "Multiverse/base.html" %}
+{% load static %}
+
+{% block extra_head %}
+<style>
+    #perfil-page-body {
+        background-color: #ffffff;
+        min-height: calc(100vh - 72px);
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 40px 20px;
+    }
+    .perfil-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 28px;
+        padding: 40px;
+        max-width: 560px;
+        width: 100%;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+    }
+    .perfil-logo {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 16px;
+        background: transparent !important;
+    }
+    .perfil-logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    .perfil-title {
+        text-align: center;
+        font-weight: 900;
+        font-style: italic;
+        text-transform: uppercase;
+        color: #111;
+        margin-bottom: 8px;
+        font-size: 22px;
+    }
+    .perfil-subtitle {
+        text-align: center;
+        color: #6b7280;
+        font-size: 14px;
+        margin-bottom: 32px;
+    }
+    .perfil-section-title {
+        font-weight: 700;
+        font-size: 16px;
+        color: #111;
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #f37d15;
+    }
+    .perfil-section {
+        margin-bottom: 28px;
+    }
+    .perfil-field {
+        margin-bottom: 16px;
+    }
+    .perfil-field label {
+        display: block;
+        font-weight: 600;
+        font-size: 13px;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+    .perfil-field input,
+    .perfil-field select {
+        width: 100%;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        font-size: 14px;
+        color: #111;
+        background: #f9fafb;
+        box-sizing: border-box;
+    }
+    .perfil-field input:focus,
+    .perfil-field select:focus {
+        outline: none;
+        border-color: #f37d15;
+        box-shadow: 0 0 0 3px rgba(243,125,21,0.15);
+    }
+    .perfil-contacto-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .perfil-contacto-label {
+        min-width: 90px;
+        font-weight: 600;
+        font-size: 13px;
+        color: #374151;
+    }
+    .perfil-contacto-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #d1d5db;
+        border-radius: 12px;
+        font-size: 14px;
+        color: #111;
+        background: #f9fafb;
+    }
+    .perfil-contacto-input:focus {
+        outline: none;
+        border-color: #f37d15;
+        box-shadow: 0 0 0 3px rgba(243,125,21,0.15);
+    }
+    .perfil-address-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .perfil-address-row {
+        display: flex;
+        gap: 8px;
+    }
+    .perfil-address-input {
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 10px;
+        font-size: 14px;
+        color: #111;
+        background: #f9fafb;
+        box-sizing: border-box;
+    }
+    .perfil-address-input:focus {
+        outline: none;
+        border-color: #f37d15;
+        box-shadow: 0 0 0 3px rgba(243,125,21,0.15);
+    }
+    .perfil-address-input-full { width: 100%; }
+    .perfil-address-input-half { flex: 1; min-width: 0; }
+    .perfil-contacto-badge {
+        font-size: 11px;
+        color: #6b7280;
+        margin-left: 4px;
+    }
+    .perfil-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+    }
+    .perfil-btn-save {
+        flex: 1;
+        padding: 14px 24px;
+        background: #f37d15;
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .perfil-btn-save:hover {
+        background: #d96c10;
+    }
+    .perfil-btn-secondary {
+        padding: 14px 20px;
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        border-radius: 14px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 14px;
+        display: inline-flex;
+        align-items: center;
+        transition: background 0.2s;
+    }
+    .perfil-btn-secondary:hover {
+        background: #e5e7eb;
+    }
+    .perfil-error {
+        color: #dc2626;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+    .perfil-divider {
+        height: 1px;
+        background: #e5e7eb;
+        margin: 32px 0;
+    }
+    .perfil-btn-pass {
+        padding: 14px 24px;
+        background: #1f2937;
+        color: #fff;
+        border: none;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 15px;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .perfil-btn-pass:hover {
+        background: #374151;
+    }
+    @media (max-width: 600px) {
+        .perfil-card { padding: 24px; }
+        .perfil-contacto-row { flex-direction: column; align-items: stretch; gap: 4px; }
+        .perfil-contacto-label { min-width: auto; }
+        .perfil-address-row { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="perfil-page-body">
+    <div class="perfil-card">
+        <div class="perfil-logo">
+            <img src="{% static 'icono_tienda.png' %}" alt="Logo" />
+        </div>
+        <h1 class="perfil-title">Mi Perfil</h1>
+        <p class="perfil-subtitle">Gestiona tus datos personales y medios de contacto</p>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="perfil-section">
+                <h2 class="perfil-section-title">Datos personales</h2>
+                {% for field in form.visible_fields %}
+                    <div class="perfil-field">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {% if field.errors %}
+                            <div class="perfil-error">{{ field.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+            </div>
+
+            <div class="perfil-section">
+                <h2 class="perfil-section-title">Contactos</h2>
+                {% if tipos_con_contacto %}
+                    {% for tipo, contacto, addr in tipos_con_contacto %}
+                        {% if tipo.id_regla == 3 %}
+                        <div class="perfil-contacto-row">
+                            <span class="perfil-contacto-label">
+                                {{ tipo.nombre_contacto }}
+                                <span class="perfil-contacto-badge">({{ tipo.min_length|floatformat:"0" }}–{{ tipo.max_length|floatformat:"0" }} caracteres)</span>
+                            </span>
+                            <div class="perfil-address-group">
+                                <input type="text" name="contacto_calle_3" class="perfil-address-input perfil-address-input-full"
+                                    value="{{ addr.calle|default:'' }}" placeholder="Calle / Avenida" />
+                                <div class="perfil-address-row">
+                                    <input type="text" name="contacto_ciudad_3" class="perfil-address-input perfil-address-input-half"
+                                        value="{{ addr.ciudad|default:'' }}" placeholder="Ciudad" />
+                                    <input type="text" name="contacto_barrio_3" class="perfil-address-input perfil-address-input-half"
+                                        value="{{ addr.barrio|default:'' }}" placeholder="Barrio (opcional)" />
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="perfil-contacto-row">
+                            <span class="perfil-contacto-label">
+                                {{ tipo.nombre_contacto }}
+                                <span class="perfil-contacto-badge">({{ tipo.min_length|floatformat:"0" }}–{{ tipo.max_length|floatformat:"0" }} caracteres)</span>
+                            </span>
+                            <input
+                                type="text"
+                                name="contacto_dato_{{ tipo.id_regla }}"
+                                class="perfil-contacto-input"
+                                value="{{ contacto.dato_contacto|default:'' }}"
+                                placeholder="{{ tipo.descripcion|default:'' }}"
+                                maxlength="{{ tipo.max_length|floatformat:'0' }}"
+                            />
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <p style="color:#6b7280; font-size:13px;">No hay tipos de contacto configurados.</p>
+                {% endif %}
+            </div>
+
+            <div class="perfil-actions">
+                <button type="submit" class="perfil-btn-save">Guardar cambios</button>
+                <a href="{% url 'home' %}" class="perfil-btn-secondary">Cancelar</a>
+            </div>
+        </form>
+
+        <div class="perfil-divider"></div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+            <input type="hidden" name="cambiar_contrasena" value="1">
+            <div class="perfil-section">
+                <h2 class="perfil-section-title">Cambiar contraseña</h2>
+                <div class="perfil-field">
+                    <label for="id_contrasena_actual">Contraseña actual</label>
+                    <input type="password" name="contrasena_actual" id="id_contrasena_actual" class="form-control" placeholder="Contraseña actual" required minlength="6">
+                </div>
+                <div class="perfil-field">
+                    <label for="id_contrasena_nueva">Nueva contraseña</label>
+                    <input type="password" name="contrasena_nueva" id="id_contrasena_nueva" class="form-control" placeholder="Nueva contraseña" required minlength="6">
+                </div>
+                <div class="perfil-field">
+                    <label for="id_contrasena_confirmar">Confirmar contraseña</label>
+                    <input type="password" name="contrasena_confirmar" id="id_contrasena_confirmar" class="form-control" placeholder="Confirmar nueva contraseña" required minlength="6">
+                </div>
+            </div>
+            <div class="perfil-actions">
+                <button type="submit" class="perfil-btn-pass">Cambiar contraseña</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

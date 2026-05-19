@@ -1,12 +1,16 @@
 {% extends "base.html" %}
 {% block content %}
 
-
+<div style="max-width: 600px; margin: 80px auto; padding: 40px; text-align: center;">
+    <h1 style="font-size: 28px; margin-bottom: 12px;">Admin Clásico</h1>
+    <p style="color: #64748b; margin-bottom: 32px;">Esta sección está en modo de transición. Usa el Panel Dark para una experiencia completa.</p>
+    <a href="{% url 'panel_dashboard' %}" class="panel-btn" style="display:inline-block; background:#f37d15; color:#fff; padding:14px 28px; border-radius:10px; text-decoration:none; font-weight:700;">
+        🚀 Ir al Panel Dark
+    </a>
+</div>
 
 {% for mensaje in messages %}
 <div class="alert alert-{{ mensaje.tags }}">{{ mensaje }}</div>
-
 {% endfor %}
-
 
 {% endblock %}

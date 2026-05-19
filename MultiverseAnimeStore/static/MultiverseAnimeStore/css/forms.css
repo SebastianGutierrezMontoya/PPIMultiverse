@@ -256,7 +256,7 @@ form p textarea[required] ~ label {
 /* ------------------------------------------------------------------ */
 .form-container button[type="submit"],
 form button[type="submit"] {
-    background: var(--primary-color, #6c63ff);
+    background: var(--primary-color, #f37d15);
     color: white;
     border: none;
     padding: 12px 32px;

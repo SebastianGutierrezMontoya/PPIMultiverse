@@ -1,4 +1,5 @@
 {% extends "Admin/panel_base.html" %}
+{% load static %}
 
 {% block panel_content %}
 <div class="panel-content-header">
@@ -13,14 +14,15 @@
 <div class="panel-form-card">
     <form method="post">
         {% csrf_token %}
-
+        {% for hidden in form.hidden_fields %}{{ hidden }}{% endfor %}
+        
         {% if form.non_field_errors %}
         <div class="panel-alert panel-alert-error">
             {% for err in form.non_field_errors %}{{ err }}{% endfor %}
         </div>
         {% endif %}
 
-        {% for field in form %}
+        {% for field in form.visible_fields %}
         <div class="panel-form-group">
             <label for="{{ field.id_for_label }}" class="{% if field.field.required %}required{% endif %}">
                 {{ field.label }}
@@ -31,6 +33,7 @@
             {% endif %}
         </div>
         {% endfor %}
+
         <div class="panel-form-actions">
             <button type="submit" class="panel-btn panel-btn-primary">💾 Guardar</button>
             <a href="{% url 'panel_categorias' %}" class="panel-btn panel-btn-secondary">Cancelar</a>

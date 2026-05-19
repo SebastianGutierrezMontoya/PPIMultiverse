@@ -32,18 +32,28 @@ function clearCartCache() {
   }
 }
 
+function updateBodyScroll() {
+  var cartOpen = cartSidebar && cartSidebar.classList.contains('open');
+  var drawer = document.getElementById('mobileDrawer');
+  var drawerOpen = drawer && drawer.classList.contains('open');
+  if (cartOpen || drawerOpen) {
+    document.body.style.overflow = 'hidden';
+  } else {
+    document.body.style.overflow = '';
+  }
+}
+
 function toggleCart() {
   const isOpen = cartSidebar.classList.contains('open');
 
   if (isOpen) {
     cartSidebar.classList.remove('open');
     cartOverlay.classList.remove('open');
-    document.body.style.overflow = '';
   } else {
     cartSidebar.classList.add('open');
     cartOverlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
   }
+  updateBodyScroll();
 }
 
 
@@ -77,11 +87,14 @@ function renderCart() {
   cart.forEach((item, index) => {
     total += item.price * item.qty;
 
+    const stockInfo = item.stock ? '<span class="cart-stock-info">Stock: ' + item.stock + '</span>' : '';
+
     const itemHTML = `
       <div class="cart-item">
         <div class="cart-item-info">
           <span class="cart-price">$${formatPrice(item.price * item.qty)}</span>
           <span class="cart-name">${item.name}</span>
+          ${stockInfo}
         </div>
         <div class="cart-qty-controls">
           <button onclick="changeQty(${index}, -1)" class="cart-qty-btn">-</button>
@@ -89,7 +102,7 @@ function renderCart() {
           <button onclick="changeQty(${index}, 1)" class="cart-qty-btn">+</button>
         </div>
         <button onclick="removeFromCart(${index})" class="cart-remove">
-          <i class="fas fa-trash-can">X</i>
+          <i class="fas fa-trash-can"></i>
         </button>
       </div>
     `;
@@ -118,6 +131,14 @@ function formatPrice(value) {
 }
 
 function changeQty(index, delta) {
+  const item = cart[index];
+  const newQty = item.qty + delta;
+
+  if (delta > 0 && item.stock && newQty > item.stock) {
+    alert('Stock máximo alcanzado. Solo hay ' + item.stock + ' disponible(s).');
+    return;
+  }
+
   cart[index].qty += delta;
   if (cart[index].qty <= 0) {
     cart.splice(index, 1);
@@ -127,18 +148,29 @@ function changeQty(index, delta) {
   if (cart.length === 0) {
     cartSidebar.classList.remove('open');
     cartOverlay.classList.remove('open');
-    document.body.style.overflow = '';
+    updateBodyScroll();
   }
 }
 
-function addToCart(name, price, id) {
+function addToCart(name, price, id, stock) {
+  const stockNum = parseInt(stock) || 0;
+
+  if (stockNum <= 0) {
+    alert('Producto agotado. No se puede agregar al carrito.');
+    return;
+  }
+
   const unitPrice = parseFloat(price) || 0;
   const existing = cart.find(item => item.id === id);
 
   if (existing) {
+    if (existing.qty + 1 > stockNum) {
+      alert('Stock máximo alcanzado. Solo hay ' + stockNum + ' disponible(s).');
+      return;
+    }
     existing.qty = (existing.qty || 1) + 1;
   } else {
-    cart.push({ id, name, price: unitPrice, qty: 1 });
+    cart.push({ id, name, price: unitPrice, qty: 1, stock: stockNum });
   }
 
   renderCart();
@@ -146,7 +178,7 @@ function addToCart(name, price, id) {
 
   cartSidebar.classList.add('open');
   cartOverlay.classList.add('open');
-  document.body.style.overflow = 'hidden';
+  updateBodyScroll();
 }
 
 
@@ -193,21 +225,19 @@ function submitCheckoutForm() {
 
   const calleVal = calleInput ? calleInput.value.trim() : '';
   const ciudadVal = ciudadInput ? ciudadInput.value.trim() : '';
-  const paisVal = paisInput ? paisInput.value.trim() : '';
   const barrioVal = barrioInput ? barrioInput.value.trim() : '';
 
-  if (!calleVal || !ciudadVal || !paisVal) {
+  if (!calleVal || !ciudadVal) {
     if (error) {
-      error.textContent = 'Completa la dirección: calle, ciudad y país son obligatorios.';
+      error.textContent = 'Completa la dirección: calle y ciudad son obligatorios.';
       error.classList.remove('hidden');
     }
     if (calleInput && !calleVal) calleInput.classList.add('error');
     if (ciudadInput && !ciudadVal) ciudadInput.classList.add('error');
-    if (paisInput && !paisVal) paisInput.classList.add('error');
     return;
   }
 
-  const parts = [calleVal, ciudadVal, paisVal];
+  const parts = [calleVal, ciudadVal, 'Colombia'];
   if (barrioVal) parts.push(barrioVal);
   addressHidden.value = parts.join(' | ');
 
@@ -238,6 +268,14 @@ function clearInputError(input) {
 }
 
 function initCart() {
+  if (window.location.search.includes('clear_cart=1')) {
+    clearCartCache();
+    cart = [];
+    renderCart();
+    window.history.replaceState({}, '', window.location.pathname);
+    return;
+  }
+
   cart = loadCartFromCache();
   renderCart();
 
@@ -249,6 +287,22 @@ function initCart() {
   if (window.isAuthenticated) {
     if (nameGroup) nameGroup.style.display = 'none';
     if (phoneGroup) phoneGroup.style.display = 'none';
+
+    fetch('/api/mis-contactos/')
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.calle) {
+          var calleInput = document.getElementById('checkout_calle');
+          var ciudadInput = document.getElementById('checkout_ciudad');
+          var barrioInput = document.getElementById('checkout_barrio');
+          if (calleInput) calleInput.value = data.calle;
+          if (ciudadInput) ciudadInput.value = data.ciudad;
+          if (barrioInput && data.barrio) barrioInput.value = data.barrio;
+          var badge = document.getElementById('checkout-address-badge');
+          if (badge) badge.style.display = 'flex';
+        }
+      })
+      .catch(function(err) { console.warn('Error cargando contactos:', err); });
   } else {
     if (nameInput) nameInput.addEventListener('input', function() { clearInputError(this); });
     if (phoneInput) phoneInput.addEventListener('input', function() { clearInputError(this); });

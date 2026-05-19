@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/cart-sidebar.css' %}">
         <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/catalogo.css' %}">
         <link rel="stylesheet" href="{% static 'MultiverseAnimeStore/css/forms.css' %}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
         {% block extra_head %}{% endblock %}
 
     </head>
@@ -19,6 +20,18 @@
         {% include 'Multiverse/cart-sidebar.html' %}
 
     <main>
+
+        {% block base_messages %}
+        {% if messages %}
+        <div style="max-width: 960px; margin: 0 auto; padding: 20px 20px 0;">
+            {% for message in messages %}
+            <div style="padding: 14px 20px; border-radius: 12px; font-size: 14px; font-weight: 600; margin-bottom: 12px; {% if message.level_tag == 'success' %}background: rgba(34,197,94,0.15); color: #16a34a; border: 1px solid rgba(34,197,94,0.3);{% elif message.level_tag == 'error' %}background: rgba(239,68,68,0.15); color: #dc2626; border: 1px solid rgba(239,68,68,0.3);{% else %}background: rgba(243,125,21,0.15); color: #f37d15; border: 1px solid rgba(243,125,21,0.3);{% endif %}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endblock %}
 
         {% block content %}
 
@@ -37,6 +50,7 @@
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+        if (document.querySelector('.panel-wrapper')) return;
         document.querySelectorAll('input[required], select[required], textarea[required]').forEach(function(el) {
             if (el.closest('.form-floating')) return;
             var label = document.querySelector('label[for="' + el.id + '"]');

@@ -8,7 +8,8 @@ from decimal import Decimal
 
 
 def hash_password(password):
-    return hashlib.sha256(password.encode('utf-8')).hexdigest()
+    from django.contrib.auth.hashers import make_password
+    return make_password(password)
 
 
 class Command(BaseCommand):

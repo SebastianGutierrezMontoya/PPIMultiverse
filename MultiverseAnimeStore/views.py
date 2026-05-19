@@ -188,7 +188,7 @@ def register_view(request):
             sexo = get_object_or_404(Sexos, pk=sexo_id)
             perfil_cliente = Perfiles.objects.filter(id_perfil=2).first()
 
-            print(telefono, direccion)
+            # print(telefono, direccion)
 
             try:
                 with transaction.atomic():
@@ -690,7 +690,8 @@ def panel_auditoria(request):
     # Reutilizar misma query
     productos_auditoria_raw = Productos_Auditoria.objects.raw("""
     SELECT
-        dummy_id,
+        
+        ctid AS dummy_id,
         model_name,
         object_id,
         creation_date,
@@ -2613,6 +2614,129 @@ def panel_consultas_list(request):
         'section': 'consultas',
         'sidebar': 0,
     })
+
+
+@Login_requerido()
+def panel_consultas_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    if request.method == 'POST':
+        form = ConsultasDinamicasForm(request.POST)
+        blocked_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'ALTER', 'TRUNCATE', 'EXECUTE', 'GRANT', 'REVOKE']
+        query = request.POST.get('cons_sql', '').upper()
+        if any(keyword in query for keyword in blocked_keywords):
+            form.add_error('cons_sql', 'La consulta contiene palabras clave bloqueadas.')
+        elif form.is_valid():
+            form.save()
+            messages.success(request, 'Consulta creada exitosamente.')
+            return redirect('panel_consultas')
+    else:
+        form = ConsultasDinamicasForm()
+    return render(request, 'Admin/panel_consultas_form.html', {
+        'form': form,
+        'section': 'consultas',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_consultas_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    consulta = get_object_or_404(Consultas_Dinamicas, pk=pk)
+    if request.method == 'POST':
+        form = ConsultasDinamicasForm(request.POST, instance=consulta)
+        blocked_keywords = ['DROP', 'DELETE', 'INSERT', 'UPDATE', 'ALTER', 'TRUNCATE', 'EXECUTE', 'GRANT', 'REVOKE']
+        query = request.POST.get('cons_sql', '').upper()
+        if any(keyword in query for keyword in blocked_keywords):
+            form.add_error('cons_sql', 'La consulta contiene palabras clave bloqueadas.')
+        elif form.is_valid():
+            form.save()
+            messages.success(request, 'Consulta actualizada exitosamente.')
+            return redirect('panel_consultas')
+    else:
+        form = ConsultasDinamicasForm(instance=consulta)
+    return render(request, 'Admin/panel_consultas_form.html', {
+        'form': form,
+        'consulta': consulta,
+        'section': 'consultas',
+        'sidebar': 0,
+    })
+
+
+@Login_requerido()
+def panel_consultas_reporte(request, id):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    data = ejecutar_reporte(id)
+    return render(request, "Admin/panel_consultas_reporte.html", {"resultado": data})
+
+
+
+@Login_requerido()
+def panel_config_contacto_list(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    config_contactos = Config_Contacto.objects.all().order_by('id_regla')
+    return render(request, 'Admin/panel_config_contacto.html', {
+        'config_contactos': config_contactos,
+        'section': 'config_contactos',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_config_contacto_crear(request):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    if request.method == 'POST':
+        form = ConfigContactoForm(request.POST)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Regla de contacto creada exitosamente.')
+                return redirect('panel_config_contactos')
+    else:
+        form = ConfigContactoForm()
+    return render(request, 'Admin/panel_config_contacto_form.html', {
+        'form': form,
+        'section': 'config_contactos',
+        'sidebar': 0,
+    })
+
+@Login_requerido()
+def panel_config_contacto_editar(request, pk):
+    if getattr(request.user, 'usuario_id_perfil_id', None) != 1:
+        messages.error(request, 'No tienes permiso para acceder a esta sección.')
+        return redirect('home')
+    config_contacto = get_object_or_404(Config_Contacto, pk=pk)
+    if request.method == 'POST':
+        form = ConfigContactoForm(request.POST, instance=config_contacto)
+        if form.is_valid():
+            try:
+                with transaction.atomic():
+                    form.save()
+            except DatabaseError as e:
+                form.add_error(None, _extract_db_message(e))
+            else:
+                messages.success(request, 'Regla de contacto actualizada exitosamente.')
+                return redirect('panel_config_contactos')
+    else:
+        form = ConfigContactoForm(instance=config_contacto)
+    return render(request, 'Admin/panel_config_contacto_form.html', {
+        'form': form,
+        'config_contacto': config_contacto,
+        'section': 'config_contactos',
+        'sidebar': 0,
+    })
+
 
 
 @Login_requerido()

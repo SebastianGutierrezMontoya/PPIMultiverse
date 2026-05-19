@@ -35,8 +35,8 @@ urlpatterns = [
     path('login/', login_view, name='login'),
     path('logout/', logout_view, name='logout'),
     path('register/', register_view, name='register'),
-    path('perfil/<str:pk>/', perfil_view, name='perfil'),
-    path('cambiar-contraseña/<str:pk>/', cambiar_contraseña, name='cambiar_contraseña'),
+    # path('perfil/<str:pk>/', perfil_view, name='perfil'),
+    # path('cambiar-contraseña/<str:pk>/', cambiar_contraseña, name='cambiar_contraseña'),
 
     path('mis-pedidos/', mis_pedidos_view, name='mis_pedidos'),
     path('mis-pedidos/<int:ped_id>/', pedido_detalle_view, name='pedido_detalle'),

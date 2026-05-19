@@ -2,7 +2,14 @@
 Django==5.2.6
 
 # Base de datos
-# Usando SQLite (incluido en Python)
+psycopg2-binary==2.9.10
+dj-database-url==2.3.0
+
+# Servidor WSGI (produccion)
+gunicorn==23.0.0
+
+# Static files (produccion)
+whitenoise==6.11.0
 
 # Utilidades
 openpyxl==3.1.5

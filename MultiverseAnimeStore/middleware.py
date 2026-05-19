@@ -18,7 +18,11 @@ class CustomAuthMiddleware:
             try:
                 user = Usuarios.objects.get(id_usuario=user_id)
 
-                # Inyectar atributos mínimos
+                if user.activo != 1:
+                    del request.session['user_id']
+                    request.user = AnonymousUser()
+                    return self.get_response(request)
+
                 user.is_authenticated = True
                 user.is_anonymous = False
                 user.is_active = True

@@ -189,6 +189,7 @@
     </div>
 </div>
 
+<script type="application/json" id="chart-data">{{ chart_data|safe }}</script>
 <script>
 (function() {
     const data = JSON.parse(document.getElementById('chart-data').textContent);
@@ -238,6 +239,5 @@
     });
 })();
 </script>
-<script type="application/json" id="chart-data">{{ chart_data|safe }}</script>
 
 {% endblock %}

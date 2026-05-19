@@ -2274,8 +2274,19 @@ def panel_reportes(request):
     hasta = request.GET.get('hasta', '')
     estado_sel = request.GET.get('estado', '')
     categoria_sel = request.GET.get('categoria', '')
+    preset = request.GET.get('preset', '')
 
     hoy = date.today()
+    presets = {
+        'hoy': (hoy.isoformat(), hoy.isoformat(), 'diario'),
+        'semana': ((hoy - timedelta(days=hoy.weekday())).isoformat(), hoy.isoformat(), 'diario'),
+        'mes': (hoy.replace(day=1).isoformat(), hoy.isoformat(), 'diario'),
+        'ano': (hoy.replace(month=1, day=1).isoformat(), hoy.isoformat(), 'mensual'),
+        'todo': ('', '', 'mensual'),
+    }
+    if preset in presets:
+        desde, hasta, periodo = presets[preset]
+
     if not desde and not hasta:
         desde = hoy.replace(day=1).isoformat()
         hasta = hoy.isoformat()
@@ -2344,14 +2355,6 @@ def panel_reportes(request):
             ])
         return response
 
-    presets = {
-        'hoy': (hoy.isoformat(), hoy.isoformat(), 'diario'),
-        'semana': ((hoy - timedelta(days=hoy.weekday())).isoformat(), hoy.isoformat(), 'diario'),
-        'mes': (hoy.replace(day=1).isoformat(), hoy.isoformat(), 'diario'),
-        'ano': (hoy.replace(month=1, day=1).isoformat(), hoy.isoformat(), 'mensual'),
-        'todo': ('', '', 'mensual'),
-    }
-
     estados = EstadoPedidos.objects.all().order_by('est_id')
     categorias = Categoria.objects.all().order_by('cat_id')
 
@@ -2372,5 +2375,4 @@ def panel_reportes(request):
         'chart_data': json.dumps(chart_data),
         'estados': estados,
         'categorias': categorias,
-        'presets': presets,
     })
